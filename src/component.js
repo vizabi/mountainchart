@@ -485,11 +485,12 @@ const MountainChartComponent = Vizabi.Component.extend({
 
   zoomToMaxMin() {
     const _this = this;
+    const mdl = this.model.marker.axis_x;
 
-    if (this.model.marker.axis_x.zoomedMin == null || this.model.marker.axis_x.zoomedMax == null) return;
+    if (mdl.zoomedMin == null && mdl.domainMin == null || mdl.zoomedMax == null && mdl.domainMin == null) return;
 
-    const x1 = this.xScale(this.model.marker.axis_x.zoomedMin);
-    const x2 = this.xScale(this.model.marker.axis_x.zoomedMax);
+    const x1 = this.xScale(mdl.zoomedMin || mdl.domainMin);
+    const x2 = this.xScale(mdl.zoomedMax || mdl.domainMax);
     // if we have same x1 and x2 then divider will be 0 and rangeRation will become -Infinity
     if (!isFinite(x1) || !isFinite(x2) || x1 === x2) return;
 
