@@ -490,6 +490,8 @@ const MountainChartComponent = Vizabi.Component.extend({
 
     const x1 = this.xScale(this.model.marker.axis_x.zoomedMin);
     const x2 = this.xScale(this.model.marker.axis_x.zoomedMax);
+    // if we have same x1 and x2 then divider will be 0 and rangeRation will become -Infinity
+    if (x1 === x2) return;
 
     this.rangeRatio = this.width / (x2 - x1) * this.rangeRatio;
     this.rangeShift = (this.rangeShift - x1) / (x2 - x1) * this.width;
