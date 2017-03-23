@@ -10,11 +10,11 @@
   "devDependencies": {
     "compare-version": "^0.1.2",
     "shelljs": "^0.7.7",
-    "vizabi": "^0.20.2-5",
+    "vizabi": "^0.20.2-25",
     "vizabi-tool-bundler": "github:vizabi/vizabi-tool-bundler"
   },
   "name": "vizabi-mountainchart",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vizabi/vizabi-mountainchart.git"
