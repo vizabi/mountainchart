@@ -119,7 +119,7 @@ const MCSelectList = Vizabi.Class.extend({
     _this.selectList
       .attr("transform", (d, i) => {
         if (d.aggrLevel != currentAggrLevel) aggrLevelSpacing += fontHeight;
-        const spacing = fontHeight * i + titleHeight * 1.5 + aggrLevelSpacing;
+        const spacing = fontHeight * i + titleHeight * 2 + aggrLevelSpacing;
         currentAggrLevel = d.aggrLevel;
         return "translate(" + (isRTL ? _this.width : 0) + "," + spacing + ")";
       })
