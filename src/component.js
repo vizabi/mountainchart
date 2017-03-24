@@ -716,9 +716,7 @@ const MountainChartComponent = Vizabi.Component.extend({
         _this._selectlist.showCloseCross(d, false);
 
       },
-      _click(d, i) {
-        if (_this.model.time.dragging || _this.model.time.playing) return;
-
+      _click(d) {
         _this.model.marker.selectMarker(d);
       }
     };
