@@ -2,13 +2,14 @@
   "main": "build/dist/mountainchart.js",
   "scripts": {
     "link": "npm link ../vizabi",
-    "build": "webpack --progress"
+    "build": "cross-env NODE_ENV=production webpack --progress"
   },
   "files": [
     "build/dist"
   ],
   "devDependencies": {
     "compare-version": "^0.1.2",
+    "cross-env": "^3.2.4",
     "shelljs": "^0.7.7",
     "vizabi": "^0.20.2-25",
     "vizabi-tool-bundler": "github:vizabi/vizabi-tool-bundler"
