@@ -1,5 +1,6 @@
 import "./styles.scss";
 import component from "./component";
+import "./dialogs/axesmc/axesmc";
 
 
 // MOUNTAIN CHART TOOL
