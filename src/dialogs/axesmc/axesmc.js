@@ -2,7 +2,7 @@
  * Axes dialog
  */
 
-const Axes = Vizabi.Component.get("_dialog").extend({
+const Axes = Vizabi.Component.get("_dialog").extend("axesmc", {
 
   /**
    * Initializes the dialog component
@@ -108,5 +108,4 @@ const Axes = Vizabi.Component.get("_dialog").extend({
   }
 });
 
-Vizabi.Component.register("axesmc", Axes);
 export default Axes;
