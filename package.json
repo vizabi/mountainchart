@@ -9,9 +9,9 @@
   ],
   "devDependencies": {
     "compare-version": "^0.1.2",
-    "cross-env": "^3.2.4",
+    "cross-env": "^4.0.0",
     "shelljs": "^0.7.7",
-    "vizabi": "^0.20.2-25",
+    "vizabi": "^0.21.0-20",
     "vizabi-tool-bundler": "github:vizabi/vizabi-tool-bundler"
   },
   "name": "vizabi-mountainchart",
