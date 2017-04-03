@@ -716,10 +716,11 @@ const MountainChartComponent = Vizabi.Component.extend({
         _this._selectlist.showCloseCross(d, false);
 
       },
-      _click(d, i) {
-        if (_this.model.time.dragging || _this.model.time.playing) return;
-
-        _this.model.marker.selectMarker(d);
+      _click(d) {
+        const isPlayingOrDragging = _this.model.time.dragging || _this.model.time.playing;
+        if (!isPlayingOrDragging || _this.model.marker.isSelected(d)) {
+          _this.model.marker.selectMarker(d);
+        }
       }
     };
 
