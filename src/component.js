@@ -34,7 +34,7 @@ const THICKNESS_THRESHOLD = 0.001;
 const COLOR_WHITEISH = "#d3d3d3";
 
 // MOUNTAIN CHART COMPONENT
-const MountainChartComponent = Vizabi.Component.extend({
+const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
   /**
    * Initialize the component
