@@ -2,6 +2,7 @@ import "./styles.scss";
 import component from "./component";
 import "./dialogs/axesmc/axesmc";
 
+const VERSION_INFO = { version: __VERSION, build: __BUILD };
 
 // MOUNTAIN CHART TOOL
 const MountainChart = Vizabi.Tool.extend("MountainChart", {
@@ -89,7 +90,9 @@ const MountainChart = Vizabi.Tool.extend("MountainChart", {
       },
       presentation: false
     }
-  }
+  },
+
+  versionInfo: VERSION_INFO
 });
 
 export default MountainChart;
