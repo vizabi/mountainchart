@@ -120,6 +120,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
         _this.updateOpacity();
         _this.updateDoubtOpacity();
         _this.redrawDataPoints();
+        _this._probe.redraw();
       },
       "change:marker.opacitySelectDim": function(evt) {
         _this.updateOpacity();

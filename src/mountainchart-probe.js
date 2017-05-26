@@ -72,7 +72,7 @@ const MCProbe = Vizabi.Class.extend({
       if (i === 3 || i === 7) string = formatter2(sumValue * (1 - leftArea / totalArea)) + " " + _this.translator("mount/people");
 
       view.text(string)
-        .classed("vzb-hidden", !options.full && i !== 0 && i !== 4)
+        .classed("vzb-hidden", !options.full && (_this.someSelected || (i !== 0 && i !== 4)))
         .attr("x", _this.xScale(options.level) + ([0, 4, 2, 6].indexOf(i) > -1 ? -6 : +5))
         .attr("y", _this.heightOfLabels)
         .attr("dy", [0, 1, 4, 5].indexOf(i) > -1 ? 0 : "1.5em");
