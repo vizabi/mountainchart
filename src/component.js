@@ -1142,7 +1142,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
   preload() {
     const _this = this;
     
-    const preload = utils.getProp(["model", "ui", "chart", "preload"], this);
+    const preload = utils.getProp(this, ["model", "ui", "chart", "preload"]);
     if(!preload) return Promise.resolve();
     
     const KEY = this.model.entities.dim;
