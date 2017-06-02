@@ -54,6 +54,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
       { name: "entities", type: "entities" },
       { name: "marker", type: "model" },
       { name: "locale", type: "locale" },
+      { name: "data", type: "data" },
       { name: "ui", type: "ui" }
     ];
 
@@ -248,10 +249,10 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     this._math.xScaleFactor = this.model.marker.axis_x.xScaleFactor;
     this._math.xScaleShift = this.model.marker.axis_x.xScaleShift;
 
-    if (!this.precomputedShapes || !this.precomputedShapes[yearNow] || !this.precomputedShapes[yearEnd]) return;
+    if (!this.precomputedShape || !this.precomputedShape[0] || !this.precomputedShape[0].income_mountains) return;
 
-    const yMax = this.precomputedShapes[this.model.ui.chart.yMaxMethod == "immediate" ? yearNow : yearEnd].yMax;
-    let shape = this.precomputedShapes[yearNow].shape;
+    const yMax = this.precomputedShape[0].income_mountains["yMax_" + this.model.ui.chart.yMaxMethod];
+    let shape = this.precomputedShape[0].income_mountains.shape;
 
     if (!yMax || !shape || shape.length === 0) return;
 
@@ -1139,19 +1140,45 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
   },
 
   preload() {
-    const shape_path = globals.ext_resources.shapePath ? globals.ext_resources.shapePath :
-      globals.ext_resources.host + globals.ext_resources.preloadPath + "mc_precomputed_shapes.json";
-
     const _this = this;
+    
+    const preload = utils.getProp(["model", "ui", "chart", "preload"], this);
+    if(!preload) return Promise.resolve();
+    
+    const KEY = this.model.entities.dim;
+    const TIMEDIM = this.model.time.dim;
 
+    //build a query to the reader to fetch preload info
+    const query = {
+      language: this.model.locale.id,
+      from: "datapoints",
+      animatable: TIMEDIM,
+      select: {
+        key: [KEY, TIMEDIM],
+        value: ["income_mountains"]
+      },
+      where: { $and: [
+        { [KEY]: "$" + KEY },
+        { [TIMEDIM]: "$" + TIMEDIM }
+      ] },
+      join: {
+        ["$" + KEY]: { key: KEY, where: { [KEY]: { $in: ["world"] } } },
+        ["$" + TIMEDIM]: { key: TIMEDIM, where: { [TIMEDIM]: this.model.time.formatDate(this.model.time.value) } }
+      },
+      order_by: [TIMEDIM]
+    };
+    
     return new Promise((resolve, reject) => {
 
-      d3.json(shape_path, (error, json) => {
-        if (error) return console.warn("Failed loading json " + shape_path + ". " + error);
-        _this.precomputedShapes = json;
-        resolve();
-      });
+      const dataPromise = this.model.data.load(query, {"income_mountains": d => JSON.parse(d)});
 
+      dataPromise.then(
+        function(dataId){
+          _this.precomputedShape = _this.model.data.getData(dataId);
+          resolve();
+        },
+        err => utils.warn("Problem with Preload mountainchart query: ", err, JSON.stringify(query))
+      );
     });
   }
 

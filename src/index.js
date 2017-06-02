@@ -21,7 +21,7 @@ const MountainChart = Vizabi.Tool.extend("MountainChart", {
     this.components = [{
       component,
       placeholder: ".vzb-tool-viz",
-      model: ["state.time", "state.entities", "state.marker", "locale", "ui"] //pass models to component
+      model: ["state.time", "state.entities", "state.marker", "locale", "data", "ui"] //pass models to component
     }, {
       component: Vizabi.Component.get("timeslider"),
       placeholder: ".vzb-tool-timeslider",
@@ -76,7 +76,8 @@ const MountainChart = Vizabi.Tool.extend("MountainChart", {
         showProbeX: true,
         probeX: 1.85,
         xLogStops: [1, 2, 5],
-        xPoints: 50
+        xPoints: 50,
+        preload: "income_mountains"
       },
       "buttons": ["colors", "find", "stack", "show", "moreoptions", "fullscreen", "presentation"],
       "dialogs": {
