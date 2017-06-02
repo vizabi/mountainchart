@@ -1149,7 +1149,6 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     const query = {
       language: this.model.locale.id,
       from: "datapoints",
-      animatable: TIMEDIM,
       select: {
         key: [KEY, TIMEDIM],
         value: [preload]
