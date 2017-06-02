@@ -243,9 +243,6 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
   afterPreload() {
     const _this = this;
 
-    const yearNow = _this.model.time.formatDate(this.model.time.value);
-    const yearEnd = _this.model.time.formatDate(this.model.time.end);
-
     this._math.xScaleFactor = this.model.marker.axis_x.xScaleFactor;
     this._math.xScaleShift = this.model.marker.axis_x.xScaleShift;
 
@@ -1155,7 +1152,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
       animatable: TIMEDIM,
       select: {
         key: [KEY, TIMEDIM],
-        value: ["income_mountains"]
+        value: [preload]
       },
       where: { $and: [
         { [KEY]: "$" + KEY },
@@ -1170,7 +1167,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     
     return new Promise((resolve, reject) => {
 
-      const dataPromise = this.model.data.load(query, {"income_mountains": d => JSON.parse(d)});
+      const dataPromise = this.model.data.load(query, {[preload]: d => JSON.parse(d)});
 
       dataPromise.then(
         function(dataId){
