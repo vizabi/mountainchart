@@ -1140,6 +1140,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     const _this = this;
     
     const preload = utils.getProp(this, ["model", "ui", "chart", "preload"]);
+    const preloadKey = utils.getProp(this, ["model", "ui", "chart", "preloadKey"]);
     if(!preload) return Promise.resolve();
     
     const KEY = this.model.entities.dim;
@@ -1158,7 +1159,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
         { [TIMEDIM]: "$" + TIMEDIM }
       ] },
       join: {
-        ["$" + KEY]: { key: KEY, where: { [KEY]: { $in: ["world"] } } },
+        ["$" + KEY]: { key: KEY, where: { [KEY]: { $in: [preloadKey||"world"] } } },
         ["$" + TIMEDIM]: { key: TIMEDIM, where: { [TIMEDIM]: this.model.time.formatDate(this.model.time.value) } }
       },
       order_by: [TIMEDIM]

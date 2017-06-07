@@ -77,7 +77,8 @@ const MountainChart = Vizabi.Tool.extend("MountainChart", {
         probeX: 1.85,
         xLogStops: [1, 2, 5],
         xPoints: 50,
-        preload: "income_mountains"
+        preload: "income_mountains",
+        preloadKey: "world"
       },
       "buttons": ["colors", "find", "stack", "show", "moreoptions", "fullscreen", "presentation"],
       "dialogs": {
