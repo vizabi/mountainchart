@@ -595,11 +595,14 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
 
     const groupManualSort = this.model.marker.group.manualSorting;
+    const isManualSortCorrect = utils.isArray(groupManualSort) && groupManualSort.length > 1;
     this.groupedPointers.forEach(group => {
-      let groupSortValue = d3.sum(group.values.map(m => m.sortValue[0]));
-
-      if (groupManualSort && groupManualSort.length > 1) groupSortValue = groupManualSort.length - 1 - groupManualSort.indexOf(group.key);
-
+      const groupSortValue = isManualSortCorrect ?
+        groupManualSort.includes(group.key) ?
+          groupManualSort.length - 1 - groupManualSort.indexOf(group.key) :
+          -1 :
+        d3.sum(group.values.map(m => m.sortValue[0]));
+      
       group.values.forEach(d => {
         d.sortValue[1] = groupSortValue;
       });
