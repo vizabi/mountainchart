@@ -322,7 +322,8 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     this.model.marker.getFrame(this.model.time.value, values => {
       if (!values) return;
       _this.values = values;
-      _this.updateEntities();
+      
+      _this.model.marker.getFrame(_this.model.time.end, _this.updateEntities.bind(_this));
       _this.updateSize();
       _this.zoomToMaxMin();
       _this._spawnMasks();
@@ -566,22 +567,22 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     this.xAxis.tickFormat(_this.model.marker.axis_x.getTickFormatter());
   },
 
-  updateEntities() {
+  updateEntities(values = this.values) {
     const _this = this;
 
     // construct pointers
     this.mountainPointers = this.model.marker.getKeys()
       .filter(d => 1
-      && _this.values.axis_x[d[_this.KEY]]
-      && _this.values.axis_y[d[_this.KEY]]
-      && _this.values.axis_s[d[_this.KEY]])
+      && values.axis_x[d[_this.KEY]]
+      && values.axis_y[d[_this.KEY]]
+      && values.axis_s[d[_this.KEY]])
       .map(d => {
         const pointer = {};
         pointer[_this.KEY] = d[_this.KEY];
         pointer.KEY = function() {
           return this[_this.KEY];
         };
-        pointer.sortValue = [_this.values.axis_y[pointer.KEY()] || 0, 0];
+        pointer.sortValue = [values.axis_y[pointer.KEY()] || 0, 0];
         pointer.aggrLevel = 0;
         return pointer;
       });
@@ -589,7 +590,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
     //TODO: optimise this!
     this.groupedPointers = d3.nest()
-      .key(d => _this.model.marker.stack.use === "property" ? _this.values.stack[d.KEY()] : _this.values.group[d.KEY()])
+      .key(d => _this.model.marker.stack.use === "property" ? values.stack[d.KEY()] : values.group[d.KEY()])
       .sortValues((a, b) => b.sortValue[0] - a.sortValue[0])
       .entries(this.mountainPointers);
 
@@ -602,7 +603,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
           groupManualSort.length - 1 - groupManualSort.indexOf(group.key) :
           -1 :
         d3.sum(group.values.map(m => m.sortValue[0]));
-      
+
       group.values.forEach(d => {
         d.sortValue[1] = groupSortValue;
       });
@@ -627,8 +628,8 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
     } else {
       this.stackedPointers = d3.nest()
-        .key(d => _this.values.stack[d.KEY()])
-        .key(d => _this.values.group[d.KEY()])
+        .key(d => values.stack[d.KEY()])
+        .key(d => values.group[d.KEY()])
         .sortKeys((a, b) => sortGroupKeys[b] - sortGroupKeys[a])
         .sortValues((a, b) => b.sortValue[0] - a.sortValue[0])
         .entries(this.mountainPointers);
