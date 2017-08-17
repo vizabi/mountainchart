@@ -253,8 +253,8 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
     if (!yMax || !shape || shape.length === 0) return;
 
-    this.xScale = d3.scale.log().domain([this.model.marker.axis_x.domainMin, this.model.marker.axis_x.domainMax]);
-    this.yScale = d3.scale.linear().domain([0, Math.round(yMax)]);
+    this.xScale = d3.scaleLog().domain([this.model.marker.axis_x.domainMin, this.model.marker.axis_x.domainMax]);
+    this.yScale = d3.scaleLinear().domain([0, Math.round(yMax)]);
 
     _this.updateSize(shape.length);
     _this.zoomToMaxMin();
@@ -305,7 +305,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
     this.mountainAtomicContainer.select(".vzb-mc-prerender").remove();
     this.year.setText(this.model.time.formatDate(this.model.time.value));
-    this.wScale = d3.scale.linear()
+    this.wScale = d3.scaleLinear()
       .domain(this.model.ui.datawarning.doubtDomain)
       .range(this.model.ui.datawarning.doubtRange);
   },
