@@ -52,7 +52,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     this.model_expects = [
       { name: "time", type: "time" },
       { name: "entities", type: "entities" },
-      { name: "marker", type: "model" },
+      { name: "marker", type: "marker" },
       { name: "locale", type: "locale" },
       { name: "data", type: "data" },
       { name: "ui", type: "ui" }
