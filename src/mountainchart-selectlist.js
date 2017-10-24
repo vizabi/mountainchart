@@ -133,7 +133,7 @@ const MCSelectList = Vizabi.Class.extend({
           name = _this.values.label[d.KEY()];
         }
 
-        const number = _this.values.axis_y[d.KEY()];
+        const number = d.valuesPointer.axis_y[d.KEY()];
 
         const string = name + ": " + formatter(number) + (i === 0 ? " " + _this.translator("mount/people") : "");
 
@@ -184,7 +184,7 @@ const MCSelectList = Vizabi.Class.extend({
           .attr("r", fontHeight / 3)
           .attr("cx", (isRTL ? -1 : 1) * fontHeight * 0.4)
           .attr("cy", fontHeight / 1.5)
-          .style("fill", _this.cScale(_this.values.color[d.KEY()]));
+          .style("fill", _this.cScale(d.valuesPointer.color[d.KEY()]));
 
         view.onTap((d, i) => {
           d3.event.stopPropagation();

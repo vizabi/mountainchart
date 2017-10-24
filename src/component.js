@@ -322,6 +322,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     this.model.marker.getFrame(this.model.time.value, values => {
       if (!values) return;
       _this.values = values;
+      _this.valuesAggregated = { color: {}, axis_y: {} };
       
       _this.model.marker.getFrame(_this.model.time.end, _this.updateEntities.bind(_this));
       _this.updateSize();
@@ -833,6 +834,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     }
 
     this.mountainPointers.forEach(d => {
+      d.valuesPointer = _this.values;
       d.yMax = d3.max(_this.cached[d.KEY()].map(m => m.y0 + m.y));
       if (_this.yMax < d.yMax) _this.yMax = d.yMax;
     });
@@ -843,18 +845,20 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
     //if(mergeStacked){
     this.stackedPointers.forEach(d => {
+      d.valuesPointer = _this.valuesAggregated;
       const firstLast = _this._getFirstLastPointersInStack(d);
       _this.cached[d.key] = _this._getVerticesOfaMergedShape(firstLast);
-      _this.values.color[d.key] = "_default";
-      _this.values.axis_y[d.key] = _this._sumLeafPointersByMarker(d, "axis_y");
+      _this.valuesAggregated.color[d.key] = "_default";
+      _this.valuesAggregated.axis_y[d.key] = _this._sumLeafPointersByMarker(d, "axis_y");
       d.yMax = firstLast.first.yMax;
     });
     //} else if (mergeGrouped || dragOrPlay){
     this.groupedPointers.forEach(d => {
+      d.valuesPointer = _this.valuesAggregated;
       const firstLast = _this._getFirstLastPointersInStack(d);
       _this.cached[d.key] = _this._getVerticesOfaMergedShape(firstLast);
-      _this.values.color[d.key] = _this.values.color[firstLast.first.KEY()];
-      _this.values.axis_y[d.key] = _this._sumLeafPointersByMarker(d, "axis_y");
+      _this.valuesAggregated.color[d.key] = _this.values.color[firstLast.first.KEY()];
+      _this.valuesAggregated.axis_y[d.key] = _this._sumLeafPointersByMarker(d, "axis_y");
       d.yMax = firstLast.first.yMax;
     });
     //}
@@ -1047,12 +1051,12 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     const _this = this;
     if (!this.mountains) return utils.warn("redrawDataPointsOnlyColors(): no mountains  defined. likely a premature call, fix it!");
     const isColorUseIndicator = this.model.marker.color.use === "indicator";
-    this.mountains.style("fill", d => _this.values.color[d.KEY()] ?
+    this.mountains.style("fill", d => d.valuesPointer.color[d.KEY()] ?
       (
-        isColorUseIndicator && _this.values.color[d.KEY()] == "_default" ?
+        isColorUseIndicator && d.valuesPointer.color[d.KEY()] == "_default" ?
           _this.model.marker.color.palette["_default"]
           :
-          _this.cScale(_this.values.color[d.KEY()])
+          _this.cScale(d.valuesPointer.color[d.KEY()])
       )
       :
       COLOR_WHITEISH);
@@ -1061,6 +1065,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
   _renderShape(view, key, hidden) {
     const stack = this.model.marker.stack.which;
     const _this = this;
+    const valuesPointer = view.datum().valuesPointer;
 
     view.classed("vzb-hidden", hidden);
 
@@ -1072,17 +1077,17 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     const filter = {};
     filter[this.KEY] = key;
     if (this.model.marker.isSelected(filter)) {
-      view.attr("d", this.area(this.cached[key].filter(f => f.y > _this.values.axis_y[key] * THICKNESS_THRESHOLD)));
+      view.attr("d", this.area(this.cached[key].filter(f => f.y > valuesPointer.axis_y[key] * THICKNESS_THRESHOLD)));
     } else {
       view.attr("d", this.area(this.cached[key]));
     }
 
     //color use indicator suggests that this should be updated on every timeframe
     if (this.model.marker.color.use === "indicator") {
-      view.style("fill", _this.values.color[key] ?
+      view.style("fill", valuesPointer.color[key] ?
         (
-          _this.values.color[key] !== "_default" ?
-            _this.cScale(_this.values.color[key])
+          valuesPointer.color[key] !== "_default" ?
+            _this.cScale(valuesPointer.color[key])
             :
             _this.model.marker.color.palette["_default"]
         )
@@ -1099,7 +1104,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
       type: "path",
       id: key,
       time: this.model.time.value.getUTCFullYear(),
-      fill: this.cScale(this.values.color[key]),
+      fill: this.cScale(valuesPointer.color[key]),
       d: this.area(this.cached[key])
     });
   },
