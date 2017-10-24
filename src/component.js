@@ -322,7 +322,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     this.model.marker.getFrame(this.model.time.value, values => {
       if (!values) return;
       _this.values = values;
-      _this.values2 = { color: {}, axis_y: {} };
+      _this.valuesAggregated = { color: {}, axis_y: {} };
       
       _this.model.marker.getFrame(_this.model.time.end, _this.updateEntities.bind(_this));
       _this.updateSize();
@@ -845,20 +845,20 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
     //if(mergeStacked){
     this.stackedPointers.forEach(d => {
-      d.valuesPointer = _this.values2;
+      d.valuesPointer = _this.valuesAggregated;
       const firstLast = _this._getFirstLastPointersInStack(d);
       _this.cached[d.key] = _this._getVerticesOfaMergedShape(firstLast);
-      _this.values2.color[d.key] = "_default";
-      _this.values2.axis_y[d.key] = _this._sumLeafPointersByMarker(d, "axis_y");
+      _this.valuesAggregated.color[d.key] = "_default";
+      _this.valuesAggregated.axis_y[d.key] = _this._sumLeafPointersByMarker(d, "axis_y");
       d.yMax = firstLast.first.yMax;
     });
     //} else if (mergeGrouped || dragOrPlay){
     this.groupedPointers.forEach(d => {
-      d.valuesPointer = _this.values2;
+      d.valuesPointer = _this.valuesAggregated;
       const firstLast = _this._getFirstLastPointersInStack(d);
       _this.cached[d.key] = _this._getVerticesOfaMergedShape(firstLast);
-      _this.values2.color[d.key] = _this.values.color[firstLast.first.KEY()];
-      _this.values2.axis_y[d.key] = _this._sumLeafPointersByMarker(d, "axis_y");
+      _this.valuesAggregated.color[d.key] = _this.values.color[firstLast.first.KEY()];
+      _this.valuesAggregated.axis_y[d.key] = _this._sumLeafPointersByMarker(d, "axis_y");
       d.yMax = firstLast.first.yMax;
     });
     //}
