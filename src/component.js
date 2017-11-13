@@ -324,21 +324,23 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
       _this.values = values;
       _this.valuesAggregated = { color: {}, axis_y: {} };
       
-      _this.model.marker.getFrame(_this.model.time.end, _this.updateEntities.bind(_this));
-      _this.updateSize();
-      _this.zoomToMaxMin();
-      _this._spawnMasks();
-      _this.updateTime();
-      _this.updatePointers();
-      _this._adjustMaxY({ force: true });
-      _this.redrawDataPoints();
-      _this.redrawDataPointsOnlyColors();
-      _this.highlightMarkers();
-      _this.selectMarkers();
-      _this._selectlist.redraw();
-      _this.updateOpacity();
-      _this.updateDoubtOpacity();
-      _this._probe.redraw();
+      _this.model.marker.getFrame(_this.model.time.end, endValues => {
+        _this.updateEntities(endValues);
+        _this.updateSize();
+        _this.zoomToMaxMin();
+        _this._spawnMasks();
+        _this.updateTime();
+        _this.updatePointers();
+        _this._adjustMaxY({ force: true });
+        _this.redrawDataPoints();
+        _this.redrawDataPointsOnlyColors();
+        _this.highlightMarkers();
+        _this.selectMarkers();
+        _this._selectlist.redraw();
+        _this.updateOpacity();
+        _this.updateDoubtOpacity();
+        _this._probe.redraw();
+      });
     });
   },
 
