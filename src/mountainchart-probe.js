@@ -1,3 +1,5 @@
+const { utils } = Vizabi;
+
 const MCProbe = Vizabi.Class.extend({
 
   init(context) {
@@ -21,7 +23,7 @@ const MCProbe = Vizabi.Class.extend({
     let leftArea = 0;
 
     const _computeAreas = function(d) {
-      sumValue += d.valuesPointer.axis_y[d.KEY()];
+      sumValue += d.valuesPointer.axis_y[utils.getKey(d.KEYS(), _this.dataKeys.axis_y)];
       _this.cached[d.KEY()].forEach(d => {
         totalArea += d.y;
         if (_this._math.rescale(d.x) < options.level) leftArea += d.y;

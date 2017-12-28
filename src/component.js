@@ -51,7 +51,6 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     //define expected models for this component
     this.model_expects = [
       { name: "time", type: "time" },
-      { name: "entities", type: "entities" },
       { name: "marker", type: "marker" },
       { name: "locale", type: "locale" },
       { name: "data", type: "data" },
@@ -300,8 +299,11 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
       _this._probe.redraw();
     });
 
-    this.KEY = this.model.entities.getDimension();
     this.TIMEDIM = this.model.time.getDimension();
+    this.KEYS = utils.unique(this.model.marker._getAllDimensions({ exceptType: "time" }));
+    this.KEY = this.KEYS.join(",");
+    this.dataKeys = this.model.marker.getDataKeysPerHook();
+    this.labelNames = this.model.marker.getLabelHookNames();
 
     this.mountainAtomicContainer.select(".vzb-mc-prerender").remove();
     this.year.setText(this.model.time.formatDate(this.model.time.value));
@@ -313,6 +315,10 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
   ready() {
     //console.log("ready")
     const _this = this;
+    this.KEYS = utils.unique(this.model.marker._getAllDimensions({ exceptType: "time" }));
+    this.KEY = this.KEYS.join(",");
+    this.dataKeys = this.model.marker.getDataKeysPerHook();
+    this.labelNames = this.model.marker.getLabelHookNames();
 
     this._math.xScaleFactor = this.model.marker.axis_x.xScaleFactor;
     this._math.xScaleShift = this.model.marker.axis_x.xScaleShift;
@@ -572,20 +578,25 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
   updateEntities(values = this.values) {
     const _this = this;
+    const dataKeys = this.dataKeys;
 
     // construct pointers
     this.mountainPointers = this.model.marker.getKeys()
       .filter(d => 1
-      && values.axis_x[d[_this.KEY]]
-      && values.axis_y[d[_this.KEY]]
-      && values.axis_s[d[_this.KEY]])
+      && values.axis_x[utils.getKey(d, dataKeys.axis_x)]
+      && values.axis_y[utils.getKey(d, dataKeys.axis_y)]
+      && values.axis_s[utils.getKey(d, dataKeys.axis_s)])
       .map(d => {
         const pointer = {};
-        pointer[_this.KEY] = d[_this.KEY];
-        pointer.KEY = function() {
-          return this[_this.KEY];
+        pointer._keys = d;
+        pointer.KEYS = function() {
+          return this._keys;
         };
-        pointer.sortValue = [values.axis_y[pointer.KEY()] || 0, 0];
+        pointer._key = utils.getKey(d, _this.KEYS);
+        pointer.KEY = function() {
+          return this._key;
+        };
+        pointer.sortValue = [values.axis_y[utils.getKey(pointer, dataKeys.axis_y)] || 0, 0];
         pointer.aggrLevel = 0;
         return pointer;
       });
@@ -593,7 +604,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
     //TODO: optimise this!
     this.groupedPointers = d3.nest()
-      .key(d => _this.model.marker.stack.use === "property" ? values.stack[d.KEY()] : values.group[d.KEY()])
+      .key(d => _this.model.marker.stack.use === "property" ? values.stack[utils.getKey(d.KEYS(), dataKeys.stack)] : values.group[utils.getKey(d.KEYS(), dataKeys.group)])
       .sortValues((a, b) => b.sortValue[0] - a.sortValue[0])
       .entries(this.mountainPointers);
 
@@ -611,7 +622,10 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
         d.sortValue[1] = groupSortValue;
       });
 
-      group[_this.model.entities.getDimension()] = group.key; // hack to get highlihgt and selection work
+      group._keys = { [_this.KEY]: group.key }; // hack to get highlihgt and selection work
+      group.KEYS = function() {
+        return this._keys;
+      };
       group.KEY = function() {
         return this.key;
       };
@@ -631,8 +645,8 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
     } else {
       this.stackedPointers = d3.nest()
-        .key(d => values.stack[d.KEY()])
-        .key(d => values.group[d.KEY()])
+        .key(d => values.stack[utils.getKey(d.KEYS(), dataKeys.stack)])
+        .key(d => values.group[utils.getKey(d.KEYS(), dataKeys.group)])
         .sortKeys((a, b) => sortGroupKeys[b] - sortGroupKeys[a])
         .sortValues((a, b) => b.sortValue[0] - a.sortValue[0])
         .entries(this.mountainPointers);
@@ -641,11 +655,14 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
 
       this.stackedPointers.forEach(stack => {
+        stack._keys = { [_this.KEY]: stack.key }; // hack to get highlihgt and selection work
+        stack.KEYS = function() {
+          return this._keys;
+        };
         stack.KEY = function() {
           return this.key;
         };
-        stack[_this.model.entities.getDimension()] = stack.key; // hack to get highlihgt and selection work
-        stack.aggrLevel = 2;
+          stack.aggrLevel = 2;
       });
     }
 
@@ -698,6 +715,10 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
       });
   },
 
+  _getLabelText(values, labelNames, d) {
+    return this.KEYS.map(key => values[labelNames[key]] ? values[labelNames[key]][d[key]] : d[key]).join(", ");
+  },
+
   _interact() {
     const _this = this;
 
@@ -705,12 +726,12 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
       _mousemove(d, i) {
         if (_this.model.time.dragging || _this.model.time.playing) return;
 
-        _this.model.marker.highlightMarker(d);
+        _this.model.marker.highlightMarker(d.KEYS());
 
         const mouse = d3.mouse(_this.graph.node()).map(d => parseInt(d));
 
         //position tooltip
-        _this._setTooltip(d.key ? _this.model.marker.color.getColorlegendMarker().label.getItems()[d.key] : _this.values.label[d.KEY()]);
+        _this._setTooltip(d.key ? _this.model.marker.color.getColorlegendMarker().label.getItems()[d.key] : _this._getLabelText(_this.values, _this.labelNames, d.KEYS()));
         _this._selectlist.showCloseCross(d, true);
 
       },
@@ -724,8 +745,8 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
       },
       _click(d) {
         const isPlayingOrDragging = _this.model.time.dragging || _this.model.time.playing;
-        if (!isPlayingOrDragging || _this.model.marker.isSelected(d)) {
-          _this.model.marker.selectMarker(d);
+        if (!isPlayingOrDragging || _this.model.marker.isSelected(d.KEYS())) {
+          _this.model.marker.selectMarker(d.KEYS());
         }
       }
     };
@@ -751,7 +772,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
   _sumLeafPointersByMarker(branch, marker) {
     const _this = this;
-    if (!branch.key) return _this.values[marker][branch.KEY()];
+    if (!branch.key) return _this.values[marker][utils.getKey(branch.KEYS(), _this.dataKeys[marker])];
     return d3.sum(branch.values.map(m => _this._sumLeafPointersByMarker(m, marker)));
   },
 
@@ -769,12 +790,12 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
       if (_this.someHighlighted) {
         //highlight or non-highlight
-        if (_this.model.marker.isHighlighted(d)) return OPACITY_HIGHLT;
+        if (_this.model.marker.isHighlighted(d.KEYS())) return OPACITY_HIGHLT;
       }
 
       if (_this.someSelected) {
         //selected or non-selected
-        return _this.model.marker.isSelected(d) ? OPACITY_SELECT : OPACITY_SELECT_DIM;
+        return _this.model.marker.isSelected(d.KEYS()) ? OPACITY_SELECT : OPACITY_SELECT_DIM;
       }
 
       if (_this.someHighlighted) return OPACITY_HIGHLT_DIM;
@@ -783,13 +804,13 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
     });
 
-    this.mountains.classed("vzb-selected", d => _this.model.marker.isSelected(d));
+    this.mountains.classed("vzb-selected", d => _this.model.marker.isSelected(d.KEYS()));
 
     const nonSelectedOpacityZero = _this.model.marker.opacitySelectDim < 0.01;
 
     // when pointer events need update...
     if (nonSelectedOpacityZero !== this.nonSelectedOpacityZero) {
-      this.mountainsAtomic.style("pointer-events", d => (!_this.someSelected || !nonSelectedOpacityZero || _this.model.marker.isSelected(d)) ?
+      this.mountainsAtomic.style("pointer-events", d => (!_this.someSelected || !nonSelectedOpacityZero || _this.model.marker.isSelected(d.KEYS())) ?
         "visible" : "none");
     }
 
@@ -812,7 +833,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
     //spawn the original mountains
     this.mountainPointers.forEach((d, i) => {
-      const vertices = _this._spawn(_this.values, d);
+      const vertices = _this._spawn(_this.values, _this.dataKeys, d);
       _this.cached[d.KEY()] = vertices;
       d.hidden = vertices.length === 0;
     });
@@ -939,12 +960,12 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     });
   },
 
-  _spawn(values, d) {
+  _spawn(values, dataKeys, d) {
     const _this = this;
 
-    const norm = values.axis_y[d.KEY()];
-    const sigma = _this._math.giniToSigma(values.axis_s[d.KEY()]);
-    const mu = _this._math.gdpToMu(values.axis_x[d.KEY()], sigma);
+    const norm = values.axis_y[utils.getKey(d.KEYS(), dataKeys.axis_y)];
+    const sigma = _this._math.giniToSigma(values.axis_s[utils.getKey(d.KEYS(), dataKeys.axis_s)]);
+    const mu = _this._math.gdpToMu(values.axis_x[utils.getKey(d.KEYS(), dataKeys.axis_x)], sigma);
 
     if (!norm || !mu || !sigma) return [];
 
@@ -1053,15 +1074,10 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     const _this = this;
     if (!this.mountains) return utils.warn("redrawDataPointsOnlyColors(): no mountains  defined. likely a premature call, fix it!");
     const isColorUseIndicator = this.model.marker.color.use === "indicator";
-    this.mountains.style("fill", d => d.valuesPointer.color[d.KEY()] ?
-      (
-        isColorUseIndicator && d.valuesPointer.color[d.KEY()] == "_default" ?
-          _this.model.marker.color.palette["_default"]
-          :
-          _this.cScale(d.valuesPointer.color[d.KEY()])
-      )
-      :
-      COLOR_WHITEISH);
+    this.mountains.style("fill", d => {
+      const color = d.valuesPointer.color[utils.getKey(d.KEYS(), _this.dataKeys.color)];
+      return color ? (isColorUseIndicator && color == "_default" ? _this.model.marker.color.palette["_default"] : _this.cScale(color)) : COLOR_WHITEISH;
+    });
   },
 
   _renderShape(view, key, hidden) {
@@ -1154,7 +1170,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     const preloadKey = utils.getProp(this, ["model", "ui", "chart", "preloadKey"]);
     if(!preload) return Promise.resolve();
     
-    const KEY = this.model.entities.dim;
+    const KEY = this.model.marker._getFirstDimension({ exceptType: "time" });
     const TIMEDIM = this.model.time.dim;
 
     //build a query to the reader to fetch preload info
