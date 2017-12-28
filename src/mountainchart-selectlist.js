@@ -19,7 +19,7 @@ const MCSelectList = Vizabi.Class.extend({
     const listData = _this.mountainPointers
       .concat(_this.groupedPointers)
       .concat(_this.stackedPointers)
-      .filter(f => _this.model.marker.isSelected(f)).sort((a, b) => {
+      .filter(f => _this.model.marker.isSelected(f.KEYS())).sort((a, b) => {
         if (a.sortValue && b.sortValue) {
           if (a.sortValue[1] === b.sortValue[1]) {
             return d3.descending(a.sortValue[0], b.sortValue[0]);
@@ -50,13 +50,13 @@ const MCSelectList = Vizabi.Class.extend({
             if (utils.isTouchDevice()) return;
             d3.event.stopPropagation();
             _this.model.marker.clearHighlighted();
-            _this.model.marker.selectMarker(d);
+            _this.model.marker.selectMarker(d.KEYS());
             d3.event.stopPropagation();
           })
           .onTap((d, i) => {
-            d3.select("#" + d.geo + "-label-" + _this._id).remove();
+            //d3.select("#" + d.geo + "-label-" + _this._id).remove();
             _this.model.marker.clearHighlighted();
-            _this.model.marker.selectMarker(d);
+            _this.model.marker.selectMarker(d.KEYS());
           });
         const labelCloseGroup = label.select("g.vzb-mc-label-x");
         if (!utils.isTouchDevice()) {
@@ -78,7 +78,7 @@ const MCSelectList = Vizabi.Class.extend({
       .on("mousemove", (d, i) => {
         if (utils.isTouchDevice()) return;
         _local.showCloseCross(d, true);
-        _this.model.marker.highlightMarker(d);
+        _this.model.marker.highlightMarker(d.KEYS());
       })
       .on("mouseout", (d, i) => {
         if (utils.isTouchDevice()) return;
@@ -89,13 +89,15 @@ const MCSelectList = Vizabi.Class.extend({
       .on("click", (d, i) => {
         if (utils.isTouchDevice()) return;
         _this.model.marker.clearHighlighted();
-        _this.model.marker.selectMarker(d);
+        _this.model.marker.selectMarker(d.KEYS());
       })
       .merge(_this.selectList);
   },
 
   redraw() {
     const _this = this.context;
+    const dataKeys = _this.dataKeys;
+
     if (!_this.selectList || !_this.someSelected) return;
 
     const sample = _this.mountainLabelContainer.append("g").attr("class", "vzb-mc-label").append("text").text("0");
@@ -125,15 +127,15 @@ const MCSelectList = Vizabi.Class.extend({
       })
       .each(function(d, i) {
 
-        const view = d3.select(this).attr("id", d.geo + "-label-" + _this._id);
+        const view = d3.select(this).attr("id", d.KEY() + "-label-" + _this._id);
         let name = "";
         if (d.key) {
           name = d.key === "all" ? _this.translator("mount/merging/world") : groupLabels[d.key];
         } else {
-          name = _this.values.label[d.KEY()];
+          name = _this._getLabelText(_this.values, _this.labelNames, d.KEYS());
         }
 
-        const number = d.valuesPointer.axis_y[d.KEY()];
+        const number = d.valuesPointer.axis_y[utils.getKey(d.KEYS(), dataKeys.axis_y)];
 
         const string = name + ": " + formatter(number) + (i === 0 ? " " + _this.translator("mount/people") : "");
 
@@ -184,13 +186,13 @@ const MCSelectList = Vizabi.Class.extend({
           .attr("r", fontHeight / 3)
           .attr("cx", (isRTL ? -1 : 1) * fontHeight * 0.4)
           .attr("cy", fontHeight / 1.5)
-          .style("fill", _this.cScale(d.valuesPointer.color[d.KEY()]));
+          .style("fill", _this.cScale(d.valuesPointer.color[utils.getKey(d.KEYS(), dataKeys.color)]));
 
         view.onTap((d, i) => {
           d3.event.stopPropagation();
-          _this.model.marker.highlightMarker(d);
+          _this.model.marker.highlightMarker(d.KEYS());
           setTimeout(() => {
-            _this.model.marker.unhighlightMarker(d);
+            _this.model.marker.unhighlightMarker(d.KEYS());
           }, 2000);
         });
       });
@@ -198,10 +200,10 @@ const MCSelectList = Vizabi.Class.extend({
 
   showCloseCross(d, show) {
     const _this = this.context;
-    const KEY = _this.KEY;
+    const key = d.KEY();
     //show the little cross on the selected label
     _this.selectList
-      .filter(f => f[KEY] == d[KEY])
+      .filter(f => f.KEY() == key)
       .select(".vzb-mc-label-x")
       .classed("vzb-invisible", !show);
   },
