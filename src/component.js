@@ -596,7 +596,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
         pointer.KEY = function() {
           return this._key;
         };
-        pointer.sortValue = [values.axis_y[utils.getKey(pointer, dataKeys.axis_y)] || 0, 0];
+        pointer.sortValue = [values.axis_y[utils.getKey(d, dataKeys.axis_y)] || 0, 0];
         pointer.aggrLevel = 0;
         return pointer;
       });
