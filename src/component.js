@@ -964,8 +964,13 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     const _this = this;
 
     const norm = values.axis_y[utils.getKey(d.KEYS(), dataKeys.axis_y)];
-    const sigma = _this._math.giniToSigma(values.axis_s[utils.getKey(d.KEYS(), dataKeys.axis_s)]);
-    const mu = _this._math.gdpToMu(values.axis_x[utils.getKey(d.KEYS(), dataKeys.axis_x)], sigma);
+    const sigma = _this.model.ui.chart.directSigma ?
+      values.axis_s[utils.getKey(d.KEYS(), dataKeys.axis_s)] :
+      _this._math.giniToSigma(values.axis_s[utils.getKey(d.KEYS(), dataKeys.axis_s)]);
+    
+    const mu = _this.model.ui.chart.directMu ?
+      values.axis_x[utils.getKey(d.KEYS(), dataKeys.axis_x)] :
+      _this._math.gdpToMu(values.axis_x[utils.getKey(d.KEYS(), dataKeys.axis_x)], sigma);
 
     if (!norm || !mu || !sigma) return [];
 

@@ -77,6 +77,8 @@ const MountainChart = Vizabi.Tool.extend("MountainChart", {
         probeX: 1.85,
         xLogStops: [1, 2, 5],
         xPoints: 50,
+        directSigma: false, //false = input is gini, true = input is standatd deviation of the distribution
+        directMu: false, //false = input is GDP/capita, true = input is mean of the distribution
         preload: "income_mountains",
         preloadKey: "world"
       },
