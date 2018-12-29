@@ -101,6 +101,10 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
         _this._adjustMaxY({ force: true });
         _this.redrawDataPoints();
       },
+      "change:ui.chart.showForecastOverlay": function(evt) {
+        if (!_this._readyOnce) return;
+        _this._updateForecastOverlay();
+      },
       "change:time.record": function(evt) {
         if (_this.model.time.record) {
           _this._export.open(this.element, this.name);
@@ -232,6 +236,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     this.probeEl = this.element.select(".vzb-mc-probe");
     this.probeLineEl = this.probeEl.select("line");
     this.probeTextEl = this.probeEl.selectAll("text");
+    this.forecastOverlay = this.element.select(".vzb-mc-forecastoverlay");
 
     this.element
       .onTap((d, i) => {
@@ -824,6 +829,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     this.time = this.model.time.value;
     this.duration = this.model.time.playing && (this.time - this.time_1 > 0) ? this.model.time.delayAnimations : 0;
     this.year.setText(this.model.time.formatDate(this.time), this.duration);
+    this._updateForecastOverlay();
   },
 
   updatePointers() {
@@ -897,6 +903,10 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
     }
 
 
+  },
+  
+  _updateForecastOverlay() {
+    this.forecastOverlay.classed("vzb-hidden", (this.model.time.value <= this.model.time.endBeforeForecast) || !this.model.time.endBeforeForecast || !this.model.ui.chart.showForecastOverlay);
   },
 
   _getFirstLastPointersInStack(group) {
