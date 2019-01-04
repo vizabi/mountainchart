@@ -142,6 +142,25 @@
         @extend %vzb-chart-info;
       }
 
+      .vzb-mc-decorations {
+        .vzb-mc-x-axis-groups {
+          text {
+            fill: $vzb-color-grey;
+            dominant-baseline: ideographic;
+            text-transform: uppercase;
+          }
+
+          line {
+            stroke: $vzb-color-grey;
+          }
+
+          rect {
+            fill: $vzb-color-grey;
+            opacity: .2;
+          }
+        }
+      }
+
       .vzb-mc-line {
         fill: none;
         stroke: $vzb-color-grey;

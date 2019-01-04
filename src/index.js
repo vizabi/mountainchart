@@ -71,6 +71,10 @@ const MountainChart = Vizabi.Tool.extend("MountainChart", {
     locale: { },
     ui: {
       chart: {
+        decorations: {
+          enabled: true,
+          xAxisGroups: null
+        },
         manualSortingEnabled: true,
         yMaxMethod: "latest",
         showProbeX: true,
