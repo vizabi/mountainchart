@@ -90,7 +90,7 @@ const MountainChart = Vizabi.Tool.extend("MountainChart", {
       "dialogs": {
         "popup": ["colors", "find", "stack", "moreoptions"],
         "sidebar": ["colors", "find", "stack"],
-        "moreoptions": ["opacity", "speed", "stack", "axesmc", "colors", "presentation", "about"]
+        "moreoptions": ["opacity", "speed", "stack", "axesmc", "colors", "presentation", "technical", "about"]
       },
       datawarning: {
         doubtDomain: [],
