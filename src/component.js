@@ -915,7 +915,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
   _sumLeafPointersByMarker(branch, marker) {
     const _this = this;
-    if (!branch.key) return _this.values[marker][utils.getKey(branch.KEYS(), _this.dataKeys[marker])];
+    if (!branch.hasOwnProperty("key")) return _this.values[marker][utils.getKey(branch.KEYS(), _this.dataKeys[marker])];
     return d3.sum(branch.values.map(m => _this._sumLeafPointersByMarker(m, marker)));
   },
 
