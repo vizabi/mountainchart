@@ -73,7 +73,7 @@ const MountainChart = Vizabi.Tool.extend("MountainChart", {
     ui: {
       chart: {
         robinhood: {
-          enable: false,
+          enabled: false,
           xTax: [100],
           yTax: [0.01]
         },

@@ -25,17 +25,13 @@ const RobinHood = Vizabi.Component.get("_dialog").extend("robinhood", {
       },
     };
 
-    // this.components = [{
-    //   component: Vizabi.Component.get("minmaxinputs"),
-    //   placeholder: ".vzb-xlimits-container",
-    //   model: ["state.marker", "state.time", "locale"],
-    //   markerID: "axis_x",
-    //   ui: {
-    //     selectDomainMinMax: false,
-    //     selectZoomedMinMax: true
-    //   }
-    // }];
-
+    this.components = [{
+      component: Vizabi.Component.get("simplecheckbox"),
+      placeholder: ".vzb-rbh-enable-container",
+      model: ["ui.chart.robinhood", "locale"],
+      checkbox: "enabled",
+      prefix: "rbh"
+    }];
 
     this._super(config, parent);
     this.template = require("./robinhood.html");

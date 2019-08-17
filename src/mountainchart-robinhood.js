@@ -6,7 +6,7 @@ const MCRobinHood = Vizabi.Class.extend({
     this.context = context;
 
     this.meshEdgeTaxIndexes = [];
-    //this.meshAdjustedIndexes = [];
+    this.meshAdjustedIndexes = [];
     this.meshExtremePovetryIndex = 0;
     this.taxByPointers = {};
     this.taxSum = 0;
@@ -14,7 +14,7 @@ const MCRobinHood = Vizabi.Class.extend({
 
   findMeshIndexes(mesh) {
     const _this = this.context;
-    if (!_this.model.ui.chart.robinhood.enable) return;
+    if (!_this.model.ui.chart.robinhood.enabled) return;
 
     const extremePovetryLevel = _this.model.ui.chart.probeX;
 
@@ -39,13 +39,21 @@ const MCRobinHood = Vizabi.Class.extend({
 
     //todo
     this.adjXTax = _this.model.ui.chart.robinhood.xTax.slice(0);
-    this.adjYTax = _this.model.ui.chart.robinhood.yTax.slice(0);
+    this.adjYTax = _this.model.ui.chart.robinhood.yTax.map(p => p * 0.01);
 
+    this.meshEdgeTaxIndexes.forEach((meshFirstIndex, index) => {
+      const meshLastIndex = this.meshEdgeTaxIndexes[index + 1] || this.rescaledMesh.length;
+      for(let i = meshFirstIndex; i < meshLastIndex; i++) {
+        const adjustedIncome = this.rescaledMesh[i] * (1 - this.adjYTax[index]);
+        const adjIndex = rescaledMesh.findIndex(income => income > adjustedIncome);
+        this.meshAdjustedIndexes[i] = (rescaledMesh[adjIndex] + rescaledMesh[adjIndex - 1]) * 0.5 < adjustedIncome ? adjIndex : (adjIndex - 1);
+      }
+    });
   },
 
   adjustCached() {
     const _this = this.context;
-    if (!_this.model.ui.chart.robinhood.enable) return;
+    if (!_this.model.ui.chart.robinhood.enabled) return;
 
     const rescaledMesh = this.rescaledMesh;
     const meshLength = rescaledMesh.length;
@@ -62,7 +70,8 @@ const MCRobinHood = Vizabi.Class.extend({
         const nextMeshIndex = meshIndexArray[index + 1] || meshLength;
         for(let i = meshIndex; i < nextMeshIndex; i++) {
           tax += rescaledMesh[i] * cached[i].y * this.adjYTax[index];
-          cached[i].y -= cached[i].y * this.adjYTax[index];
+          cached[this.meshAdjustedIndexes[i]].y += cached[i].y;
+          cached[i].y = 0;
         }
         return tax;
       }, 0);
