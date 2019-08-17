@@ -1,6 +1,7 @@
 import "./styles.scss";
 import component from "./component";
 import "./dialogs/axesmc/axesmc";
+import "./dialogs/robinhood/robinhood";
 
 const VERSION_INFO = { version: __VERSION, build: __BUILD };
 
@@ -71,6 +72,11 @@ const MountainChart = Vizabi.Tool.extend("MountainChart", {
     locale: { },
     ui: {
       chart: {
+        robinhood: {
+          enable: true,
+          xTax: [100],
+          yTax: [0.01]
+        },
         decorations: {
           enabled: true,
           xAxisGroups: null
@@ -90,7 +96,7 @@ const MountainChart = Vizabi.Tool.extend("MountainChart", {
       "dialogs": {
         "popup": ["colors", "find", "stack", "moreoptions"],
         "sidebar": ["colors", "find", "stack"],
-        "moreoptions": ["opacity", "speed", "stack", "axesmc", "colors", "presentation", "technical", "about"]
+        "moreoptions": ["opacity", "speed", "stack", "axesmc", "robinhood", "colors", "presentation", "about"]
       },
       datawarning: {
         doubtDomain: [],

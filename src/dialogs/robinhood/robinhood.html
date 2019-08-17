@@ -1,0 +1,29 @@
+<div class='vzb-dialog-modal'>
+    <span class="thumb-tack-class thumb-tack-class-ico-pin fa" data-dialogtype="axesmc" data-click="pinDialog"></span>
+    <span class="thumb-tack-class thumb-tack-class-ico-drag fa" data-dialogtype="axesmc" data-click="dragDialog"></span>
+    <div class="vzb-dialog-title">
+        <%=t ("buttons/robinhood") %>
+    </div>
+    <div class="vzb-dialog-content">
+        <div class="vzb-rbh-enable-container">
+            <p class="vzb-dialog-sublabel">
+              <input type="checkbox" name="rbh-enable" class="vzb-rbh-enable-check"> <%=t ("hints/mount/rbh/enable") %>
+            </p>
+        </div>
+        <div class="vzb-rbh-tax-container">
+            <p class="vzb-dialog-sublabel" name="xtax">
+                <%=t ("hints/mount/rbh/xtax") %>
+                <input type="text" class="vzb-rbh-xtax-field" name="xtax">
+            </p>
+            <p class="vzb-dialog-sublabel" name="ytax">
+                <%=t ("hints/mount/rbh/ytax") %>
+                <input type="text" class="vzb-rbh-ytax-field" name="ytax">
+            </p>
+        </div>
+    </div>
+    <div class="vzb-dialog-buttons">
+        <div data-click="closeDialog" class="vzb-dialog-button vzb-label-primary">
+            <%=t ("buttons/ok") %>
+        </div>
+    </div>
+</div>
