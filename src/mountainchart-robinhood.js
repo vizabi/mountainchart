@@ -6,7 +6,7 @@ const MCRobinHood = Vizabi.Class.extend({
     this.context = context;
 
     this.meshEdgeTaxIndexes = [];
-    this.meshAdjustedIndexes = [];
+    this.meshAdjusted = [];
     this.meshExtremePovetryIndex = 0;
     this.taxByPointers = {};
     this.taxSum = 0;
@@ -29,6 +29,7 @@ const MCRobinHood = Vizabi.Class.extend({
     const xTaxCopy = _this.model.ui.chart.robinhood.xTax.slice(0);
     
     let xTaxValue = xTaxCopy.pop();
+    this.meshEdgeTaxIndexes = [];
     for(let i = mesh.length - 1; i > 0; i--) {
       if(rescaledMesh[i] < xTaxValue) {
         this.meshEdgeTaxIndexes[xTaxCopy.length] = i + 1;
@@ -40,16 +41,31 @@ const MCRobinHood = Vizabi.Class.extend({
     //todo
     this.adjXTax = _this.model.ui.chart.robinhood.xTax.map(p => +p);
     this.adjYTax = _this.model.ui.chart.robinhood.yTax.map(p => 0.01 * p);
+    if (this.adjXTax.length > this.adjYTax.length) {
+      this.adjYTax.splice(-1, 0, ...Array(this.adjXTax.length - this.adjYTax.length).fill(this.adjYTax[this.adjYTax.length - 1]));
+    }
 
     this.meshEdgeTaxIndexes.forEach((meshFirstIndex, index) => {
       const meshLastIndex = this.meshEdgeTaxIndexes[index + 1] || this.rescaledMesh.length;
       for(let i = meshFirstIndex; i < meshLastIndex; i++) {
-        const adjustedIncome = (rescaledMesh[i] - this.adjXTax[index]) * (1 - this.adjYTax[index]) + this.adjXTax[index];
+        const adjustedIncome = adjustIncome(rescaledMesh[i], this.adjXTax, this.adjYTax, index);
         
         const adjIndex = rescaledMesh.findIndex(income => income > adjustedIncome);
-        this.meshAdjustedIndexes[i] = (rescaledMesh[adjIndex] + rescaledMesh[adjIndex - 1]) * 0.5 < adjustedIncome ? adjIndex : (adjIndex - 1);
+        this.meshAdjusted[i] = {
+          index: (rescaledMesh[adjIndex] + rescaledMesh[adjIndex - 1]) * 0.5 < adjustedIncome ? adjIndex : (adjIndex - 1),
+          tax: rescaledMesh[i] - adjustedIncome
+        }
       }
     });
+
+    function adjustIncome(income, xTax, yTax, endIndex) {
+      let result = xTax[0];
+      for(let i = 0; i <= endIndex; i++) {
+        result += ((i === endIndex ? income : xTax[i + 1]) - xTax[i]) * (1 - yTax[i]);
+      }
+      return result;
+    }
+
   },
 
   adjustCached() {
@@ -70,9 +86,11 @@ const MCRobinHood = Vizabi.Class.extend({
       this.taxSum += this.taxByPointers[pKey] = this.meshEdgeTaxIndexes.reduce((tax, meshIndex, index, meshIndexArray) => {
         const nextMeshIndex = meshIndexArray[index + 1] || meshLength;
         for(let i = meshIndex; i < nextMeshIndex; i++) {
-          tax += (rescaledMesh[i] - this.adjXTax[index]) * cached[i].y * this.adjYTax[index];
-          cached[this.meshAdjustedIndexes[i]].y += cached[i].y;
-          cached[i].y = 0;
+          tax += this.meshAdjusted[i].tax * cached[i].y;
+          if (i !== this.meshAdjusted[i].index) {
+            cached[this.meshAdjusted[i].index].y += cached[i].y;
+            cached[i].y = 0;
+          }
         }
         return tax;
       }, 0);
