@@ -49,12 +49,12 @@ const RobinHood = Vizabi.Component.get("_dialog").extend("robinhood", {
 
     this.xTax = this.element.select(".vzb-rbh-xtax-field")
       .on("change", function() {
-        _this.setModel("xTax", d3.select(this).node().value.split(","));
+        _this.setModel("xTax", d3.select(this).node().value.split(";"));
       });
 
     this.yTax = this.element.select(".vzb-rbh-ytax-field")
       .on("change", function() {
-        _this.setModel("yTax", d3.select(this).node().value.split(","));
+        _this.setModel("yTax", d3.select(this).node().value.split(";"));
       });
 
     this.updateView();
@@ -65,8 +65,8 @@ const RobinHood = Vizabi.Component.get("_dialog").extend("robinhood", {
     const _this = this;
 
     this.enable.property("checked", this.model.ui.chart.robinhood.enable);
-    this.xTax.property("value", this.model.ui.chart.robinhood.xTax.join(","));
-    this.yTax.property("value", this.model.ui.chart.robinhood.yTax.join(","));
+    this.xTax.property("value", this.model.ui.chart.robinhood.xTax.join(";"));
+    this.yTax.property("value", this.model.ui.chart.robinhood.yTax.join(";"));
   },
 
   setModel(what, value) {

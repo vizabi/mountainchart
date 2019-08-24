@@ -45,6 +45,7 @@ const MCRobinHood = Vizabi.Class.extend({
       this.adjYTax.splice(-1, 0, ...Array(this.adjXTax.length - this.adjYTax.length).fill(this.adjYTax[this.adjYTax.length - 1]));
     }
 
+    this.meshAdjusted = [];
     this.meshEdgeTaxIndexes.forEach((meshFirstIndex, index) => {
       const meshLastIndex = this.meshEdgeTaxIndexes[index + 1] || this.rescaledMesh.length;
       for(let i = meshFirstIndex; i < meshLastIndex; i++) {
