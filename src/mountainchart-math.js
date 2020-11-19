@@ -1,20 +1,18 @@
-const { utils } = Vizabi;
+class MCMath {
 
-const MCMath = Vizabi.Class.extend({
-
-  init(context) {
+  constructor(context) {
     this.context = context;
 
     this.xScaleFactor = 1;
     this.xScaleShift = 0;
-  },
+  }
 
   rescale(x) {
     return Math.exp(this.xScaleFactor * Math.log(x) + this.xScaleShift);
-  },
+  }
   unscale(x) {
     return Math.exp((Math.log(x) - this.xScaleShift) / this.xScaleFactor);
-  },
+  }
 
   generateMesh(length, scaleType, domain) {
     // span a uniform mesh across the entire X scale
@@ -37,37 +35,39 @@ const MCMath = Vizabi.Class.extend({
     }
 
     return mesh;
-  },
+  }
 
-  gdpToMu(gdp, sigma, xScaleFactor, xScaleShift) {
+  gdpToMu(gdp, sigma) {
     // converting gdp per capita per day into MU for lognormal distribution
     // see https://en.wikipedia.org/wiki/Log-normal_distribution
     return Math.log(gdp / 365) - sigma * sigma / 2;
-  },
+  }
 
   giniToSigma(gini) {
     // The ginis are turned into std deviation.
     // Mattias uses this formula in Excel: stddev = NORMSINV( ((gini/100)+1)/2 )*2^0.5
     return this.normsinv(((gini / 100) + 1) / 2) * Math.pow(2, 0.5);
-  },
+  }
 
   // this function returns PDF values for a specified distribution
-  pdf: {
-    normal(x, mu, sigma) {
-      return Math.exp(
-        -0.5 * Math.log(2 * Math.PI)
-        - Math.log(sigma)
-        - Math.pow(x - mu, 2) / (2 * sigma * sigma)
-      );
-    },
-    lognormal(x, mu, sigma) {
-      return Math.exp(
-        -0.5 * Math.log(2 * Math.PI) //should not be different for the two scales- (scaleType=="linear"?Math.log(x):0)
-        - Math.log(sigma)
-        - Math.pow(Math.log(x) - mu, 2) / (2 * sigma * sigma)
-      );
-    }
-  },
+  pdf() { 
+    return {
+      normal(x, mu, sigma) {
+        return Math.exp(
+          -0.5 * Math.log(2 * Math.PI)
+          - Math.log(sigma)
+          - Math.pow(x - mu, 2) / (2 * sigma * sigma)
+        );
+      },
+      lognormal(x, mu, sigma) {
+        return Math.exp(
+          -0.5 * Math.log(2 * Math.PI) //should not be different for the two scales- (scaleType=="linear"?Math.log(x):0)
+          - Math.log(sigma)
+          - Math.pow(Math.log(x) - mu, 2) / (2 * sigma * sigma)
+        );
+      }
+    };
+  }
 
 
   normsinv(p) {
@@ -127,6 +127,6 @@ const MCMath = Vizabi.Class.extend({
   }
 
 
-});
+}
 
 export default MCMath;
