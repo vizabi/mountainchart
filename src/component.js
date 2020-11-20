@@ -29,6 +29,7 @@ const {
 import MountainChartMath from "./mountainchart-math";
 import Selectlist from "./mountainchart-selectlist";
 import Probe from "./mountainchart-probe";
+import RobinHood from "./mountainchart-robinhood";
 
 const THICKNESS_THRESHOLD = 0.001;
 const COLOR_WHITEISH = "#d3d3d3";
@@ -109,6 +110,9 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
         if (!_this._readyOnce) return;
         _this._updateForecastOverlay();
       },
+      "change:ui.chart.robinhood": function() {
+        _this.ready();
+      },
       "change:time.record": function(evt) {
         if (_this.model.time.record) {
           _this._export.open(this.element, this.name);
@@ -188,6 +192,7 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
       .deleteClasses(["vzb-mc-mountains-mergestacked", "vzb-mc-mountains-mergegrouped", "vzb-mc-mountains", "vzb-mc-year", "vzb-mc-mountains-labels", "vzb-mc-axis-labels"]);
     this._probe = new Probe(this);
     this._selectlist = new Selectlist(this);
+    this._robinhood = new RobinHood(this);
 
     // define path generator
     this.area = d3.area()
@@ -503,6 +508,9 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
 
     if (!meshLength) meshLength = this.model.ui.chart.xPoints;
     this.mesh = this._math.generateMesh(meshLength, scaleType, this.xScale.domain());
+    
+    //rbh
+    this._robinhood.findMeshIndexes(this.mesh);
   },
 
   _updateDecorations(duration) {
@@ -982,6 +990,8 @@ const MountainChartComponent = Vizabi.Component.extend("mountainchart", {
       d.hidden = vertices.length === 0;
     });
 
+    //rbh
+    _this._robinhood.adjustCached();
 
     //recalculate stacking
     if (_this.model.marker.stack.which !== "none") {
