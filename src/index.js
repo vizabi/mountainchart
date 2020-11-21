@@ -113,3 +113,4 @@ MountainChart.DEFAULT_UI = {
 //   "popup": ["colors", "find", "stack", "moreoptions"],
 //   "sidebar": ["colors", "find", "stack"],
 //   "moreoptions": ["opacity", "speed", "stack", "axesmc", "robinhood", "colors", "presentation", "about"]
+//npm run build && cp ./build/* ../../tools-page/node_modules/vizabi-mountainchart/build/
