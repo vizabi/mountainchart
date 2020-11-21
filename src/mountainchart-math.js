@@ -49,26 +49,22 @@ class MCMath {
     return this.normsinv(((gini / 100) + 1) / 2) * Math.pow(2, 0.5);
   }
 
-  // this function returns PDF values for a specified distribution
-  pdf() { 
-    return {
-      normal(x, mu, sigma) {
-        return Math.exp(
-          -0.5 * Math.log(2 * Math.PI)
-          - Math.log(sigma)
-          - Math.pow(x - mu, 2) / (2 * sigma * sigma)
-        );
-      },
-      lognormal(x, mu, sigma) {
-        return Math.exp(
-          -0.5 * Math.log(2 * Math.PI) //should not be different for the two scales- (scaleType=="linear"?Math.log(x):0)
-          - Math.log(sigma)
-          - Math.pow(Math.log(x) - mu, 2) / (2 * sigma * sigma)
-        );
-      }
-    };
+  // this function returns PDF values for a NORMAL distribution
+  pdfNormal(x, mu, sigma) {
+    return Math.exp(
+      -0.5 * Math.log(2 * Math.PI)
+      - Math.log(sigma)
+      - Math.pow(x - mu, 2) / (2 * sigma * sigma)
+    );
   }
-
+  // this function returns PDF values for a LOGNORMAL distribution
+  pdfLognormal(x, mu, sigma) {
+    return Math.exp(
+      -0.5 * Math.log(2 * Math.PI) //should not be different for the two scales- (scaleType=="linear"?Math.log(x):0)
+      - Math.log(sigma)
+      - Math.pow(Math.log(x) - mu, 2) / (2 * sigma * sigma)
+    );
+  }
 
   normsinv(p) {
     //

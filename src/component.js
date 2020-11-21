@@ -174,9 +174,9 @@ export default class VizabiMountainChart extends BaseComponent {
       .y1(d => this.yScale(d.y0 + d.y));
 
     //define d3 stack layout
-    this.stack = d3.stack()
+    this.stackLayout = d3.stack()
       .order(d3.stackOrderReverse)
-      .value((d, key) => this.cached[key][d].y);
+      .value((i, slice) => slice.shape[i].y);
 
     // init internal variables
     this.xScale = null;
@@ -187,9 +187,8 @@ export default class VizabiMountainChart extends BaseComponent {
 
     this.rangeRatio = 1;
     this.rangeShift = 0;
-    this.cached = {};
     this.mesh = [];
-    this.yMax = 0;
+    this.yMaxGlobal = 0;
 
     //remove pre-rendered world shape
     //this.mountainAtomicContainer.select(".vzb-mc-prerender").remove();
@@ -215,33 +214,35 @@ export default class VizabiMountainChart extends BaseComponent {
     };
     this.localise = this.services.locale.auto();
 
-    this.TIMEDIM = this.MDL.frame.data.concept;
-    this.KEYS = this.model.data.space.filter(dim => dim !== this.TIMEDIM);
-    this.KEY = this.KEYS.join(",");    
-
     this.addReaction(this._drawForecastOverlay);
 
     if (this._updateLayoutProfile()) return; //return if exists with error
-    this.addReaction(this._updateUIStrings);
-    this.addReaction(this._updateIndicators);
+    this.addReaction(this._updateHeaderAndFooter);
+    this.addReaction(this._updateScales);
     this.addReaction(this._updateYear);
+    this.addReaction(this._updateDoubtOpacity);
     this.addReaction(this._updateMathSettings);
-    this.addReaction(this._drawData);
     this.addReaction(this._updateSize);
-    this.addReaction(this._zoomToMaxMin);
-    this.addReaction(this._spawnMasks);
-    this.addReaction(this._updatePointers);
-    this.addReaction(this._adjustMaxY);
-    this.addReaction(this._redrawDataPoints);
+    this.addReaction(this._updateMesh);
+    this.addReaction(this._zoom);
+    this.addReaction(this._updateMasks);
+    this.addReaction(this._drawData);
 
-    //this.redrawDataPointsOnlyColors();
+
+
     //this.highlightMarkers();
     //this.selectMarkers();
     //this._selectlist.redraw();
     //this.updateOpacity();
-    //this.updateDoubtOpacity();
     //this._probe.redraw();
     //this._updateDecorations()
+  }
+
+  _drawData() {
+    this._processFrameData();
+    this._createAndDeleteSlices();
+    this._computeAllShapes();
+    this._renderAllShapes();
   }
 
   init() { // all reactions bindings
@@ -258,7 +259,7 @@ export default class VizabiMountainChart extends BaseComponent {
         // this listener is a patch for fixing #1228. time.js doesn't produce the last event
         // with playing == false when paused softly
         if (!_this.MDL.frame.playing) {
-          _this._redrawDataPoints();
+          _this._renderAllShapes();
         }
       },
       "change:marker.axis_x.xScaleFactor": function() {
@@ -290,7 +291,7 @@ export default class VizabiMountainChart extends BaseComponent {
       },
       "change:ui.yMaxMethod": function() {
         _this._adjustMaxY({ force: true });
-        _this._redrawDataPoints();
+        _this._renderAllShapes();
       },
       "change:ui.decorations": function() {
         if (!_this._readyOnce) return;
@@ -321,7 +322,7 @@ export default class VizabiMountainChart extends BaseComponent {
         _this._selectlist.redraw();
         _this.updateOpacity();
         _this.updateDoubtOpacity();
-        _this._redrawDataPoints();
+        _this._renderAllShapes();
         _this._probe.redraw();
       },
       "change:marker.opacitySelectDim": function() {
@@ -335,8 +336,8 @@ export default class VizabiMountainChart extends BaseComponent {
         if (path.indexOf("scaleType") > -1) {
           _this.ready();
         } else if (path.indexOf("zoomedMin") > -1 || path.indexOf("zoomedMax") > -1) {
-          _this._zoomToMaxMin();
-          _this._redrawDataPoints();
+          _this._zoom();
+          _this._renderAllShapes();
           _this._probe.redraw();
         }
       },
@@ -347,8 +348,8 @@ export default class VizabiMountainChart extends BaseComponent {
       },
       "change:marker.group.merge": function() {
         if (!_this._readyOnce) return;
-        _this._updatePointers();
-        _this._redrawDataPoints();
+        _this._computeAllShapes();
+        _this._renderAllShapes();
       },
       "change:marker.stack": function() {
         if (!_this._readyOnce) return;
@@ -380,23 +381,23 @@ export default class VizabiMountainChart extends BaseComponent {
     const preloadKey = utils.getProp(this, ["model", "ui", "chart", "preloadKey"]);
     if(!preload) return Promise.resolve();
     
-    const KEY = this.model.marker._getFirstDimension({ exceptType: "time" });
-    const TIMEDIM = this.model.time.dim;
+    const MAINDIM = this.model.data.space.filter(dim => dim !== this.TIMEDIM)[0];
+    const TIMEDIM = this.MDL.frame.data.concept;
 
     //build a query to the reader to fetch preload info
     const query = {
       language: this.model.locale.id,
       from: "datapoints",
       select: {
-        key: [KEY, TIMEDIM],
+        key: [MAINDIM, TIMEDIM],
         value: [preload]
       },
       where: { $and: [
-        { [KEY]: "$" + KEY },
+        { [MAINDIM]: "$" + MAINDIM },
         { [TIMEDIM]: "$" + TIMEDIM }
       ] },
       join: {
-        ["$" + KEY]: { key: KEY, where: { [KEY]: { $in: [preloadKey||"world"] } } },
+        ["$" + MAINDIM]: { key: MAINDIM, where: { [MAINDIM]: { $in: [preloadKey||"world"] } } },
         ["$" + TIMEDIM]: { key: TIMEDIM, where: { [TIMEDIM]: this.model.time.formatDate(this.model.time.value) } }
       },
       order_by: [TIMEDIM]
@@ -430,7 +431,7 @@ export default class VizabiMountainChart extends BaseComponent {
     this.yScale = d3.scaleLinear().domain([0, Math.round(yMax)]);
 
     this._updateSize(shape.length);
-    this._zoomToMaxMin();
+    this._zoom();
 
     shape = shape.map((m, i) => ({ x: this.mesh[i], y0: 0, y: +m }));
 
@@ -467,8 +468,8 @@ export default class VizabiMountainChart extends BaseComponent {
       //console.log("acting on resize");
       //return if _updatesize exists with error
       if (this._updateSize()) return;
-      this._updatePointers(); // respawn is needed
-      this._redrawDataPoints();
+      this._computeAllShapes(); // respawn is needed
+      this._renderAllShapes();
       this._selectlist.redraw();
       this._probe.redraw();
     });
@@ -476,7 +477,7 @@ export default class VizabiMountainChart extends BaseComponent {
 
 
   _updateLayoutProfile(){
-    this.services.layout.width + this.services.layout.height;
+    this.services.layout.size;
 
     this.profileConstants = this.services.layout.getProfileConstants(PROFILE_CONSTANTS, PROFILE_CONSTANTS_FOR_PROJECTOR);
     this.height = this.element.node().clientHeight || 0;
@@ -484,7 +485,7 @@ export default class VizabiMountainChart extends BaseComponent {
     if (!this.height || !this.width) return utils.warn("Chart _updateProfile() abort: container is too little or has display:none");
   }
 
-  _updateUIStrings() {
+  _updateHeaderAndFooter() {
     const _this = this;
 
     this.DOM.xTitle.select("text")
@@ -526,13 +527,11 @@ export default class VizabiMountainChart extends BaseComponent {
       });
   }
 
-  _updateIndicators() {
+  _updateScales() {
     //fetch scales, or rebuild scales if there are none, then fetch
     this.yScale = this.MDL.y.scale.d3Scale.copy();
     this.xScale = this.MDL.x.scale.d3Scale.copy();
     this.cScale = this.MDL.color.scale.d3Scale.copy();
-
-    this.xAxis.tickFormat(this.localise);
   }
 
   _drawForecastOverlay() {
@@ -561,48 +560,33 @@ export default class VizabiMountainChart extends BaseComponent {
     this._math.xScaleShift = this.MDL.x.config.xScaleShift;
   }
 
-  frameChanged(frame, time) {
-    if (!frame) return utils.warn("change:time.value: empty data received from marker.getFrame(). doing nothing");
-    if (time.toString() != this.model.time.value.toString()) return; // frame is outdated
-    this.values = frame;
-    this.updateTime();
-    this._updatePointers();
-    this._redrawDataPoints();
-    this._selectlist.redraw();
-    this._probe.redraw();
-    this.updateDoubtOpacity();
-  }
-
-  _updateSize(meshLength) {
+  _updateSize() {
     const {
       margin,
       infoElHeight,
     } = this.profileConstants;
+
+    const width = this.width - margin.left - margin.right;
+    const height = this.height - margin.top - margin.bottom;
 
     //graph group is shifted according to margins (while svg element is at 100 by 100%)
     this.DOM.graph.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     const isRTL = this.services.locale.isRTL();
 
-    const yearLabelOptions = {
-      topOffset: this.services.layout.profile === "LARGE" ? margin.top * 2 : 0,
-      xAlign: this.services.layout.profile === "LARGE" ? (isRTL ? "left" : "right") : "center",
-      yAlign: this.services.layout.profile === "LARGE" ? "top" : "center",
-      widthRatio: this.services.layout.profile === "LARGE" ? 3 / 8 : 8 / 10
-    };
-
     //year is centered and resized
     this._year
-      .setConditions(yearLabelOptions)
-      .resize(this.width, this.height);
+      .setConditions({
+        topOffset: this.services.layout.profile === "LARGE" ? margin.top * 2 : 0,
+        xAlign: this.services.layout.profile === "LARGE" ? (isRTL ? "left" : "right") : "center",
+        yAlign: this.services.layout.profile === "LARGE" ? "top" : "center",
+        widthRatio: this.services.layout.profile === "LARGE" ? 3 / 8 : 8 / 10
+      })
+      .resizeText(width, height);
 
     //update scales to the new range
-    this.yScale.range([this.height, 0]);
-    this.xScale.range([this.rangeShift, this.width * this.rangeRatio + this.rangeShift]);
-
-
-    //need to know scale type of X to move on
-    const scaleType = this.MDL.x.scale.type || "log";
+    this.yScale.range([height, 0]);
+    this.xScale.range([this.rangeShift, width * this.rangeRatio + this.rangeShift]);
 
     //axis is updated
     this.xAxis.scale(this.xScale)
@@ -610,7 +594,7 @@ export default class VizabiMountainChart extends BaseComponent {
       .tickPadding(9)
       .tickSizeMinor(3, 0)
       .labelerOptions({
-        scaleType,
+        scaleType: this.MDL.x.scale.type || "log",
         toolMargin: margin,
         pivotingLimit: margin.bottom * 1.5,
         method: this.xAxis.METHOD_REPEATING,
@@ -618,18 +602,17 @@ export default class VizabiMountainChart extends BaseComponent {
         formatter: this.localise
       });
 
-
     this.DOM.xAxis
-      .attr("transform", "translate(0," + this.height + ")")
+      .attr("transform", "translate(0," + height + ")")
       .call(this.xAxis);
 
     this.DOM.xTitle.select("text")
-      .attr("transform", "translate(" + this.width + "," + this.height + ")")
+      .attr("transform", "translate(" + width + "," + height + ")")
       .attr("dy", "-0.36em");
 
     this.DOM.yTitle
       .style("font-size", infoElHeight + "px")
-      .attr("transform", "translate(" + (isRTL ? this.width : 0) + "," + margin.top + ")");
+      .attr("transform", "translate(" + (isRTL ? width : 0) + "," + margin.top + ")");
 
     this.DOM.xAxisGroups
       .style("font-size", infoElHeight * 0.8 + "px");
@@ -642,7 +625,7 @@ export default class VizabiMountainChart extends BaseComponent {
       .attr("y", -warnBB.height * 1.0 + 1);
 
     this.DOM.dataWarning
-      .attr("transform", "translate(" + (isRTL ? this.width - warnBB.width - warnBB.height * 2 : 0) + "," + (margin.top + warnBB.height * 1.5) + ")")
+      .attr("transform", "translate(" + (isRTL ? width - warnBB.width - warnBB.height * 2 : 0) + "," + (margin.top + warnBB.height * 1.5) + ")")
       .select("text")
       .attr("dx", warnBB.height * 1.5);
 
@@ -660,12 +643,18 @@ export default class VizabiMountainChart extends BaseComponent {
     }
 
     this.DOM.eventArea
-      .attr("y", this.height)
-      .attr("width", this.width)
+      .attr("y", height)
+      .attr("width", width)
       .attr("height", margin.bottom);
+  }
 
+  _updateMesh(meshLength){
     if (!meshLength) meshLength = this.ui.xPoints;
-    this.mesh = this._math.generateMesh(meshLength, scaleType, this.xScale.domain());
+    this.mesh = this._math.generateMesh(
+      meshLength, 
+      this.MDL.x.scale.type || "log", 
+      this.xScale.domain()
+    );
     
     //rbh
     //this._robinhood.findMeshIndexes(this.mesh);
@@ -702,7 +691,7 @@ export default class VizabiMountainChart extends BaseComponent {
         const view = d3.select(this);
         
         const text = view.select("text.vzb-mc-x-axis-group-text")
-          .text(_this.translator(d.label));
+          .text(_this.localise(d.label));
         
         const calcs = {min: d.min, max: d.max};
         
@@ -726,7 +715,7 @@ export default class VizabiMountainChart extends BaseComponent {
           const view = d3.select(this);
 
           const text = view.select("text.vzb-mc-x-axis-group-text")
-            .text(_this.translator(d.label_short));
+            .text(_this.localise(d.label_short));
 
           const calcs = xAxisGroups_calcs[i];
 
@@ -801,7 +790,7 @@ export default class VizabiMountainChart extends BaseComponent {
     
   }
 
-  _zoomToMaxMin() {
+  _zoom() {
     const mdlcfg = this.MDL.x.config;
 
     if (mdlcfg.zoomedMin == null && this.MDL.x.scale.domain[0] == null || mdlcfg.zoomedMax == null && this.MDL.x.scale.domain[1] == null) return;
@@ -819,6 +808,7 @@ export default class VizabiMountainChart extends BaseComponent {
     this.DOM.xAxis.call(this.xAxis);
   }
 
+  //TODO rewrite old understandings
   isProperty(mdl){
     return mdl.data.space.length == 1 && !mdl.data.constant;
   }
@@ -829,26 +819,16 @@ export default class VizabiMountainChart extends BaseComponent {
     return !!mdl.data.constant;
   }
 
-  updateDoubtOpacity(opacity) {
-    if (opacity == null) opacity = this.wScale(+this.time.getUTCFullYear().toString());
-    if (this.someSelected) opacity = 1;
+  _updateDoubtOpacity(opacity) {
+    if (opacity == null) opacity = this.wScale(this.MDL.frame.value.getUTCFullYear());
+    if (this.MDL.selected.data.filter.any()) opacity = 1;
     this.DOM.dataWarning.style("opacity", opacity);
   }
 
   _processFrameData() {
-    return this.__dataProcessed = this.model.dataArray
-      //copy array in order to not sort in place
-      .concat();
-  }
-
-  _drawData() {
-    this._processFrameData();
-    this._createAndDeleteSlices();
-  }
-
-  _createAndDeleteSlices() {
-    // construct pointers
-    this.sliceData = this.__dataProcessed
+    
+    this.atomicSliceData = this.model.dataArray
+      .concat() //copy array in order to avoid sorting in place
       .filter(d => d.x && d.y && d.s)
       .map(d => {
         d.KEY = () => d[Symbol.for("key")];
@@ -857,76 +837,64 @@ export default class VizabiMountainChart extends BaseComponent {
         return d;
       });
 
-    this.groupedPointers = d3.nest()
-      .key(d => this.isProperty(this.MDL.stack)? d.stack: d.group)
-      .sortValues((a, b) => b.sortValue[0] - a.sortValue[0])
-      .entries(this.sliceData);
-
-
     const groupManualSort = this.MDL.group.manualSorting;
     const isManualSortCorrect = utils.isArray(groupManualSort) && groupManualSort.length > 1;
-    this.groupedPointers.forEach(group => {
-      const groupSortValue = isManualSortCorrect ?
-        groupManualSort.includes(group.key) ?
-          groupManualSort.length - 1 - groupManualSort.indexOf(group.key) :
-          -1 :
-        d3.sum(group.values.map(m => m.sortValue[0]));
+    const sortValuesForGroups = {};
+
+    this.groupedSliceData = d3.nest()
+      .key(d => this.isProperty(this.MDL.stack)? d.stack: d.group)
+      .sortValues((a, b) => b.sortValue[0] - a.sortValue[0])
+      .entries(this.atomicSliceData);
+
+    this.groupedSliceData.forEach(group => {
+      let groupSortValue = 0;
+
+      if (isManualSortCorrect)
+        groupSortValue = groupManualSort.includes(group.key) ? groupManualSort.length - 1 - groupManualSort.indexOf(group.key) : -1;
+      else
+        groupSortValue = d3.sum(group.values.map(m => m.sortValue[0]));
 
       group.values.forEach(d => {
         d.sortValue[1] = groupSortValue;
       });
 
-      group._keys = { [this.KEY]: group.key }; // hack to get highlihgt and selection work
-      group.KEYS = function() {
-        return this._keys;
-      };
-      group.KEY = function() {
-        return this.key;
-      };
+      sortValuesForGroups[group.key] = groupSortValue;
+      group.KEY = () => group.key;
       group.aggrLevel = 1;
     });
 
-    const sortGroupKeys = {};
-    this.groupedPointers.forEach(m => {
-      sortGroupKeys[m.key] = m.values[0].sortValue[1];
-    });
 
-
-    // update the stacked pointers
     if (this.MDL.stack.data.constant === "none") {
-      this.stackedPointers = [];
-      this.sliceData.sort((a, b) => b.sortValue[0] - a.sortValue[0]);
+      this.stackedSliceData = [];
+      this.atomicSliceData.sort((a, b) => b.sortValue[0] - a.sortValue[0]);
 
     } else {
-      this.stackedPointers = d3.nest()
+      this.stackedSliceData = d3.nest()
         .key(d => d.stack)
         .key(d => d.group)
-        .sortKeys((a, b) => sortGroupKeys[b] - sortGroupKeys[a])
+        .sortKeys((a, b) => sortValuesForGroups[b] - sortValuesForGroups[a])
         .sortValues((a, b) => b.sortValue[0] - a.sortValue[0])
-        .entries(this.sliceData);
+        .entries(this.atomicSliceData);
 
-      this.sliceData.sort((a, b) => b.sortValue[1] - a.sortValue[1]);
-
-
-      this.stackedPointers.forEach(stack => {
-        stack._keys = { [this.KEY]: stack.key }; // hack to get highlihgt and selection work
-        stack.KEYS = function() {
-          return this._keys;
-        };
-        stack.KEY = function() {
-          return this.key;
-        };
+      this.stackedSliceData.forEach(stack => {
+        stack.KEY = () => stack.key;
         stack.aggrLevel = 2;
       });
+
+      //TODO: sorting too many times?
+      this.atomicSliceData.sort((a, b) => b.sortValue[1] - a.sortValue[1]);
     }
+  }
+
+  _createAndDeleteSlices() {    
 
     //bind the data to DOM elements
     this.mountainsMergeStacked = this.DOM.mountainAtomicContainer.selectAll(".vzb-mc-mountain.vzb-mc-aggrlevel2")
-      .data(this.stackedPointers);
+      .data(this.stackedSliceData);
     this.mountainsMergeGrouped = this.DOM.mountainAtomicContainer.selectAll(".vzb-mc-mountain.vzb-mc-aggrlevel1")
-      .data(this.groupedPointers);
+      .data(this.groupedSliceData);
     this.mountainsAtomic = this.DOM.mountainAtomicContainer.selectAll(".vzb-mc-mountain.vzb-mc-aggrlevel0")
-      .data(this.sliceData);
+      .data(this.atomicSliceData);
 
     //exit selection -- remove shapes
     this.mountainsMergeStacked.exit().remove();
@@ -945,9 +913,7 @@ export default class VizabiMountainChart extends BaseComponent {
       .merge(this.mountainsAtomic);
 
     //add interaction
-    this.mountains = this.DOM.mountainAtomicContainer.selectAll(".vzb-mc-mountain");
-
-    this.mountains
+    this.mountains = this.DOM.mountainAtomicContainer.selectAll(".vzb-mc-mountain")
       .on("mousemove", (d, i) => {
         if (utils.isTouchDevice()) return;
         this._interact()._mousemove(d, i);
@@ -959,7 +925,6 @@ export default class VizabiMountainChart extends BaseComponent {
       .on("click", (d, i) => {
         if (utils.isTouchDevice()) return;
         this._interact()._click(d, i);
-        this.highlightMarkers();
       });
     // .onTap((d, i) => {
     //   this._interact()._click(d, i);
@@ -978,12 +943,12 @@ export default class VizabiMountainChart extends BaseComponent {
       _mousemove(d) {
         if (/*this.model.time.dragging ||*/ this.MDL.frame.playing) return;
 
-        this.model.marker.highlightMarker(d.KEYS());
+        this.MDL.selected.data.filter.set(d);
 
         //const mouse = d3.mouse(this.graph.node()).map(d => parseInt(d));
 
         //position tooltip
-        this._setTooltip(d.key ? this.MDL.color.getColorlegendMarker().label.getItems()[d.key] : this._getLabelText(d));
+        this._setTooltip(this._getLabelText(d));
         this._selectlist.showCloseCross(d, true);
 
       },
@@ -991,14 +956,14 @@ export default class VizabiMountainChart extends BaseComponent {
         if (/*this.model.time.dragging ||*/ this.MDL.frame.playing) return;
 
         this._setTooltip("");
-        this.model.marker.clearHighlighted();
+        this.MDL.selected.data.filter.delete(d);
         this._selectlist.showCloseCross(d, false);
 
       },
       _click(d) {
         const isPlayingOrDragging = /*this.model.time.dragging ||*/ this.MDL.frame.playing;
         if (!isPlayingOrDragging || this.MDL.selected.data.filter.has(d)) {
-          this.model.marker.selectMarker(d.KEYS());
+          this.MDL.selected.data.filter.toggle(d);
         }
       }
     };
@@ -1006,14 +971,14 @@ export default class VizabiMountainChart extends BaseComponent {
   }
 
   highlightMarkers() {
-    this.someHighlighted = (this.MDL.highlighted.data.filter.markers.size > 0);
+    this.someHighlighted = (this.MDL.highlighted.data.filter.any());
 
     if (!this.selectList || !this.someSelected) return;
     this.selectList.classed("vzb-highlight", d => this.MDL.highlighted.data.filter.has(d));
   }
 
   selectMarkers() {
-    this.someSelected = (this.MDL.selected.data.filter.markers.size > 0);
+    this.someSelected = (this.MDL.selected.data.filter.any());
 
     this._selectlist.rebuild();
     this.nonSelectedOpacityZero = false;
@@ -1067,109 +1032,85 @@ export default class VizabiMountainChart extends BaseComponent {
   }
 
 
-  _updatePointers() {
-    this.yMax = 0;
-
-    // KEY: ƒ ()
-    // KEYS: ƒ ()
-    // aggrLevel: 0
-    // sortValue: (2) [4981422, 4509144651]
-    // _key: "pse"
-    // _keys: {country: "pse"}
-
-    // KEY: ƒ ()
-    // aggrLevel: 0
-    // color: "asia"
-    // country: "afg"
-    // frame: Wed Jan 01 1800 01:12:12 GMT+0112 (Central European Standard Time) {}
-    // group: "asia"
-    // label: {country: "Afghanistan"}
-    // s: 30.5
-    // sortValue: (2) [3280000, 670501875]
-    // stack: "asia"
-    // time: Wed Jan 01 1800 01:12:12 GMT+0112 (Central European Standard Time) {}
-    // x: 603
-    // y: 3280000
-    // Symbol(key): "country-afg"
+  _computeAllShapes() {
 
     //spawn the original mountains
-    this.sliceData.forEach((d) => {
-      const vertices = this._spawn(d);
-      this.cached[d.KEY()] = vertices;
-      d.hidden = vertices.length === 0;
+    this.atomicSliceData.forEach((d) => {
+      d.shape = this._spawnShape(d);
+      d.hidden = d.shape.length === 0;
     });
 
     //rbh
     //this._robinhood.adjustCached();
 
-    //recalculate stacking
+    //recalculate shapes depending on stacking
     if (this.MDL.stack.data.constant !== "none") {
-      this.stackedPointers.forEach(group => {
-        let toStack = [];
-        group.values.forEach(subgroup => {
-          toStack = toStack.concat(subgroup.values.filter(f => !f.hidden));
+      this.stackedSliceData.forEach(stack => {
+        let slicesToStack = [];
+        stack.values.forEach(group => {
+          slicesToStack = slicesToStack.concat(group.values.filter(f => !f.hidden));
         });
-        this.stack.keys(toStack.map(d => d.KEY()))(d3.range(this.mesh.length))
-          .forEach((vertices, keyIndex) => {
-            const key = toStack[keyIndex].KEY();
-            vertices.forEach((d, verticesIndex) => {
-              this.cached[key][verticesIndex].y0 = d[0];
+        this.stackLayout
+          .keys(slicesToStack)(d3.range(this.mesh.length))
+          .forEach((vertices, sliceIndex) => {
+            const slice = slicesToStack[sliceIndex];
+            vertices.forEach((d, i) => {
+              slice.shape[i].y0 = d[0];
             });
           });
       });
-    }
 
-    this.sliceData.forEach(d => {
-      d.yMax = d3.max(this.cached[d.KEY()].map(m => m.y0 + m.y));
-      if (this.yMax < d.yMax) this.yMax = d.yMax;
-    });
-
-    const mergeGrouped = this.MDL.group.config.merge;
-    const mergeStacked = this.MDL.stack.config.merge;
-    //var dragOrPlay = (/*this.model.time.dragging ||*/ this.MDL.frame.playing) && this.model.marker.stack.which !== "none";
-
-    //if(mergeStacked){
-    this.stackedPointers.forEach(d => {
-      const firstLast = this._getFirstLastPointersInStack(d);
-      this.cached[d.key] = this._getVerticesOfaMergedShape(firstLast);
-      d.color = "_default";
-      d.y = this._sumLeafSlicesByEncoding(d, "y");
-      d.yMax = firstLast.first.yMax;
-    });
-    //} else if (mergeGrouped || dragOrPlay){
-    this.groupedPointers.forEach(d => {
-      const firstLast = this._getFirstLastPointersInStack(d);
-      this.cached[d.key] = this._getVerticesOfaMergedShape(firstLast);
-      d.color = firstLast.first.color;
-      d.y = this._sumLeafSlicesByEncoding(d, "y");
-      d.yMax = firstLast.first.yMax;
-    });
-    //}
-
-    if (!mergeStacked && !mergeGrouped && this.isProperty(this.MDL.stack)) {
-      this.groupedPointers.forEach(d => {
-        const visible = d.values.filter(f => !f.hidden);
-        d.yMax = visible[0].yMax;
-        d.values.forEach(e => {
-          e.yMaxGroup = d.yMax;
-        });
+      this.stackedSliceData.forEach(d => {
+        const firstLast = this._getFirstAndLastSlicesInGroup(d);
+        d.shape = this._getMergedShape(firstLast);
+        d.y = this._sumLeafSlicesByEncoding(d, "y");
+        d.color = "_default";
+        d.yMax = firstLast.first.yMax;
+      });
+      this.groupedSliceData.forEach(d => {
+        const firstLast = this._getFirstAndLastSlicesInGroup(d);
+        d.shape = this._getMergedShape(firstLast);
+        d.y = this._sumLeafSlicesByEncoding(d, "y");
+        d.color = firstLast.first.color;
+        d.yMax = firstLast.first.yMax;
       });
     }
+
+    //push yMaxGlobal up so shapes can fit
+    this.yMaxGlobal = 0;
+    this.atomicSliceData.forEach(d => {
+      d.yMax = d3.max(d.shape.map(m => m.y0 + m.y));
+      if (this.yMaxGlobal < d.yMax) this.yMaxGlobal = d.yMax;
+    });
+
+    this._adjustMaxY();
+    
+
+    // if (!mergeStacked && !mergeGrouped && this.isProperty(this.MDL.stack)) {
+    //   this.groupedSliceData.forEach(d => {
+    //     const visible = d.values.filter(f => !f.hidden);
+    //     d.yMax = visible[0].yMax;
+    //     d.values.forEach(e => {
+    //       e.yMaxGroup = d.yMax;
+    //     });
+    //   });
+    // }
 
 
   }
   
 
-  _getFirstLastPointersInStack(group) {
-    let visible, visible2;
+  _getFirstAndLastSlicesInGroup(group) {
+    let visible = [], visible2 = [];
     let first, last;
 
-    if (group.values[0].values) {
+    if (group.aggrLevel == 2) {
       visible = group.values[0].values.filter(f => !f.hidden);
       visible2 = group.values[group.values.length - 1].values.filter(f => !f.hidden);
       first = visible[0];
       last = visible2[visible2.length - 1];
-    } else {
+    }
+    if (group.aggrLevel == 1) {
       visible = group.values.filter(f => !f.hidden);
       first = visible[0];
       last = visible[visible.length - 1];
@@ -1177,32 +1118,25 @@ export default class VizabiMountainChart extends BaseComponent {
 
     if (!visible.length || (visible2 && !visible2.length)) utils.warn("mountain chart failed to generate shapes. check the incoming data");
 
-    return {
-      first,
-      last
-    };
+    return {first, last};
   }
 
-  _getVerticesOfaMergedShape(arg) {
-    const first = arg.first.KEY();
-    const last = arg.last.KEY();
-
+  _getMergedShape({first, last}) {
     return this.mesh.map((m, i) => {
       return {
         x: m,
-        y0: this.cached[last][i].y0,
-        y: this.cached[first][i].y0 + this.cached[first][i].y - this.cached[last][i].y0
+        y0: last.shape[i].y0,
+        y: first.shape[i].y0 + first.shape[i].y - last.shape[i].y0
       };
     });
   }
 
-  _spawnMasks() {
+  _updateMasks() {
     const tailFatX = this._math.unscale(this.MDL.x.config.tailFatX);
     const tailCutX = this._math.unscale(this.MDL.x.config.tailCutX);
     const tailFade = this.MDL.x.config.tailFade;
     const k = 2 * Math.PI / (Math.log(tailFatX) - Math.log(tailCutX));
     const m = Math.PI - Math.log(tailFatX) * k;
-
 
     this.spawnMask = [];
     this.cosineShape = [];
@@ -1215,7 +1149,7 @@ export default class VizabiMountainChart extends BaseComponent {
     });
   }
 
-  _spawn(d) {
+  _spawnShape(d) {
     const norm = d.y;
     const sigma = this.ui.directSigma ?
       d.s :
@@ -1231,7 +1165,7 @@ export default class VizabiMountainChart extends BaseComponent {
     let acc = 0;
 
     this.mesh.forEach((dX, i) => {
-      distribution[i] = this._math.pdf().lognormal(dX, mu, sigma);
+      distribution[i] = this._math.pdfLognormal(dX, mu, sigma);
       acc += this.spawnMask[i] * distribution[i];
     });
 
@@ -1246,15 +1180,15 @@ export default class VizabiMountainChart extends BaseComponent {
 
   _adjustMaxY() {
     if (this.ui.yMaxMethod === "immediate") {
-      if (!this.yMax) utils.warn("Setting yMax to " + this.yMax + ". You failed again :-/");
-      this.yScale.domain([0, Math.round(this.yMax)]);
+      if (!this.yMaxGlobal) utils.warn("Setting yMax to " + this.yMaxGlobal + ". You failed again :-/");
+      this.yScale.domain([0, Math.round(this.yMaxGlobal)]);
     } else {
-      if (!this.yMax) utils.warn("Setting yMax to " + this.yMax + ". You failed again :-/");
+      if (!this.yMaxGlobal) utils.warn("Setting yMax to " + this.yMaxGlobal + ". You failed again :-/");
       this.yScale.domain([0, Math.round(this.ui.yMaxMethod)]);
     }
   }
 
-  _redrawDataPoints() {
+  _renderAllShapes() {
     const _this = this;
     const mergeGrouped = this.MDL.group.config.merge;
     const mergeStacked = this.MDL.stack.config.merge;
@@ -1273,13 +1207,13 @@ export default class VizabiMountainChart extends BaseComponent {
 
     this.mountainsMergeGrouped.each(function(d) {
       const view = d3.select(this);
-      const hidden = (!mergeGrouped && !dragOrPlay) || (mergeStacked && !_this.model.marker.isSelected(d));
+      const hidden = (!mergeGrouped && !dragOrPlay) || (mergeStacked && !_this.MDL.selected.data.filter.has(d));
       _this._renderShape(view, d, hidden);
     });
 
     this.mountainsAtomic.each(function(d) {
       const view = d3.select(this);
-      const hidden = d.hidden || ((mergeGrouped || mergeStacked || dragOrPlay) && !_this.model.marker.isSelected(d));
+      const hidden = d.hidden || ((mergeGrouped || mergeStacked || dragOrPlay) && !_this.MDL.selected.data.filter.has(d));
       _this._renderShape(view, d, hidden);
     });
 
@@ -1295,7 +1229,7 @@ export default class VizabiMountainChart extends BaseComponent {
         //     return b.yMax - a.yMax;
         // });
       } else {
-        this.mountainsAtomic.sort((a, b) => b.yMaxGroup - a.yMaxGroup);
+        //this.mountainsAtomic.sort((a, b) => b.yMaxGroup - a.yMaxGroup);
       }
     }
 
@@ -1308,19 +1242,9 @@ export default class VizabiMountainChart extends BaseComponent {
     // }
   }
 
-  redrawDataPointsOnlyColors() {
-    if (!this.mountains) return utils.warn("redrawDataPointsOnlyColors(): no mountains  defined. likely a premature call, fix it!");
-    const isColorUseIndicator = this.isIndicator(this.MDL.color);
-    this.mountains.style("fill", d => {
-      const color = d.valuesPointer.color;
-      return color ? (isColorUseIndicator && color == "_default" ? this.MDL.color.palette["_default"] : this.cScale(color)) : COLOR_WHITEISH;
-    });
-  }
 
   _renderShape(view, d, hidden) {
     const stack = this.MDL.stack.which;
-    const valuesPointer = view.datum().valuesPointer;
-    const key = d.KEY();
 
     view.classed("vzb-hidden", hidden);
 
@@ -1329,27 +1253,15 @@ export default class VizabiMountainChart extends BaseComponent {
       return;
     }
 
-    const filter = {};
-    filter[this.KEY] = key;
-    if (this.MDL.selected.data.filter.has(d)) {
-      view.attr("d", this.area(this.cached[key].filter(f => f.y > valuesPointer.axis_y[key] * THICKNESS_THRESHOLD)));
-    } else {
-      view.attr("d", this.area(this.cached[key]));
-    }
-
-    //color use indicator suggests that this should be updated on every timeframe
-    if (this.isIndicator(this.MDL.color)) {
-      view.style("fill", valuesPointer.color[key] ?
-        (
-          valuesPointer.color[key] !== "_default" ?
-            this.cScale(valuesPointer.color[key])
-            :
-            this.MDL.color.palette["_default"]
-        )
-        :
-        COLOR_WHITEISH
-      );
-    }
+    if (this.MDL.selected.data.filter.has(d))
+      view.attr("d", this.area(d.shape.filter(f => f.y > d.y * THICKNESS_THRESHOLD)));
+    else
+      view.attr("d", this.area(d.shape));
+    
+    if (d.color)
+      view.style("fill", d.color !== "_default" ? this.cScale(d.color) : this.MDL.color.palette["_default"]);
+    else
+      view.style("fill", COLOR_WHITEISH);
 
     if (stack !== "none") view
       .transition().duration(Math.random() * 900 + 100).ease(d3.easeCircle)
