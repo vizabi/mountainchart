@@ -94,6 +94,11 @@ const MCSelectList = Vizabi.Class.extend({
       .merge(_this.selectList);
   },
 
+  setHighlighted(filter){
+    const _this = this.context;
+    _this.selectList.classed("vzb-highlight", filter);
+  },
+
   redraw() {
     const _this = this.context;
     const dataKeys = _this.dataKeys;
