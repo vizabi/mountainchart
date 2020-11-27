@@ -1,148 +1,178 @@
-const { 
-  utils,
-  iconset: {
-    close: iconClose
+import {
+  Icons,
+  LegacyUtils as utils,
+  BaseComponent
+} from "VizabiSharedComponents";
+const {ICON_CLOSE} = Icons;
+
+export class MCSelectList extends BaseComponent {
+
+
+  setup() {
+
   }
-} = Vizabi;
 
-const MCSelectList = Vizabi.Class.extend({
+  draw() {
 
-  init(context) {
-    this.context = context;
+    this.MDL = {
+      frame: this.model.encoding.get("frame"),
+      color: this.model.encoding.get("color"),
+      selectedF: this.model.encoding.get("selected").data.filter,
+      highlightedF: this.model.encoding.get("highlighted").data.filter
+    };
+    this.localise = this.services.locale.auto();
 
-  },
+    this.addReaction(this.addAndRemoveLabels);
+    this.addReaction(this.updateHighlighted);
+  }
 
-  rebuild(data) {
-    const _this = this.context;
-    const _local = this;
+  addAndRemoveLabels(){
+    const _this = this;
+    this.MDL.selectedF.markers; //watch
+    this.MDL.frame.value; //watch
+    this.services.layout.size; //watch
 
-    const listData = _this.mountainPointers
-      .concat(_this.groupedPointers)
-      .concat(_this.stackedPointers)
-      .filter(f => _this.model.marker.isSelected(f.KEYS())).sort((a, b) => {
-        if (a.sortValue && b.sortValue) {
-          if (a.sortValue[1] === b.sortValue[1]) {
-            return d3.descending(a.sortValue[0], b.sortValue[0]);
-          }
-          return d3.descending(a.sortValue[1], b.sortValue[1]);
-        }
+    const listData = this.parent.atomicSliceData
+      .concat(this.parent.groupedSliceData)
+      .concat(this.parent.stackedSliceData)
+      .filter(d => this.MDL.selectedF.has(d))
+      .sort(this._sortLabels);
 
-        if (a.aggrLevel != b.aggrLevel) {
-          return d3.descending(a.aggrLevel, b.aggrLevel);
-        } else if (a.aggrLevel && b.aggrLevel) {
-          return d3.descending(a.yMax, b.yMax);
-        }
+    this.labels = this.element.selectAll("g.vzb-mc-label")
+      .data(listData, d => d.KEY());
 
-        return 0;
-      });
-    _this.selectList = _this.mountainLabelContainer.selectAll("g.vzb-mc-label")
-      .data(utils.unique(listData, d => d.KEY()));
-    _this.selectList.exit().remove();
-    _this.selectList = _this.selectList.enter().append("g")
+    this.labels.exit().remove();
+    this.labels = this.labels.enter().append("g")
       .attr("class", "vzb-mc-label")
-      .each(function(d, i) {
-        const label = d3.select(this);
-        label.append("circle").attr("class", "vzb-mc-label-legend");
-        label.append("text").attr("class", "vzb-mc-label-shadow vzb-mc-label-text");
-        label.append("text").attr("class", "vzb-mc-label-text");
-        label.append("g").attr("class", "vzb-mc-label-x vzb-label-shadow vzb-invisible")
-          .on("click", (d, i) => {
-            if (utils.isTouchDevice()) return;
-            d3.event.stopPropagation();
-            _this.model.marker.clearHighlighted();
-            _this.model.marker.selectMarker(d.KEYS());
-            d3.event.stopPropagation();
-          })
-          .onTap((d, i) => {
-            //d3.select("#" + d.geo + "-label-" + _this._id).remove();
-            _this.model.marker.clearHighlighted();
-            _this.model.marker.selectMarker(d.KEYS());
-          });
-        const labelCloseGroup = label.select("g.vzb-mc-label-x");
-        if (!utils.isTouchDevice()) {
-          utils.setIcon(labelCloseGroup, iconClose)
-            .select("svg")
-            .attr("class", "vzb-mc-label-x-icon")
-            .attr("width", "0px")
-            .attr("height", "0px");
-
-          labelCloseGroup.insert("circle", "svg");
-
-        } else {
-          labelCloseGroup.append("rect");
-          labelCloseGroup.append("text")
-            .attr("class", "vzb-mc-label-x-text")
-            .text("Deselect");
-        }
+      .each(function(d) {
+        const view = d3.select(this);
+        _this._buildOneLabel(view, d);
       })
-      .on("mousemove", (d, i) => {
+      .merge(this.labels);
+    
+    this.redraw();
+  }
+
+  _sortLabels(a, b){
+    if (a.sortValue && b.sortValue) {
+      if (a.sortValue[1] === b.sortValue[1]) {
+        return d3.descending(a.sortValue[0], b.sortValue[0]);
+      }
+      return d3.descending(a.sortValue[1], b.sortValue[1]);
+    }
+
+    if (a.aggrLevel != b.aggrLevel) {
+      return d3.descending(a.aggrLevel, b.aggrLevel);
+    } else if (a.aggrLevel == b.aggrLevel) {
+      return d3.descending(a.yMax, b.yMax);
+    }
+
+    return 0;
+  }
+
+  _buildOneLabel(view, d){
+    
+    view.append("circle").attr("class", "vzb-mc-label-legend");
+    view.append("text").attr("class", "vzb-mc-label-shadow vzb-mc-label-text");
+    view.append("text").attr("class", "vzb-mc-label-text");
+
+    const labelCloseGroup = view.append("g")
+      .attr("class", "vzb-mc-label-x vzb-label-shadow vzb-invisible")
+      .on("click", () => {
         if (utils.isTouchDevice()) return;
-        _local.showCloseCross(d, true);
-        _this.model.marker.highlightMarker(d.KEYS());
-      })
-      .on("mouseout", (d, i) => {
-        if (utils.isTouchDevice()) return;
-        _local.showCloseCross(d, false);
-        _this.model.marker.clearHighlighted();
+        d3.event.stopPropagation();
+        this.MDL.highlightedF.delete(d);
+        this.MDL.selectedF.toggle(d);
+      });
+      // .onTap(() => {
+      //   this.MDL.highlightedF.delete(d);
+      //   this.MDL.selectedF.toggle(d);
+      // });
 
-      })
-      .on("click", (d, i) => {
-        if (utils.isTouchDevice()) return;
-        _this.model.marker.clearHighlighted();
-        _this.model.marker.selectMarker(d.KEYS());
-      })
-      .merge(_this.selectList);
-  },
+    if (!utils.isTouchDevice()) {
+      utils.setIcon(labelCloseGroup, ICON_CLOSE)
+        .select("svg")
+        .attr("class", "vzb-mc-label-x-icon")
+        .attr("width", "0px")
+        .attr("height", "0px");
 
-  setHighlighted(filter){
-    const _this = this.context;
-    _this.selectList.classed("vzb-highlight", filter);
-  },
+      labelCloseGroup.insert("circle", "svg");
+
+    } else {
+      labelCloseGroup.append("rect");
+      labelCloseGroup.append("text")
+        .attr("class", "vzb-mc-label-x-text")
+        .text("Deselect");
+    }
+
+    view
+      .on("mousemove", () => {
+        if (utils.isTouchDevice()) return;
+        this.showCloseCross(d, true);
+        this.MDL.highlightedF.set(d);
+      })
+      .on("mouseout", () => {
+        if (utils.isTouchDevice()) return;
+        this.showCloseCross(d, false);
+        this.MDL.highlightedF.delete(d);
+      })
+      .on("click", () => {
+        if (utils.isTouchDevice()) return;
+        this.MDL.highlightedF.delete(d);
+        this.MDL.selectedF.toggle(d);
+      });
+
+  }
+
+
+  updateHighlighted(){
+    this.MDL.highlightedF.markers; //watch
+    this.labels.classed("vzb-highlight", d => this.MDL.highlightedF.has(d));
+  }
 
   redraw() {
-    const _this = this.context;
-    const dataKeys = _this.dataKeys;
+    const _this = this;
 
-    if (!_this.selectList || !_this.someSelected) return;
 
-    const sample = _this.mountainLabelContainer.append("g").attr("class", "vzb-mc-label").append("text").text("0");
+    if (!this.labels || !this.MDL.selectedF.any()) return;
+
+    const sample = this.element.append("g")
+      .attr("class", "vzb-mc-label")
+      .append("text")
+      .text("0");
+
     let fontHeight = sample.node().getBBox().height * 1.2;
     const fontSizeToFontHeight = parseFloat(sample.style("font-size")) / fontHeight;
     d3.select(sample.node().parentNode).remove();
-    const formatter = _this.model.marker.axis_y.getTickFormatter();
 
-    const titleHeight = _this.yTitleEl.select("text").node().getBBox().height || 0;
+    const titleHeight = this.parent.DOM.yTitle.select("text").node().getBBox().height || 0;
 
-    const maxFontHeight = (_this.height - titleHeight * 3) / (_this.selectList.data().length + 2);
+    const maxFontHeight = (this.parent.height - titleHeight * 3) / (this.labels.data().length + 2);
     if (fontHeight > maxFontHeight) fontHeight = maxFontHeight;
 
     let currentAggrLevel = "null";
     let aggrLevelSpacing = 0;
 
-    const groupLabels = _this.model.marker.color.getColorlegendMarker().label.getItems();
+    const isRTL = this.services.locale.isRTL();
 
-    const isRTL = _this.model.locale.isRTL();
-
-    _this.selectList
+    this.labels
       .attr("transform", (d, i) => {
         if (d.aggrLevel != currentAggrLevel) aggrLevelSpacing += fontHeight;
         const spacing = fontHeight * i + titleHeight * 2 + aggrLevelSpacing;
         currentAggrLevel = d.aggrLevel;
-        return "translate(" + (isRTL ? _this.width : 0) + "," + spacing + ")";
+        return "translate(" + (isRTL ? this.parent.width : 0) + "," + spacing + ")";
       })
       .each(function(d, i) {
 
-        const view = d3.select(this).attr("id", d.KEY() + "-label-" + _this._id);
+        const view = d3.select(this).attr("id", d.KEY() + "-label-" + _this.parent.id);
         let name = "";
         if (d.key) {
-          name = d.key === "all" ? _this.translator("mount/merging/world") : groupLabels[d.key];
+          name = d.key === "all" ? _this.localise("mount/merging/world") : _this.parent._getLabelText(d);
         } else {
-          name = _this._getLabelText(_this.values, _this.labelNames, d.KEYS());
+          name = _this.parent._getLabelText(d);
         }
 
-        const number = d.valuesPointer.axis_y[utils.getKey(d.KEYS(), dataKeys.axis_y)];
-
-        const string = name + ": " + formatter(number) + (i === 0 ? " " + _this.translator("mount/people") : "");
+        const string = name + ": " + _this.localise(d.y) + (i === 0 ? " " + _this.localise("mount/people") : "");
 
         const text = view.selectAll(".vzb-mc-label-text")
           .attr("x", (isRTL ? -1 : 1) * fontHeight)
@@ -191,28 +221,26 @@ const MCSelectList = Vizabi.Class.extend({
           .attr("r", fontHeight / 3)
           .attr("cx", (isRTL ? -1 : 1) * fontHeight * 0.4)
           .attr("cy", fontHeight / 1.5)
-          .style("fill", _this.cScale(d.valuesPointer.color[utils.getKey(d.KEYS(), dataKeys.color)]));
+          .style("fill", _this.parent.cScale(d.color));
 
-        view.onTap((d, i) => {
-          d3.event.stopPropagation();
-          _this.model.marker.highlightMarker(d.KEYS());
-          setTimeout(() => {
-            _this.model.marker.unhighlightMarker(d.KEYS());
-          }, 2000);
-        });
+        // view.onTap((d, i) => {
+        //   d3.event.stopPropagation();
+        //   _this.model.marker.highlightMarker(d.KEYS());
+        //   setTimeout(() => {
+        //     _this.model.marker.unhighlightMarker(d.KEYS());
+        //   }, 2000);
+        // });
       });
-  },
+  }
 
   showCloseCross(d, show) {
-    const _this = this.context;
     const key = d.KEY();
     //show the little cross on the selected label
-    _this.selectList
+    this.labels
       .filter(f => f.KEY() == key)
       .select(".vzb-mc-label-x")
       .classed("vzb-invisible", !show);
-  },
+  }
 
-});
+}
 
-export default MCSelectList;

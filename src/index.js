@@ -11,7 +11,7 @@ import {
   Dialogs,
   ButtonList
 } from "VizabiSharedComponents";
-import VizabiMountainchart from "./component.js";
+import {VizabiMountainChart} from "./component.js";
 import { observable } from "mobx";
 
 //import "./dialogs/axesmc/axesmc";
@@ -28,7 +28,7 @@ export default class MountainChart extends BaseComponent {
     config.name = "mountainchart";
 
     config.subcomponents = [{
-      type: VizabiMountainchart,
+      type: VizabiMountainChart,
       placeholder: ".vzb-mountainchart",
       model: marker,
       name: "chart"

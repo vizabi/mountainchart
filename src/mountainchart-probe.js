@@ -1,96 +1,113 @@
-const { utils } = Vizabi;
+import {
+  BaseComponent
+} from "VizabiSharedComponents";
 
-const MCProbe = Vizabi.Class.extend({
+export class MCProbe extends BaseComponent {
 
-  init(context) {
-    this.context = context;
+  constructor(config){
+    config.template = `
+      <text class="vzb-mc-probe-value vzb-shadow vzb-mc-probe-value-ul"></text>
+      <text class="vzb-mc-probe-value vzb-shadow vzb-mc-probe-value-ur"></text>
+      <text class="vzb-mc-probe-value vzb-shadow vzb-mc-probe-value-dl"></text>
+      <text class="vzb-mc-probe-value vzb-shadow vzb-mc-probe-value-dr"></text>
+      <text class="vzb-mc-probe-value vzb-mc-probe-value-ul"></text>
+      <text class="vzb-mc-probe-value vzb-mc-probe-value-ur"></text>
+      <text class="vzb-mc-probe-value vzb-mc-probe-value-dl"></text>
+      <text class="vzb-mc-probe-value vzb-mc-probe-value-dr"></text>
+      <text class="vzb-mc-probe-extremepoverty"></text>
+      <line></line>
+    `;
 
-  },
+    super(config);
+  }
 
-  redraw(options) {
-    const _this = this.context;
-    if (!options) options = {};
+  setup() {
+    this.DOM = {
+      probe: this.element,
+      probeLine: this.element.select("line"),
+      probeValues: this.element.selectAll(".vzb-mc-probe-value"),
+      extremepovertyText: this.element.select(".vzb-mc-probe-extremepoverty")
+    };
+  }
 
-    if (!options.level) options.level = _this.model.ui.chart.probeX;
+  draw() {
 
-    _this.probeEl.classed("vzb-hidden", !options.level || !_this.model.ui.chart.showProbeX);
+    this.MDL = {
+      frame: this.model.encoding.get("frame"),
+      stack: this.model.encoding.get("stack"),
+      x: this.model.encoding.get("x")
+    };
+    this.localise = this.services.locale.auto();
+
+    this.addReaction(this.redraw);
+  }
+
+
+  redraw(options = {}) {
+    this.services.layout.size; //watch
+    this.MDL.frame.value; //watch
+
+    const stackMode = this.MDL.stack.data.constant;
+    const height = this.parent.height - this.parent.profileConstants.margin.top - this.parent.profileConstants.margin.bottom;
+    
+
+    if (!options.level) options.level = this.parent.ui.probeX; //TODO: move inside
+
+    this.DOM.probe.classed("vzb-hidden", !options.level || !this.parent.ui.showProbeX);
     if (!options.level) return;
 
-    _this.xAxisEl.call(_this.xAxis.highlightValue(options.full ? options.level : "none"));
+    this.parent.DOM.xAxis.call(this.parent.xAxis.highlightValue(options.full ? options.level : "none"));
 
     let sumValue = 0;
     let totalArea = 0;
     let leftArea = 0;
 
-    const _computeAreas = function(d) {
-      sumValue += d.valuesPointer.axis_y[utils.getKey(d.KEYS(), _this.dataKeys.axis_y)];
-      _this.cached[d.KEY()].forEach(d => {
-        totalArea += d.y;
-        if (_this._math.rescale(d.x) < options.level) leftArea += d.y;
+    const _computeAreas = (d) => {
+      sumValue += d.y;
+      d.shape.forEach(vertex => {
+        totalArea += vertex.y;
+        if (this.parent._math.rescale(vertex.x) < options.level) leftArea += vertex.y;
       });
     };
 
-    if (_this.model.marker.stack.which === "all") {
-      _this.stackedPointers.forEach(_computeAreas);
-    } else if (_this.model.marker.stack.which === "none") {
-      _this.mountainPointers.forEach(_computeAreas);
-    } else {
-      _this.groupedPointers.forEach(_computeAreas);
-    }
+    if (stackMode === "all")
+      this.parent.stackedSliceData.forEach(_computeAreas);
+    else if (stackMode === "none")
+      this.parent.atomicSliceData.forEach(_computeAreas);
+    else
+      this.parent.groupedSliceData.forEach(_computeAreas);
 
-    const formatter1 = d3.format(".3r");
-    const formatter2 = _this.model.marker.axis_y.getTickFormatter();
-    _this.heightOfLabels = _this.heightOfLabels || (0.66 * _this.height);
+    const formatterPercent = d3.format(".3r");
 
-    _this.probeTextEl.each(function(d, i) {
-      if (i !== 8) return;
-      const view = d3.select(this);
+    this.DOM.extremepovertyText
+      .text(this.localise("mount/extremepoverty"))
+      .classed("vzb-hidden", options.full)
+      .attr("x", -height)
+      .attr("y", this.parent.xScale(options.level))
+      .attr("dy", "-1.15em")
+      .attr("dx", "0.5em")
+      .attr("transform", "rotate(-90)");
 
-      if (!options.full && _this.model.ui.chart.probeX == _this.model.marker.axis_x.tailFatX) {
-
-        view.text(_this.translator("mount/extremepoverty"))
-          .classed("vzb-hidden", false)
-          .attr("x", -_this.height)
-          .attr("y", _this.xScale(options.level))
-          .attr("dy", "-1.15em")
-          .attr("dx", "0.5em")
-          .attr("transform", "rotate(-90)");
-
-        _this.heightOfLabels = _this.height - view.node().getBBox().width - view.node().getBBox().height * 1.75;
-      } else {
-        view.classed("vzb-hidden", true);
-      }
-    });
+    if(!options.full) 
+      this.heightOfLabels = height - this.DOM.extremepovertyText.node().getBBox().width - this.DOM.extremepovertyText.node().getBBox().height * 1.75;
 
 
-    _this.probeTextEl.each(function(d, i) {
-      if (i === 8) return;
-      const view = d3.select(this);
+    this.DOM.probeValues
+      .text((d, i)=>{
+        if (i === 0 || i === 4) return formatterPercent(leftArea / totalArea * 100) + "%";
+        if (i === 1 || i === 5) return formatterPercent(100 - leftArea / totalArea * 100) + "%";
+        if (i === 2 || i === 6) return this.localise(sumValue * leftArea / totalArea);
+        if (i === 3 || i === 7) return this.localise(sumValue * (1 - leftArea / totalArea)) + " " + this.localise("mount/people");
+      })
+      .classed("vzb-hidden", (d, i) => !options.full && (this.parent.someSelected || (i !== 0 && i !== 4)))
+      .attr("x", (d, i) => this.parent.xScale(options.level) + ([0, 4, 2, 6].includes(i) ? -6 : +5))
+      .attr("y", this.heightOfLabels || (0.66 * height))
+      .attr("dy", (d, i) => [0, 1, 4, 5].includes(i) ? 0 : "1.5em");
 
-      let string;
-      if (i === 0 || i === 4) string = formatter1(leftArea / totalArea * 100) + "%";
-      if (i === 1 || i === 5) string = formatter1(100 - leftArea / totalArea * 100) + "%";
-      if (i === 2 || i === 6) string = formatter2(sumValue * leftArea / totalArea);
-      if (i === 3 || i === 7) string = formatter2(sumValue * (1 - leftArea / totalArea)) + " " + _this.translator("mount/people");
-
-      view.text(string)
-        .classed("vzb-hidden", !options.full && (_this.someSelected || (i !== 0 && i !== 4)))
-        .attr("x", _this.xScale(options.level) + ([0, 4, 2, 6].indexOf(i) > -1 ? -6 : +5))
-        .attr("y", _this.heightOfLabels)
-        .attr("dy", [0, 1, 4, 5].indexOf(i) > -1 ? 0 : "1.5em");
-    });
-
-
-    _this.probeLineEl
-      .attr("x1", _this.xScale(options.level))
-      .attr("x2", _this.xScale(options.level))
-      .attr("y1", _this.height + 6)
+    this.DOM.probeLine
+      .attr("x1", this.parent.xScale(options.level))
+      .attr("x2", this.parent.xScale(options.level))
+      .attr("y1", height + 6)
       .attr("y2", 0);
-
-
-  },
-
-
-});
-
-export default MCProbe;
+  }
+}

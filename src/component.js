@@ -9,8 +9,8 @@ import {
 } from "VizabiSharedComponents";
 
 import MountainChartMath from "./mountainchart-math";
-//import Selectlist from "./mountainchart-selectlist";
-//import Probe from "./mountainchart-probe";
+import {MCSelectList} from "./mountainchart-selectlist";
+import {MCProbe} from "./mountainchart-probe";
 //import RobinHood from "./mountainchart-robinhood";
 
 const {ICON_WARN, ICON_QUESTION} = Icons;
@@ -46,12 +46,20 @@ const PROFILE_CONSTANTS_FOR_PROJECTOR = {
 };
 
 // MOUNTAIN CHART COMPONENT
-export default class VizabiMountainChart extends BaseComponent {
+export class VizabiMountainChart extends BaseComponent {
 
   constructor(config) {
     config.subcomponents = [{
       type: DynamicBackground,
       placeholder: ".vzb-mc-year"
+    },{
+      name: "selectlist",
+      type: MCSelectList,
+      placeholder: ".vzb-mc-mountains-labels"
+    },{
+      name: "probe",
+      type: MCProbe,
+      placeholder: ".vzb-mc-probe"
     }];
 
     config.name = "mountainchart";
@@ -91,18 +99,7 @@ export default class VizabiMountainChart extends BaseComponent {
           <g class="vzb-mc-axis-x"></g>
 
           <g class="vzb-mc-axis-labels"></g>
-          <g class="vzb-mc-probe">
-            <text class="vzb-shadow vzb-mc-probe-value-ul"></text>
-            <text class="vzb-shadow vzb-mc-probe-value-ur"></text>
-            <text class="vzb-shadow vzb-mc-probe-value-dl"></text>
-            <text class="vzb-shadow vzb-mc-probe-value-dr"></text>
-            <text class="vzb-mc-probe-value-ul"></text>
-            <text class="vzb-mc-probe-value-ur"></text>
-            <text class="vzb-mc-probe-value-dl"></text>
-            <text class="vzb-mc-probe-value-dr"></text>
-            <text class="vzb-mc-probe-extremepoverty"></text>
-            <line></line>
-          </g>
+          <g class="vzb-mc-probe"></g>
 
           <g class="vzb-mc-tooltip vzb-hidden">
             <rect class="vzb-tooltip-border"></rect>
@@ -137,18 +134,16 @@ export default class VizabiMountainChart extends BaseComponent {
       mountainMergeStackedContainer: this.element.select(".vzb-mc-mountains-mergestacked"),
       mountainMergeGroupedContainer: this.element.select(".vzb-mc-mountains-mergegrouped"),
       mountainAtomicContainer: this.element.select(".vzb-mc-mountains"),
-      mountainLabelContainer: this.element.select(".vzb-mc-mountains-labels"),
       tooltip: this.element.select(".vzb-mc-tooltip"),
       eventArea: this.element.select(".vzb-mc-eventarea"),
-      probe: this.element.select(".vzb-mc-probe"),
-      probeLine: this.element.select("line"),
-      probeText: this.element.selectAll("text"),
       forecastOverlay: this.element.select(".vzb-mc-forecastoverlay"),
       decorations: this.element.select(".vzb-mc-decorations"),
       xAxisGroups: this.element.select(".vzb-mc-x-axis-groups")
     };
 
     this._year = this.findChild({type: "DynamicBackground"});
+    this._selectlist = this.findChild({name: "selectlist"});
+    this._probe = this.findChild({name: "probe"});
     // this.element.onTap((d, i) => {
     //   this._interact()._mouseout(d, i);
     // });
@@ -158,8 +153,6 @@ export default class VizabiMountainChart extends BaseComponent {
     //this._export
     //  .prefix("vzb-mc-")
     //  .deleteClasses(["vzb-mc-mountains-mergestacked", "vzb-mc-mountains-mergegrouped", "vzb-mc-mountains", "vzb-mc-year", "vzb-mc-mountains-labels", "vzb-mc-axis-labels"]);
-    //this._probe = new Probe(this);
-    //this._selectlist = new Selectlist(this);
     //this._robinhood = new RobinHood(this);
 
     // define path generator
@@ -224,8 +217,7 @@ export default class VizabiMountainChart extends BaseComponent {
     this.addReaction(this.zoom);
     this.addReaction(this.updateMasks);
     this.addReaction(this.drawData);
-    this.addReaction(this.highlightSlices);
-    this.addReaction(this.selectSlices);
+    this.addReaction(this.updateSelected);
     this.addReaction(this.updateAllSlicesOpacity);
     this.addReaction(this.updateDecorations);
     //this._probe.redraw();
@@ -441,35 +433,6 @@ export default class VizabiMountainChart extends BaseComponent {
       .style("opacity", 1);
   }
 
-  _readyOnce() { //user actions bindings 
-    const _this = this;
-
-    this.eventAreaEl
-      .on("mousemove", function() {
-        if (_this._isDragging) return;
-        if (!_this.ui.showProbeX) return;
-        _this._probe.redraw({
-          level: _this.xScale.invert(d3.mouse(this)[0]),
-          full: true
-        });
-      })
-      .on("mouseout", () => {
-        if (this._isDragging) return;
-        if (!this.ui.showProbeX) return;
-        this._probe.redraw();
-      });
-
-    this.on("resize", () => {
-      //console.log("acting on resize");
-      //return if _updatesize exists with error
-      if (this.updateSize()) return;
-      this.computeAllShapes(); // respawn is needed
-      this.renderAllShapes();
-      this._selectlist.redraw();
-      this._probe.redraw();
-    });
-  }
-
 
   updateLayoutProfile(){
     this.services.layout.size; //watch
@@ -478,7 +441,6 @@ export default class VizabiMountainChart extends BaseComponent {
     this.height = this.element.node().clientHeight || 0;
     this.width = this.element.node().clientWidth || 0;
 
-    console.log(this.element.node(), this.width);
     if (!this.height || !this.width) return utils.warn("Chart _updateProfile() abort: container is too little or has display:none");
   }
 
@@ -521,6 +483,21 @@ export default class VizabiMountainChart extends BaseComponent {
       })
       .on("mouseout", () => {
         this.updateDoubtOpacity();
+      });
+
+    this.DOM.eventArea
+      .on("mousemove", function() {
+        if (_this._isDragging()) return;
+        if (!_this.ui.showProbeX) return;
+        _this._probe.redraw({
+          level: _this.xScale.invert(d3.mouse(this)[0]),
+          full: true
+        });
+      })
+      .on("mouseout", () => {
+        if (this._isDragging()) return;
+        if (!this.ui.showProbeX) return;
+        this._probe.redraw();
       });
   }
 
@@ -846,6 +823,7 @@ export default class VizabiMountainChart extends BaseComponent {
   processFrameData() {
     
     this.atomicSliceData = this.model.dataArray
+      .filter(f => f.unstate !== false && f.unstate !== 0 && f.unstate !== "FALSE") //TODO: remove this when vizabi reactive can request un states https://github.com/vizabi/vizabi-reactive/issues/31
       .concat() //copy array in order to avoid sorting in place
       .filter(d => d.x && d.y && d.s)
       .map(d => {
@@ -997,10 +975,10 @@ export default class VizabiMountainChart extends BaseComponent {
     }
 
     //push yMaxGlobal up so shapes can fit
-    this.yMaxGlobal = 0;
     this.atomicSliceData.forEach(d => {
       d.yMax = d3.max(d.shape.map(m => m.y0 + m.y));
       if (this.yMaxGlobal < d.yMax) this.yMaxGlobal = d.yMax;
+      if (this.yMaxGlobal < this.ui.yMaxMethod) this.yMaxGlobal = this.ui.yMaxMethod;
     });
 
     this._adjustMaxY();
@@ -1122,7 +1100,6 @@ export default class VizabiMountainChart extends BaseComponent {
         //position tooltip
         _this._setTooltip(_this._getLabelText(d));
         //_this._selectlist.showCloseCross(d, true);
-
       },
       _mouseout(d) {
         if (_this._isDragging() || _this.MDL.frame.playing) return;
@@ -1142,18 +1119,10 @@ export default class VizabiMountainChart extends BaseComponent {
 
   }
 
-  highlightSlices() {
-    this.someHighlighted = this.MDL.highlightedF.any();
-
-    //if (this.someSelected)
-      //this._selectList.setHighlighted(d => this.MDL.highlightedF.has(d));
-  }
-
-  selectSlices() {
+  updateSelected() {
+    this.MDL.selectedF.markers; //watch
     this.someSelected = this.MDL.selectedF.any();
 
-    //this._selectlist.rebuild();
-    //this._selectlist.redraw();
     this.nonSelectedOpacityZero = false;
     this.mountains.classed("vzb-selected", d => this.MDL.selectedF.has(d));
   }
@@ -1162,7 +1131,7 @@ export default class VizabiMountainChart extends BaseComponent {
     if (branch.values)
       return d3.sum(branch.values.map(m => this._sumLeafSlicesByEncoding(m, enc)));
     else
-      return branch.enc;    
+      return branch[enc];    
   }
 
   updateAllSlicesOpacity() {
@@ -1175,6 +1144,8 @@ export default class VizabiMountainChart extends BaseComponent {
     const OPACITY_SELECT = 1.0;
     const OPACITY_REGULAR = this.ui.opacityRegular;
     const OPACITY_SELECT_DIM = this.ui.opacitySelectDim;
+
+    this.someHighlighted = this.MDL.highlightedF.any();
 
     this.mountains.style("opacity", d => {
 
@@ -1225,7 +1196,7 @@ export default class VizabiMountainChart extends BaseComponent {
       last = visible[visible.length - 1];
     }
 
-    if (!visible.length || (visible2 && !visible2.length)) utils.warn("mountain chart failed to generate shapes. check the incoming data");
+    if (!first || !last) utils.warn("mountain chart failed to generate shapes. check the incoming data");
 
     return {first, last};
   }
@@ -1270,13 +1241,7 @@ export default class VizabiMountainChart extends BaseComponent {
   }
 
   _adjustMaxY() {
-    if (this.ui.yMaxMethod === "immediate") {
-      if (!this.yMaxGlobal) utils.warn("Setting yMax to " + this.yMaxGlobal + ". You failed again :-/");
-      this.yScale.domain([0, Math.round(this.yMaxGlobal)]);
-    } else {
-      if (!this.yMaxGlobal) utils.warn("Setting yMax to " + this.yMaxGlobal + ". You failed again :-/");
-      this.yScale.domain([0, Math.round(this.ui.yMaxMethod)]);
-    }
+    this.yScale.domain([0, Math.round(this.yMaxGlobal)]);
   }
 
 
