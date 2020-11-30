@@ -144,6 +144,7 @@ export class VizabiMountainChart extends BaseComponent {
     this._year = this.findChild({type: "DynamicBackground"});
     this._selectlist = this.findChild({name: "selectlist"});
     this._probe = this.findChild({name: "probe"});
+    
     // this.element.onTap((d, i) => {
     //   this._interact()._mouseout(d, i);
     // });
@@ -203,13 +204,13 @@ export class VizabiMountainChart extends BaseComponent {
       group: this.model.encoding.get("group")
     };
     this.localise = this.services.locale.auto();
-
-    this.addReaction(this.drawForecastOverlay);
+    this._dataNotes = this.parent.findChild({name: "datanotes"});
 
     if (this.updateLayoutProfile()) return; //return if exists with error
     this.addReaction(this.updateHeaderAndFooter);
     this.addReaction(this.updateScales);
     this.addReaction(this.updateYear);
+    this.addReaction(this.drawForecastOverlay);
     this.addReaction(this.updateDoubtOpacity);
     this.addReaction(this.updateMathSettings);
     this.addReaction(this.updateSize);
@@ -220,7 +221,6 @@ export class VizabiMountainChart extends BaseComponent {
     this.addReaction(this.updateSelected);
     this.addReaction(this.updateAllSlicesOpacity);
     this.addReaction(this.updateDecorations);
-    //this._probe.redraw();
   }
 
   drawData() {
@@ -459,24 +459,23 @@ export class VizabiMountainChart extends BaseComponent {
 
     utils.setIcon(this.DOM.info, ICON_QUESTION).select("svg").attr("width", "0px").attr("height", "0px");
 
-    //TODO: move away from UI strings, maybe to ready or ready once
     this.DOM.info.on("click", () => {
-      this.parent.findChildByName("gapminder-datanotes").pin();
+      this._dataNotes.pin();
     });
     this.DOM.info.on("mouseover", function() {
       const rect = this.getBBox();
       const coord = utils.makeAbsoluteContext(this, this.farthestViewportElement)(rect.x - 10, rect.y + rect.height + 10);
-      const toolRect = _this.root.element.getBoundingClientRect();
+      const toolRect = _this.root.element.node().getBoundingClientRect();
       const chartRect = _this.element.node().getBoundingClientRect();
-      _this.parent.findChildByName("gapminder-datanotes").setHook("axis_y").show().setPos(coord.x + chartRect.left - toolRect.left, coord.y);
+      _this._dataNotes.setEncoding(_this.MDL.y).show().setPos(coord.x + chartRect.left - toolRect.left, coord.y);
     });
     this.DOM.info.on("mouseout", () => {
-      this.parent.findChildByName("gapminder-datanotes").hide();
+      _this._dataNotes.hide();
     });
 
     this.DOM.dataWarning
       .on("click", () => {
-        this.parent.findChildByName("gapminder-datawarning").toggle();
+        this.parent.findChild({name: "datawarning"}).toggle();
       })
       .on("mouseover", () => {
         this.updateDoubtOpacity(1);
@@ -510,9 +509,10 @@ export class VizabiMountainChart extends BaseComponent {
 
   drawForecastOverlay() {
     this.DOM.forecastOverlay.classed("vzb-hidden", 
-      !this.MDL.frame.endBeforeForecast || 
-      !this.state.showForecastOverlay || 
-      (this.MDL.frame.value <= this.MDL.frame.endBeforeForecast)
+      !this.MDL.frame.config.endBeforeForecast || 
+      !this.ui.showForecastOverlay || 
+      //TODO date parsing here is a hack because of https://github.com/vizabi/vizabi-reactive/issues/37
+      (this.MDL.frame.value <= new Date(this.MDL.frame.config.endBeforeForecast))
     );
   }
 
@@ -769,6 +769,10 @@ export class VizabiMountainChart extends BaseComponent {
 
   zoom() {
     const mdlcfg = this.MDL.x.config;
+    const {
+      margin,
+    } = this.profileConstants;
+    const width = this.width - margin.left - margin.right;
 
     if (mdlcfg.zoomedMin == null && this.MDL.x.scale.domain[0] == null || mdlcfg.zoomedMax == null && this.MDL.x.scale.domain[1] == null) return;
 
@@ -777,10 +781,10 @@ export class VizabiMountainChart extends BaseComponent {
     // if we have same x1 and x2 then divider will be 0 and rangeRation will become -Infinity
     if (!isFinite(x1) || !isFinite(x2) || x1 === x2) return;
 
-    this.rangeRatio = this.width / (x2 - x1) * this.rangeRatio;
-    this.rangeShift = (this.rangeShift - x1) / (x2 - x1) * this.width;
+    this.rangeRatio = width / (x2 - x1) * this.rangeRatio;
+    this.rangeShift = (this.rangeShift - x1) / (x2 - x1) * width;
 
-    this.xScale.range([this.rangeShift, this.width * this.rangeRatio + this.rangeShift]);
+    this.xScale.range([this.rangeShift, width * this.rangeRatio + this.rangeShift]);
 
     this.DOM.xAxis.call(this.xAxis);
   }
@@ -1247,7 +1251,7 @@ export class VizabiMountainChart extends BaseComponent {
 
   _isDragging(){
     const timeslider = this.parent.findChild({type: "TimeSlider"});
-    return timeslider && timeslider.dragging;
+    return timeslider && timeslider.ui.dragging;
   }
 
   _setTooltip(tooltipText) {
@@ -1289,6 +1293,7 @@ export class VizabiMountainChart extends BaseComponent {
 }
 
 VizabiMountainChart.DEFAULT_UI = {
+  //TODO: why must forecast options be in page config for speed dialog to work
   opacitySelectDim: 0.3,
   opacityRegular: 0.7,
   robinhood: {
@@ -1301,8 +1306,8 @@ VizabiMountainChart.DEFAULT_UI = {
     xAxisGroups: null
   },
   datawarning: {
-    doubtDomain: [],
-    doubtRange: []
+    doubtDomain: [1800, 1950, 2020],
+    doubtRange: [1.0, 0.8, 0.5]
   },
   manualSortingEnabled: true,
   yMaxMethod: 2651276116,
