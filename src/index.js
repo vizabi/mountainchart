@@ -12,6 +12,7 @@ import {
   ButtonList
 } from "VizabiSharedComponents";
 import {VizabiMountainChart} from "./component.js";
+import {Stack} from "./dialogs/stack/stack.js";
 import { observable } from "mobx";
 
 //import "./dialogs/axesmc/axesmc";

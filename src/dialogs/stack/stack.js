@@ -1,70 +1,99 @@
-import * as utils from "base/utils";
-import Component from "base/component";
-import Dialog from "components/dialogs/_dialog";
 
-import draggablelist from "components/draggablelist/draggablelist";
 
+//import draggablelist from "components/draggablelist/draggablelist";
+
+import {
+  //BaseComponent,
+  //Icons,
+  //Utils,
+  //LegacyUtils as utils,
+  //axisSmart,
+  //DynamicBackground,
+  //Exporter as svgexport,
+  Dialog
+} from "VizabiSharedComponents";
 
 /*
  * stack dialog
  */
+export class Stack extends Dialog {
 
-const Stack = Dialog.extend("stack", {
+  constructor(config){
+    config.tempate = `
+      <div class='vzb-dialog-modal'>
+        <div class="vzb-dialog-title">
+          <span data-localise="buttons/stack"></span>
+        </div>
+        
+        <div class="vzb-dialog-content">
+            
+            <!--p class="vzb-dialog-sublabel" data-localise="hints/mount/howtostack"></p-->
+            <form class="vzb-howtostack vzb-dialog-paragraph">
+                <label> <input type="radio" name="stack" value="none" data-localise="mount/stacking/none"></label>
+                <label> <input type="radio" name="stack" value="bycolor" data-localise="mount/stacking/color"></label>
+                <label> <input type="radio" name="stack" value="all" data-localise="mount/stacking/world"></label>
+            </form>
+            
+            <form class="vzb-howtomerge vzb-dialog-paragraph">
+                <p class="vzb-dialog-sublabel" data-localise="hints/mount/howtomerge"></p>
+                <label> <input type="radio" name="merge" value="none" data-localise="mount/merging/none"></label>
+                <label> <input type="radio" name="merge" value="grouped" data-localise="mount/merging/color"></label>
+                <label> <input type="radio" name="merge" value="stacked" data-localise="mount/merging/world"></label>
+            </form>
+            
+            <form class="vzb-manual-sorting">
+                <p class="vzb-dialog-sublabel" data-localise="mount/manualSorting"></p>
+                <div class="vzb-dialog-draggablelist vzb-dialog-control"></div>
+            </form>
+                    
+        </div>
+      </div>
+    `;
+    config.subcomponents = [
+    //   type: DraggableList,
+    //   name: "draggablelist",
+    //   placeholder: ".vzb-dialog-draggablelist"
+    // model: ["state.marker.group", "state.marker.color", "locale", "ui.chart"],
+    // groupID: "manualSorting",
+    // isEnabled: "manualSortingEnabled",
+    // dataArrFn: _this.manualSorting.bind(_this),
+    // lang: ""
+    ];
+   
+    super(config);
+  }
 
-  /**
-     * Initializes the dialog component
-     * @param config component configuration
-     * @param context component context (parent)
-     */
-  init(config, parent) {
-    this.name = "stack";
+  setup(options) {
     const _this = this;
 
-    // in dialog, this.model_expects = ["state", "ui", "locale"];
-
-    this.components = [{
-      component: draggablelist,
-      placeholder: ".vzb-dialog-draggablelist",
-      model: ["state.marker.group", "state.marker.color", "locale", "ui.chart"],
-      groupID: "manualSorting",
-      isEnabled: "manualSortingEnabled",
-      dataArrFn: _this.manualSorting.bind(_this),
-      lang: ""
-    }];
-
-    this.model_binds = {
-      "change:state.marker.group": function(evt) {
-        //console.log("group change " + evt);
-        if (!_this._ready) return;
-        _this.updateView();
-      }
+    this.DOM = {
+      howToStack: this.element.select(".vzb-howtostack").selectAll("input"),
+      howToMerge: this.element.select(".vzb-howtomerge").selectAll("input")
     };
 
-    this._super(config, parent);
-  },
-
-
-  readyOnce() {
-    this._super();
-
-    const _this = this;
-    this.group = this.model.state.marker.group;
-    this.stack = this.model.state.marker.stack;
-
-    this.howToStackEl = this.element.select(".vzb-howtostack").selectAll("input")
+    this.DOM.howToStack
       .on("change", function() {
         _this.setModel("stack", d3.select(this).node().value);
       });
-    this.howToMergeEl = this.element.select(".vzb-howtomerge").selectAll("input")
+    this.DOM.howToMerge
       .on("change", function() {
         _this.setModel("merge", d3.select(this).node().value);
       });
+  }
 
-    this.updateView();
-  },
+  draw(){
+    this.MDL = {
+      color: this.model.encoding.get("color"),
+      group: this.model.encoding.get("group"),
+      stack: this.model.encoding.get("stack")
+    };
+
+    this.addReaction(this.updateView);
+  }
+
+
 
   ready() {
-    this._super();
     if (!this.model.state.marker.color.isDiscrete()) {
       if (this.stack.use == "property") {
         this.setModel("stack", "none");
@@ -75,45 +104,56 @@ const Stack = Dialog.extend("stack", {
         return;
       }
     }
-    this.updateView();
-  },
+  }
 
   updateView() {
     const _this = this;
 
-    this.howToStackEl
+    this.DOM.howToStack
       .property("checked", function() {
-        if (d3.select(this).node().value === "none") return _this.stack.which === "none";
-        if (d3.select(this).node().value === "bycolor") return _this.stack.which === _this.model.state.marker.color.which;
-        if (d3.select(this).node().value === "all") return _this.stack.which === "all";
+        if (d3.select(this).node().value === "none") 
+          return _this.MDL.stack.data.constant === "none";
+        if (d3.select(this).node().value === "bycolor") 
+          return _this.MDL.stack.data.concept === _this.MDL.color.data.concept;
+        if (d3.select(this).node().value === "all") 
+          return _this.MDL.stack.data.constant === "all";
       })
       .attr("disabled", function() {
-        if (d3.select(this).node().value === "none") return null; // always enabled
-        if (d3.select(this).node().value === "all") return null; // always enabled
-        if (d3.select(this).node().value === "bycolor") return _this.model.state.marker.color.use !== "property" ? true : null;
+        if (d3.select(this).node().value === "none") 
+          return null; // always enabled
+        if (d3.select(this).node().value === "all") 
+          return null; // always enabled
+        if (d3.select(this).node().value === "bycolor")
+          return _this.MDL.color.data.space.length == 1 ? true : null;
       });
 
-    _this.model.ui.chart.manualSortingEnabled = _this.stack.which == "all";
+    //_this.ui.chart.manualSortingEnabled = _this.MDL.stack.data.constant == "all";
 
-    this.howToMergeEl
+    this.DOM.howToMerge
       .property("checked", function() {
-        if (d3.select(this).node().value === "none") return !_this.group.merge && !_this.stack.merge;
-        if (d3.select(this).node().value === "grouped") return _this.group.merge;
-        if (d3.select(this).node().value === "stacked") return _this.stack.merge;
+        if (d3.select(this).node().value === "none") 
+          return !_this.MDL.group.config.merge && !_this.MDL.stack.config.merge;
+        if (d3.select(this).node().value === "grouped") 
+          return _this.MDL.group.config.merge;
+        if (d3.select(this).node().value === "stacked") 
+          return _this.MDL.stack.config.merge;
       })
       .attr("disabled", function() {
-        if (d3.select(this).node().value === "none") return null; // always enabled
-        if (d3.select(this).node().value === "grouped") return _this.stack.which === "none" || _this.model.state.marker.color.use !== "property" ? true : null;
-        if (d3.select(this).node().value === "stacked") return _this.stack.which === "all" ? null : true;
+        if (d3.select(this).node().value === "none") 
+          return null; // always enabled
+        if (d3.select(this).node().value === "grouped") 
+          return _this.MDL.stack.data.constant === "none" || _this.MDL.color.data.space.length == 1 ? true : null;
+        if (d3.select(this).node().value === "stacked") 
+          return _this.MDL.stack.data.constant === "all" ? null : true;
       });
 
 
-  },
+  }
 
   manualSorting(value, persistent = false) {
     if (arguments.length === 0) return this.model.state.marker.group.manualSorting;
     this.model.state.marker.group.set({ manualSorting: value }, false, persistent);
-  },
+  }
 
   setModel(what, value) {
 
@@ -121,36 +161,36 @@ const Stack = Dialog.extend("stack", {
 
     if (what === "merge") {
       switch (value) {
-        case "none":
-          obj.group.merge = false;
-          obj.stack.merge = false;
-          break;
-        case "grouped":
-          obj.group.merge = true;
-          obj.stack.merge = false;
-          break;
-        case "stacked":
-          obj.group.merge = false;
-          obj.stack.merge = true;
-          break;
+      case "none":
+        obj.group.merge = false;
+        obj.stack.merge = false;
+        break;
+      case "grouped":
+        obj.group.merge = true;
+        obj.stack.merge = false;
+        break;
+      case "stacked":
+        obj.group.merge = false;
+        obj.stack.merge = true;
+        break;
       }
     }
     if (what === "stack") {
 
       switch (value) {
-        case "all":
-          obj.stack.use = "constant";
-          obj.stack.which = "all";
-          break;
-        case "none":
-          obj.stack.use = "constant";
-          obj.stack.which = "none";
-          break;
-        case "bycolor":
-          obj.stack.use = "property";
-          obj.stack.which = this.model.state.marker.color.which;
-          obj.stack.spaceRef = this.model.state.marker.color.spaceRef;
-          break;
+      case "all":
+        obj.stack.use = "constant";
+        obj.stack.which = "all";
+        break;
+      case "none":
+        obj.stack.use = "constant";
+        obj.stack.which = "none";
+        break;
+      case "bycolor":
+        obj.stack.use = "property";
+        obj.stack.which = this.model.state.marker.color.which;
+        obj.stack.spaceRef = this.model.state.marker.color.spaceRef;
+        break;
       }
 
       //validate possible merge values in group and stack hooks
@@ -160,6 +200,7 @@ const Stack = Dialog.extend("stack", {
 
     this.model.state.marker.set(obj);
   }
-});
+}
 
-export default Stack;
+
+Dialog.add("stack", Stack);
