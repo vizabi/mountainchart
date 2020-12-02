@@ -67,13 +67,11 @@ export class Stack extends Dialog {
   }
 
   draw(){
-    this.MDL = {
-      color: this.model.encoding.get("color"),
-      group: this.model.encoding.get("group"),
-      stack: this.model.encoding.get("stack")
-    };
+    super.draw();
 
-    this.localise = this.services.locale.auto();
+    this.MDL.color = this.model.encoding.get("color");
+    this.MDL.group = this.model.encoding.get("group");
+    this.MDL.stack = this.model.encoding.get("stack");
 
     this.addReaction(this.updateView);
   }
@@ -179,8 +177,8 @@ export class Stack extends Dialog {
           break;
         case "bycolor":
           this.MDL.stack.config.data.constant = null;
-          this.MDL.stack.config.data.space = { ref: "markers.mountain.encoding.color.data.space" };
-          this.MDL.stack.config.data.concept = { ref: "markers.mountain.encoding.color.data.concept" };
+          this.MDL.stack.config.data.space = this.MDL.color.config.data.space;
+          this.MDL.stack.config.data.concept = this.MDL.color.config.data.concept;
           
           this.MDL.stack.config.merge = false;
           break;
