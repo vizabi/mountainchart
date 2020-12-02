@@ -859,6 +859,7 @@ export class VizabiMountainChart extends BaseComponent {
       });
 
       sortValuesForGroups[group.key] = groupSortValue;
+      group[Symbol.for("key")] = group.key;
       group.KEY = () => group.key;
       group.aggrLevel = 1;
     });
@@ -877,6 +878,7 @@ export class VizabiMountainChart extends BaseComponent {
         .entries(this.atomicSliceData);
 
       this.stackedSliceData.forEach(stack => {
+        stack[Symbol.for("key")] = stack.key;
         stack.KEY = () => stack.key;
         stack.aggrLevel = 2;
       });
@@ -1071,7 +1073,7 @@ export class VizabiMountainChart extends BaseComponent {
       view.attr("d", this.area(d.shape));
     
     if (d.color)
-      view.style("fill", d.color !== "_default" ? this.cScale(d.color) : this.MDL.color.palette["_default"]);
+      view.style("fill", this.cScale(d.color));
     else
       view.style("fill", COLOR_WHITEISH);
 
@@ -1089,6 +1091,15 @@ export class VizabiMountainChart extends BaseComponent {
   }
 
   _getLabelText(d) {
+    if(d.aggrLevel == 2)
+      return this.localise("mount/stacking/world") || d.key;
+    if(d.aggrLevel == 1) {
+      //TODO: is there a better way?
+      const legend = this.root.model.stores.markers.get("legend");
+      if (!legend) return d.key;
+      const legendItem = legend.dataArray.find(f => f[this.MDL.group.data.concept] == d.key) || {};      
+      return legendItem.name || d.key;
+    }
     return Object.values(d.label).join(", ");
   }
 

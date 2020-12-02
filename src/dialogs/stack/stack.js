@@ -1,51 +1,39 @@
 
 
 //import draggablelist from "components/draggablelist/draggablelist";
-
-import {
-  //BaseComponent,
-  //Icons,
-  //Utils,
-  //LegacyUtils as utils,
-  //axisSmart,
-  //DynamicBackground,
-  //Exporter as svgexport,
-  Dialog
-} from "VizabiSharedComponents";
-
+import {Dialog} from "VizabiSharedComponents";
+import { runInAction } from "mobx";
 /*
  * stack dialog
  */
 export class Stack extends Dialog {
 
   constructor(config){
-    config.tempate = `
+    config.template = `
       <div class='vzb-dialog-modal'>
         <div class="vzb-dialog-title">
           <span data-localise="buttons/stack"></span>
         </div>
         
         <div class="vzb-dialog-content">
-            
+          <form class="vzb-howtostack vzb-dialog-paragraph">
             <!--p class="vzb-dialog-sublabel" data-localise="hints/mount/howtostack"></p-->
-            <form class="vzb-howtostack vzb-dialog-paragraph">
-                <label> <input type="radio" name="stack" value="none" data-localise="mount/stacking/none"></label>
-                <label> <input type="radio" name="stack" value="bycolor" data-localise="mount/stacking/color"></label>
-                <label> <input type="radio" name="stack" value="all" data-localise="mount/stacking/world"></label>
-            </form>
-            
-            <form class="vzb-howtomerge vzb-dialog-paragraph">
-                <p class="vzb-dialog-sublabel" data-localise="hints/mount/howtomerge"></p>
-                <label> <input type="radio" name="merge" value="none" data-localise="mount/merging/none"></label>
-                <label> <input type="radio" name="merge" value="grouped" data-localise="mount/merging/color"></label>
-                <label> <input type="radio" name="merge" value="stacked" data-localise="mount/merging/world"></label>
-            </form>
-            
-            <form class="vzb-manual-sorting">
-                <p class="vzb-dialog-sublabel" data-localise="mount/manualSorting"></p>
-                <div class="vzb-dialog-draggablelist vzb-dialog-control"></div>
-            </form>
-                    
+            <label> <input type="radio" name="stack" value="none"> <span data-localise="mount/stacking/none"></span> </label>
+            <label> <input type="radio" name="stack" value="bycolor"> <span data-localise="mount/stacking/color"></span> </label>
+            <label> <input type="radio" name="stack" value="all" data-localise="mount/stacking/world"> <span data-localise="mount/stacking/world"></span> </label>
+          </form>
+          
+          <form class="vzb-howtomerge vzb-dialog-paragraph">
+            <p class="vzb-dialog-sublabel"> <span data-localise="hints/mount/howtomerge"></span></p>
+            <label> <input type="radio" name="merge" value="none"> <span data-localise="mount/merging/none"></span> </label>
+            <label> <input type="radio" name="merge" value="grouped"> <span data-localise="mount/merging/color"></span> </label>
+            <label> <input type="radio" name="merge" value="stacked"> <span data-localise="mount/merging/world"></span> </label>
+          </form>
+          
+          <form class="vzb-manual-sorting">
+            <p class="vzb-dialog-sublabel" data-localise="mount/manualSorting"></p>
+            <div class="vzb-dialog-draggablelist vzb-dialog-control"></div>
+          </form>
         </div>
       </div>
     `;
@@ -64,18 +52,15 @@ export class Stack extends Dialog {
   }
 
   setup(options) {
+    super.setup(options);
     const _this = this;
 
-    this.DOM = {
-      howToStack: this.element.select(".vzb-howtostack").selectAll("input"),
-      howToMerge: this.element.select(".vzb-howtomerge").selectAll("input")
-    };
-
-    this.DOM.howToStack
+    this.DOM.howToStack = this.element.select(".vzb-howtostack").selectAll("input")
       .on("change", function() {
         _this.setModel("stack", d3.select(this).node().value);
       });
-    this.DOM.howToMerge
+
+    this.DOM.howToMerge = this.element.select(".vzb-howtomerge").selectAll("input")
       .on("change", function() {
         _this.setModel("merge", d3.select(this).node().value);
       });
@@ -87,6 +72,8 @@ export class Stack extends Dialog {
       group: this.model.encoding.get("group"),
       stack: this.model.encoding.get("stack")
     };
+
+    this.localise = this.services.locale.auto();
 
     this.addReaction(this.updateView);
   }
@@ -124,7 +111,7 @@ export class Stack extends Dialog {
         if (d3.select(this).node().value === "all") 
           return null; // always enabled
         if (d3.select(this).node().value === "bycolor")
-          return _this.MDL.color.data.space.length == 1 ? true : null;
+          return _this.MDL.color.data.space.length !== 1 ? true : null;
       });
 
     //_this.ui.chart.manualSortingEnabled = _this.MDL.stack.data.constant == "all";
@@ -142,7 +129,7 @@ export class Stack extends Dialog {
         if (d3.select(this).node().value === "none") 
           return null; // always enabled
         if (d3.select(this).node().value === "grouped") 
-          return _this.MDL.stack.data.constant === "none" || _this.MDL.color.data.space.length == 1 ? true : null;
+          return _this.MDL.stack.data.constant === "none" || _this.MDL.color.data.space.length !== 1 ? true : null;
         if (d3.select(this).node().value === "stacked") 
           return _this.MDL.stack.data.constant === "all" ? null : true;
       });
@@ -156,51 +143,53 @@ export class Stack extends Dialog {
   }
 
   setModel(what, value) {
+    runInAction(() => {
 
-    const obj = { stack: {}, group: {} };
-
-    if (what === "merge") {
-      switch (value) {
-      case "none":
-        obj.group.merge = false;
-        obj.stack.merge = false;
-        break;
-      case "grouped":
-        obj.group.merge = true;
-        obj.stack.merge = false;
-        break;
-      case "stacked":
-        obj.group.merge = false;
-        obj.stack.merge = true;
-        break;
-      }
-    }
-    if (what === "stack") {
-
-      switch (value) {
-      case "all":
-        obj.stack.use = "constant";
-        obj.stack.which = "all";
-        break;
-      case "none":
-        obj.stack.use = "constant";
-        obj.stack.which = "none";
-        break;
-      case "bycolor":
-        obj.stack.use = "property";
-        obj.stack.which = this.model.state.marker.color.which;
-        obj.stack.spaceRef = this.model.state.marker.color.spaceRef;
-        break;
+      if (what === "merge") {
+        switch (value) {
+        case "none":
+          this.MDL.group.config.merge = false;
+          this.MDL.stack.config.merge = false;
+          break;
+        case "grouped":
+          this.MDL.group.config.merge = true;
+          this.MDL.stack.config.merge = false;
+          break;
+        case "stacked":
+          this.MDL.group.config.merge = false;
+          this.MDL.stack.config.merge = true;
+          break;
+        }
       }
 
-      //validate possible merge values in group and stack hooks
-      if (value === "none" && this.group.merge) obj.group.merge = false;
-      if (value !== "all" && this.stack.merge) obj.stack.merge = false;
-    }
+      if (what === "stack") {
+        switch (value) {
+        case "all":
+          this.MDL.stack.config.data.constant = "all";
+          this.MDL.stack.config.data.space = [];
+          this.MDL.stack.config.data.concept = null;
+          break;
+        case "none":
+          this.MDL.stack.config.data.constant = "none";
+          this.MDL.stack.config.data.space = [];
+          this.MDL.stack.config.data.concept = null;
+          
+          this.MDL.group.config.merge = false;
+          this.MDL.stack.config.merge = false;
+          break;
+        case "bycolor":
+          this.MDL.stack.config.data.constant = null;
+          this.MDL.stack.config.data.space = { ref: "markers.mountain.encoding.color.data.space" };
+          this.MDL.stack.config.data.concept = { ref: "markers.mountain.encoding.color.data.concept" };
+          
+          this.MDL.stack.config.merge = false;
+          break;
+        }
+      }
 
-    this.model.state.marker.set(obj);
+    });
   }
 }
-
+ 
 
 Dialog.add("stack", Stack);
