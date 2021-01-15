@@ -13,6 +13,8 @@ import {MCSelectList} from "./mountainchart-selectlist";
 import {MCProbe} from "./mountainchart-probe";
 //import RobinHood from "./mountainchart-robinhood";
 
+import {decorate, computed} from "mobx";
+
 const {ICON_WARN, ICON_QUESTION} = Icons;
 //const COLOR_BLACKISH = "rgb(51, 51, 51)";
 const COLOR_WHITEISH = "rgb(253, 253, 253)";
@@ -46,7 +48,7 @@ const PROFILE_CONSTANTS_FOR_PROJECTOR = {
 };
 
 // MOUNTAIN CHART COMPONENT
-export class VizabiMountainChart extends BaseComponent {
+class _VizabiMountainChart extends BaseComponent {
 
   constructor(config) {
     config.subcomponents = [{
@@ -187,10 +189,8 @@ export class VizabiMountainChart extends BaseComponent {
       .range(this.ui.datawarning.doubtRange);
   }
 
-
-  draw() {
-
-    this.MDL = {
+  get MDL(){
+    return {
       frame: this.model.encoding.get("frame"),
       selectedF: this.model.encoding.get("selected").data.filter,
       highlightedF: this.model.encoding.get("highlighted").data.filter,
@@ -203,6 +203,10 @@ export class VizabiMountainChart extends BaseComponent {
       stack: this.model.encoding.get("stack"),
       group: this.model.encoding.get("group")
     };
+  }
+
+  draw() {
+
     this.localise = this.services.locale.auto();
     this._dataNotes = this.parent.findChild({name: "datanotes"});
 
@@ -1303,7 +1307,7 @@ export class VizabiMountainChart extends BaseComponent {
 
 }
 
-VizabiMountainChart.DEFAULT_UI = {
+_VizabiMountainChart.DEFAULT_UI = {
   //TODO: why must forecast options be in page config for speed dialog to work
   opacitySelectDim: 0.3,
   opacityRegular: 0.7,
@@ -1331,3 +1335,8 @@ VizabiMountainChart.DEFAULT_UI = {
   preload: "income_mountains",
   preloadKey: "world"
 };
+
+
+export const VizabiMountainChart = decorate(_VizabiMountainChart, {
+  "MDL": computed
+});
