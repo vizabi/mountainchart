@@ -2,7 +2,9 @@ import {
   BaseComponent
 } from "VizabiSharedComponents";
 
-export class MCProbe extends BaseComponent {
+import {decorate, computed} from "mobx";
+
+class MCProbe extends BaseComponent {
 
   constructor(config){
     config.template = `
@@ -30,15 +32,17 @@ export class MCProbe extends BaseComponent {
     };
   }
 
-  draw() {
 
-    this.MDL = {
+  get MDL() {
+    return {
       frame: this.model.encoding.get("frame"),
       stack: this.model.encoding.get("stack"),
       x: this.model.encoding.get("x")
     };
-    this.localise = this.services.locale.auto();
+  }
 
+  draw() {
+    this.localise = this.services.locale.auto();
     this.addReaction(this.redraw);
   }
 
@@ -111,3 +115,8 @@ export class MCProbe extends BaseComponent {
       .attr("y2", 0);
   }
 }
+
+const decorated = decorate(MCProbe, {
+  "MDL": computed
+});
+export { decorated as MCProbe };
