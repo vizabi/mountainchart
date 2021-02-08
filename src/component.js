@@ -831,7 +831,6 @@ class _VizabiMountainChart extends BaseComponent {
   processFrameData() {
     
     this.atomicSliceData = this.model.dataArray
-      .filter(f => f.unstate !== false && f.unstate !== 0 && f.unstate !== "FALSE") //TODO: remove this when vizabi reactive can request un states https://github.com/vizabi/vizabi-reactive/issues/31
       .concat() //copy array in order to avoid sorting in place
       .filter(d => d.x && d.y && d.s)
       .map(d => {
