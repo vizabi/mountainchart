@@ -2,11 +2,12 @@
 
 //import draggablelist from "components/draggablelist/draggablelist";
 import {Dialog} from "VizabiSharedComponents";
-import { runInAction } from "mobx";
+import {runInAction, decorate, computed} from "mobx";
+
 /*
  * stack dialog
  */
-export class Stack extends Dialog {
+class Stack extends Dialog {
 
   constructor(config){
     config.template = `
@@ -66,13 +67,16 @@ export class Stack extends Dialog {
       });
   }
 
+  get MDL() {
+    return {
+      color: this.model.encoding.get("color"),
+      group: this.model.encoding.get("group"),
+      stack: this.model.encoding.get("stack")
+    };
+  }  
+
   draw(){
     super.draw();
-
-    this.MDL.color = this.model.encoding.get("color");
-    this.MDL.group = this.model.encoding.get("group");
-    this.MDL.stack = this.model.encoding.get("stack");
-
     this.addReaction(this.updateView);
   }
 
@@ -189,5 +193,8 @@ export class Stack extends Dialog {
   }
 }
  
-
-Dialog.add("stack", Stack);
+const decorated = decorate(Stack, {
+  "MDL": computed
+});
+Dialog.add("stack", decorated);
+export { decorated as Stack };
