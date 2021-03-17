@@ -1,6 +1,6 @@
 {
   "name": "vizabi-mountainchart",
-  "version": "3.0.11",
+  "version": "3.1.0",
   "description": "Gapminder's income mountain chart data visualisation tool",
   "scripts": {
     "link": "npm link ../vizabi-shared-components",
