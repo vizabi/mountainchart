@@ -35,9 +35,9 @@ class MCProbe extends BaseComponent {
 
   get MDL() {
     return {
-      frame: this.model.encoding.get("frame"),
-      stack: this.model.encoding.get("stack"),
-      x: this.model.encoding.get("x")
+      frame: this.model.encoding.frame,
+      stack: this.model.encoding.stack,
+      x: this.model.encoding.x
     };
   }
 

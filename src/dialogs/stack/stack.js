@@ -69,9 +69,9 @@ class Stack extends Dialog {
 
   get MDL() {
     return {
-      color: this.model.encoding.get("color"),
-      group: this.model.encoding.get("group"),
-      stack: this.model.encoding.get("stack")
+      color: this.model.encoding.color,
+      group: this.model.encoding.group,
+      stack: this.model.encoding.stack
     };
   }  
 

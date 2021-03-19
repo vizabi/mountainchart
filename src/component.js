@@ -191,17 +191,17 @@ class _VizabiMountainChart extends BaseComponent {
 
   get MDL(){
     return {
-      frame: this.model.encoding.get("frame"),
-      selectedF: this.model.encoding.get("selected").data.filter,
-      highlightedF: this.model.encoding.get("highlighted").data.filter,
-      //superHighlightedF: this.model.encoding.get("superhighlighted").data.filter,
-      y: this.model.encoding.get("y"),
-      x: this.model.encoding.get("x"),
-      s: this.model.encoding.get("s"),
-      color: this.model.encoding.get("color"),
-      label: this.model.encoding.get("label"),
-      stack: this.model.encoding.get("stack"),
-      group: this.model.encoding.get("group")
+      frame: this.model.encoding.frame,
+      selectedF: this.model.encoding.selected.data.filter,
+      highlightedF: this.model.encoding.highlighted.data.filter,
+      //superHighlightedF: this.model.encoding.superhighlighted.data.filter,
+      y: this.model.encoding.y,
+      x: this.model.encoding.x,
+      s: this.model.encoding.s,
+      color: this.model.encoding.color,
+      label: this.model.encoding.label,
+      stack: this.model.encoding.stack,
+      group: this.model.encoding.group
     };
   }
 

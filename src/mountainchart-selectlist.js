@@ -15,10 +15,10 @@ export class MCSelectList extends BaseComponent {
   draw() {
 
     this.MDL = {
-      frame: this.model.encoding.get("frame"),
-      color: this.model.encoding.get("color"),
-      selectedF: this.model.encoding.get("selected").data.filter,
-      highlightedF: this.model.encoding.get("highlighted").data.filter
+      frame: this.model.encoding.frame,
+      color: this.model.encoding.color,
+      selectedF: this.model.encoding.selected.data.filter,
+      highlightedF: this.model.encoding.highlighted.data.filter
     };
     this.localise = this.services.locale.auto();
 
