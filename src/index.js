@@ -87,7 +87,7 @@ export default class MountainChart extends BaseComponent {
 
     config.services = {
       locale: new LocaleService(config.locale),
-      layout: new LayoutService({placeholder: config.placeholder})
+      layout: new LayoutService(config.layout)
     };
 
     //register locale service in the marker model
@@ -99,26 +99,6 @@ export default class MountainChart extends BaseComponent {
   }
 }
 MountainChart.DEFAULT_UI = {
-  time: {
-    "delay": 100,
-    "delayThresholdX2": 50,
-    "delayThresholdX4": 25
-  },
   chart: {  
-    opacitySelectDim: 0.3,
-    opacityRegular: 0.7
-  },
-  datawarning: {
-    doubtDomain: [],
-    doubtRange: []
   },
 };
-
-
-
-// "buttons": ["colors", "find", "stack", "moreoptions", "presentation", "sidebarcollapse", "fullscreen"],
-// "dialogs": {
-//   "popup": ["colors", "find", "stack", "moreoptions"],
-//   "sidebar": ["colors", "find", "stack"],
-//   "moreoptions": ["opacity", "speed", "stack", "axesmc", "robinhood", "colors", "presentation", "about"]
-//npm run build && cp ./build/* ../../tools-page/node_modules/vizabi-mountainchart/build/
