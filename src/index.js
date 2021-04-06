@@ -24,7 +24,7 @@ import { observable } from "mobx";
 export default class MountainChart extends BaseComponent {
 
   constructor(config){
-    const marker = config.splash(config.model.stores.markers.get("mountain"));
+    const marker = config.splash(config.model.markers.mountain);
 
     config.name = "mountainchart";
 

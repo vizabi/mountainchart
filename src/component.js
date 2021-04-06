@@ -1098,7 +1098,7 @@ class _VizabiMountainChart extends BaseComponent {
       return this.localise("mount/stacking/world") || d.key;
     if(d.aggrLevel == 1) {
       //TODO: is there a better way?
-      const legend = this.root.model.stores.markers.get("legend");
+      const legend = this.root.model.markers.legend;
       if (!legend) return d.key;
       const legendItem = legend.dataArray.find(f => f[this.MDL.group.data.concept] == d.key) || {};      
       return legendItem.name || d.key;
