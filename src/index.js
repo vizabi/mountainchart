@@ -90,11 +90,6 @@ export default class MountainChart extends BaseComponent {
       layout: new LayoutService(config.layout)
     };
 
-    //register locale service in the marker model
-    config.model.config.markers.mountain.data.locale = observable({
-      get id() { return config.services.locale.id; }
-    });
-
     super(config);
   }
 }
