@@ -13,18 +13,14 @@ import {
 } from "VizabiSharedComponents";
 import {VizabiMountainChart} from "./component.js";
 import {Stack} from "./dialogs/stack/stack.js";
-import { observable } from "mobx";
 
 //import "./dialogs/axesmc/axesmc";
 //import "./dialogs/robinhood/robinhood";
 
-//const VERSION_INFO = { version: __VERSION, build: __BUILD };
-
-// MOUNTAIN CHART TOOL
 export default class MountainChart extends BaseComponent {
 
   constructor(config){
-    const marker = config.splash(config.model.markers.mountain);
+    const marker = config.model.markers.bar.encoding.frame.splash.marker;
 
     config.name = "mountainchart";
 
@@ -97,3 +93,5 @@ MountainChart.DEFAULT_UI = {
   chart: {  
   },
 };
+
+MountainChart.versionInfo = { version: __VERSION, build: __BUILD };
