@@ -20,7 +20,7 @@ import {Stack} from "./dialogs/stack/stack.js";
 export default class MountainChart extends BaseComponent {
 
   constructor(config){
-    const marker = config.model.markers.bar.encoding.frame.splash.marker;
+    const marker = config.model.markers.mountain.encoding.frame.splash.marker;
 
     config.name = "mountainchart";
 
