@@ -167,24 +167,23 @@ class Stack extends Dialog {
       if (what === "stack") {
         switch (value) {
         case "all":
-          this.MDL.stack.config.data.concept = null;
           this.MDL.stack.config.data.constant = "all";
+          this.MDL.stack.config.data.concept = null;
           this.MDL.stack.config.data.space = [];
           break;
         case "none":
-          this.MDL.stack.config.data.concept = null;
           this.MDL.stack.config.data.constant = "none";
+          this.MDL.stack.config.data.concept = null;
           this.MDL.stack.config.data.space = [];
           
           this.MDL.group.config.merge = false;
           this.MDL.stack.config.merge = false;
           break;
         case "bycolor":
-          this.MDL.stack.config.data.constant = null;
           this.MDL.stack.config.data.space = this.MDL.color.config.data.space;
-          this.MDL.stack.config.data.concept = this.MDL.color.config.data.concept;
-          
+          this.MDL.stack.config.data.concept = this.MDL.color.config.data.concept;          
           this.MDL.stack.config.merge = false;
+          this.MDL.stack.config.data.constant = null;
           break;
         }
       }
