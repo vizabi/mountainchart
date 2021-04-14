@@ -813,10 +813,10 @@ class _VizabiMountainChart extends BaseComponent {
 
   //TODO rewrite old understandings
   _isProperty(mdl){
-    return mdl.data.space.length == 1 && !mdl.data.constant;
+    return mdl.data.space && mdl.data.space.length == 1 && !mdl.data.constant;
   }
   _isIndicator(mdl){
-    return mdl.data.space.length > 1 && !mdl.data.constant;
+    return mdl.data.space && mdl.data.space.length > 1 && !mdl.data.constant;
   }
   _isConstant(mdl){
     return !!mdl.data.constant;
@@ -1103,7 +1103,13 @@ class _VizabiMountainChart extends BaseComponent {
       const legendItem = legend.dataArray.find(f => f[this.MDL.group.data.concept] == d.key) || {};      
       return legendItem.name || d.key;
     }
-    return Object.values(d.label).join(", ");
+    if (typeof d.label == "object") 
+      return Object.entries(d.label)
+        .filter(entry => entry[0] != this.MDL.frame.data.concept)
+        .map(entry => entry[1])
+        .join(", ");
+    if (d.label != null) return "" + d.label;
+    return d[Symbol.for("key")];
   }
 
   _interact() {
