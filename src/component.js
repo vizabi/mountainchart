@@ -513,10 +513,10 @@ class _VizabiMountainChart extends BaseComponent {
 
   drawForecastOverlay() {
     this.DOM.forecastOverlay.classed("vzb-hidden", 
-      !this.MDL.frame.config.endBeforeForecast || 
-      !this.ui.showForecastOverlay || 
-      //TODO date parsing here is a hack because of https://github.com/vizabi/vizabi-reactive/issues/37
-      (this.MDL.frame.value <= new Date(this.MDL.frame.config.endBeforeForecast))
+    !this.ui.showForecast || 
+    !this.ui.showForecastOverlay || 
+    !this.ui.endBeforeForecast || 
+      (this.MDL.frame.value <= this.MDL.frame.parseValue(this.ui.endBeforeForecast))
     );
   }
 
