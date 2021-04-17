@@ -931,10 +931,10 @@ class _VizabiMountainChart extends BaseComponent {
         if (utils.isTouchDevice()) return;
         this._interact()._click(d, i);
       })
-      // .onTap((d, i) => {
-      //   this._interact()._click(d, i);
-      //   d3.event.stopPropagation();
-      // })
+      .onTap((d, i) => {
+        this._interact()._click(d, i);
+        d3.event.stopPropagation();
+      })
       // .onLongTap(() => {
       // });
   }
