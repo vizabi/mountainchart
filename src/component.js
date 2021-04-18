@@ -15,7 +15,7 @@ import {MCProbe} from "./mountainchart-probe";
 
 import {decorate, computed} from "mobx";
 
-const {ICON_WARN, ICON_QUESTION} = Icons;
+const {ICON_QUESTION} = Icons;
 //const COLOR_BLACKISH = "rgb(51, 51, 51)";
 const COLOR_WHITEISH = "rgb(253, 253, 253)";
 
@@ -93,22 +93,19 @@ class _VizabiMountainChart extends BaseComponent {
 
           <g class="vzb-mc-axis-info vzb-noexport"></g>
 
-          <g class="vzb-data-warning vzb-noexport">
-            <svg></svg>
-            <text></text>
-          </g>
-
+          
           <g class="vzb-mc-axis-x"></g>
-
+          
           <g class="vzb-mc-axis-labels"></g>
           <g class="vzb-mc-probe"></g>
-
+          
           <g class="vzb-mc-tooltip vzb-hidden">
             <rect class="vzb-tooltip-border"></rect>
             <text class="vzb-tooltip-text"></text>
           </g>
-        </g>
+          </g>
         <rect class="vzb-mc-forecastoverlay vzb-hidden" x="0" y="0" width="100%" height="100%" fill="url(#vzb-mc-pattern-lines)" pointer-events='none'></rect>
+        <g class="vzb-datawarning-button vzb-noexport"></g>
       </svg>
       <svg>
         <defs>
@@ -131,7 +128,6 @@ class _VizabiMountainChart extends BaseComponent {
       xTitle: this.element.select(".vzb-mc-axis-x-title"),
       yTitle: this.element.select(".vzb-mc-axis-y-title"),
       info: this.element.select(".vzb-mc-axis-info"),
-      dataWarning: this.element.select(".vzb-data-warning"),
       year: this.element.select(".vzb-mc-year"),      
       mountainMergeStackedContainer: this.element.select(".vzb-mc-mountains-mergestacked"),
       mountainMergeGroupedContainer: this.element.select(".vzb-mc-mountains-mergegrouped"),
@@ -184,9 +180,6 @@ class _VizabiMountainChart extends BaseComponent {
 
     //remove pre-rendered world shape
     //this.mountainAtomicContainer.select(".vzb-mc-prerender").remove();
-    this.wScale = d3.scaleLinear()
-      .domain(this.ui.datawarning.doubtDomain)
-      .range(this.ui.datawarning.doubtRange);
   }
 
   get MDL(){
@@ -215,7 +208,6 @@ class _VizabiMountainChart extends BaseComponent {
     this.addReaction(this.updateScales);
     this.addReaction(this.updateYear);
     this.addReaction(this.drawForecastOverlay);
-    this.addReaction(this.updateDoubtOpacity);
     this.addReaction(this.updateMathSettings);
     this.addReaction(this.updateSize);
     this.addReaction(this.updateMesh);
@@ -457,10 +449,6 @@ class _VizabiMountainChart extends BaseComponent {
     this.DOM.yTitle.select("text")
       .text(this.localise("mount/title"));
 
-    utils.setIcon(this.DOM.dataWarning, ICON_WARN).select("svg").attr("width", "0px").attr("height", "0px");
-    this.DOM.dataWarning.append("text")
-      .text(this.localise("hints/dataWarning"));
-
     utils.setIcon(this.DOM.info, ICON_QUESTION).select("svg").attr("width", "0px").attr("height", "0px");
 
     this.DOM.info.on("click", () => {
@@ -476,17 +464,6 @@ class _VizabiMountainChart extends BaseComponent {
     this.DOM.info.on("mouseout", () => {
       _this._dataNotes.hide();
     });
-
-    this.DOM.dataWarning
-      .on("click", () => {
-        this.parent.findChild({name: "datawarning"}).toggle();
-      })
-      .on("mouseover", () => {
-        this.updateDoubtOpacity(1);
-      })
-      .on("mouseout", () => {
-        this.updateDoubtOpacity();
-      });
 
     this.DOM.eventArea
       .on("mousemove", function() {
@@ -597,21 +574,10 @@ class _VizabiMountainChart extends BaseComponent {
     this.DOM.xAxisGroups
       .style("font-size", infoElHeight * 0.8 + "px");
 
-    const warnBB = this.DOM.dataWarning.select("text").node().getBBox();
-    this.DOM.dataWarning.select("svg")
-      .attr("width", warnBB.height)
-      .attr("height", warnBB.height)
-      .attr("x", warnBB.height * 0.1)
-      .attr("y", -warnBB.height * 1.0 + 1);
-
-    this.DOM.dataWarning
-      .attr("transform", "translate(" + (isRTL ? width - warnBB.width - warnBB.height * 2 : 0) + "," + (margin.top + warnBB.height * 1.5) + ")")
-      .select("text")
-      .attr("dx", warnBB.height * 1.5);
+    const titleBBox = this.DOM.yTitle.node().getBBox();
+    const t = utils.transform(this.DOM.yTitle.node());
 
     if (this.DOM.info.select("svg").node()) {
-      const titleBBox = this.DOM.yTitle.node().getBBox();
-      const t = utils.transform(this.DOM.yTitle.node());
       const hTranslate = isRTL ? (titleBBox.x + t.translateX - infoElHeight * 1.4) : (titleBBox.x + t.translateX + titleBBox.width + infoElHeight * 0.4);
 
       this.DOM.info.select("svg")
@@ -621,6 +587,17 @@ class _VizabiMountainChart extends BaseComponent {
         + hTranslate + ","
         + (t.translateY - infoElHeight * 0.8) + ")");
     }
+
+    this.root.findChild({type: "_DataWarning"}).setOptions({
+      width: this.width,
+      height: this.height,
+      vertical: "top", 
+      horizontal: isRTL ? "right" : "left",
+      left: margin.left,
+      right: margin.right,
+      top: margin.top + t.translateY + infoElHeight/2,
+      wLimit: this.width - titleBBox.width - infoElHeight * 2
+    });
 
     this.DOM.eventArea
       .attr("y", height)
@@ -820,12 +797,6 @@ class _VizabiMountainChart extends BaseComponent {
   }
   _isConstant(mdl){
     return !!mdl.data.constant;
-  }
-
-  updateDoubtOpacity(opacity) {
-    if (opacity == null) opacity = this.wScale(this.MDL.frame.value.getUTCFullYear());
-    if (this.MDL.selectedF.any()) opacity = 1;
-    this.DOM.dataWarning.style("opacity", opacity);
   }
 
   processFrameData() {
@@ -1324,10 +1295,6 @@ _VizabiMountainChart.DEFAULT_UI = {
   decorations: {
     enabled: true,
     xAxisGroups: null
-  },
-  datawarning: {
-    doubtDomain: [1800, 1950, 2020],
-    doubtRange: [1.0, 0.8, 0.5]
   },
   manualSortingEnabled: true,
   yMaxMethod: 2651276116,

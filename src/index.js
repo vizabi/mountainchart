@@ -50,10 +50,11 @@ export default class MountainChart extends BaseComponent {
       placeholder: ".vzb-datanotes",
       model: marker
     },{
-      name: "datawarning",
       type: DataWarning,
       placeholder: ".vzb-datawarning",
-      model: marker
+      options: {button: ".vzb-datawarning-button"},
+      model: marker,
+      name: "data-warning"
     },{
       type: Dialogs,
       placeholder: ".vzb-dialogs",
