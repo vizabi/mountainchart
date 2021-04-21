@@ -20,7 +20,10 @@ import {Stack} from "./dialogs/stack/stack.js";
 export default class MountainChart extends BaseComponent {
 
   constructor(config){
-    const marker = config.model.markers.mountain.encoding.frame.splash.marker;
+
+    const frameType = Vizabi.stores.encodings.modelTypes.frame;
+    const fullMarker = config.model.markers.mountain;
+    const { marker, splashMarker } = frameType.splashMarker(fullMarker);
 
     config.name = "mountainchart";
 
@@ -88,6 +91,8 @@ export default class MountainChart extends BaseComponent {
     };
 
     super(config);
+    
+    this.splashMarker = splashMarker;
   }
 }
 MountainChart.DEFAULT_UI = {
