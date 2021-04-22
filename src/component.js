@@ -286,9 +286,9 @@ class _VizabiMountainChart extends BaseComponent {
 
   drawForecastOverlay() {
     this.DOM.forecastOverlay.classed("vzb-hidden", 
-    !this.ui.showForecast || 
-    !this.ui.showForecastOverlay || 
-    !this.ui.endBeforeForecast || 
+      !this.ui.showForecast || 
+      !this.ui.showForecastOverlay || 
+      !this.ui.endBeforeForecast || 
       (this.MDL.frame.value <= this.MDL.frame.parseValue(this.ui.endBeforeForecast))
     );
   }
@@ -401,10 +401,9 @@ class _VizabiMountainChart extends BaseComponent {
       .attr("height", margin.bottom);
   }
 
-  updateMesh(meshLength){
-    if (!meshLength) meshLength = this.ui.xPoints;
+  updateMesh(){
     this.mesh = this._math.generateMesh(
-      meshLength, 
+      this.ui.xPoints, 
       this.MDL.x.scale.type || "log", 
       this.xScale.domain()
     );
@@ -701,9 +700,7 @@ class _VizabiMountainChart extends BaseComponent {
       .onTap((d, i) => {
         this._interact()._click(d, i);
         d3.event.stopPropagation();
-      })
-      // .onLongTap(() => {
-      // });
+      });
   }
 
   computeAllShapes() {
@@ -769,20 +766,16 @@ class _VizabiMountainChart extends BaseComponent {
     //     });
     //   });
     // }
-
-
   }
   
   renderAllShapes() {
     const _this = this;
-    const mergeGrouped = this.MDL.group.config.merge;
-    const mergeStacked = this.MDL.stack.config.merge;
     const stackMode = this.MDL.stack.data.constant;
-    //it's important to know if the chart is dragging or playing at the moment.
-    //because if that is the case, the mountain chart will merge the stacked entities to save performance
-    const dragOrPlay = (this._isDragging() || this.MDL.frame.playing)
-      //never merge when no entities are stacked
-      && stackMode !== "none";
+    const mergeStacked = this.MDL.stack.config.merge;
+    const mergeGrouped = this.MDL.group.config.merge
+      //merge the grouped entities to save performance during dragging or playing      
+      //except when stacking is off
+      || (this._isDragging() || this.MDL.frame.playing) && stackMode !== "none";
 
     this.mountainsMergeStacked.each(function(d) {
       const view = d3.select(this);
@@ -792,32 +785,19 @@ class _VizabiMountainChart extends BaseComponent {
 
     this.mountainsMergeGrouped.each(function(d) {
       const view = d3.select(this);
-      const hidden = (!mergeGrouped && !dragOrPlay) || (mergeStacked && !_this.MDL.selectedF.has(d));
+      const hidden = !mergeGrouped || (mergeStacked && !_this.MDL.selectedF.has(d));
       _this._renderShape(view, d, hidden);
     });
 
     this.mountainsAtomic.each(function(d) {
       const view = d3.select(this);
-      const hidden = d.hidden || ((mergeGrouped || mergeStacked || dragOrPlay) && !_this.MDL.selectedF.has(d));
+      const hidden = d.hidden || (mergeGrouped || mergeStacked) && !_this.MDL.selectedF.has(d);
       _this._renderShape(view, d, hidden);
     });
 
-    if (stackMode === "none") {
+    //reorder shapes to put the tallest in the back (only now we know yMax, couldn't do this earlier)
+    if (stackMode === "none")
       this.mountainsAtomic.sort((a, b) => b.yMax - a.yMax);
-
-    } else if (stackMode === "all") {
-      // do nothing if everything is stacked
-
-    } else {
-      if (mergeGrouped || dragOrPlay) {
-        // this.mountainsMergeGrouped.sort(function (a, b) {
-        //     return b.yMax - a.yMax;
-        // });
-      } else {
-        //this.mountainsAtomic.sort((a, b) => b.yMaxGroup - a.yMaxGroup);
-      }
-    }
-
 
     // exporting shapes for shape preloader. is needed once in a while
     // if (!this.shapes) this.shapes = {}
@@ -926,7 +906,6 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   updateAllSlicesOpacity() {
-    //if(!duration)duration = 0;
     this.MDL.selectedF.markers; //watch
     this.MDL.highlightedF.markers; //watch
 
@@ -953,20 +932,21 @@ class _VizabiMountainChart extends BaseComponent {
       if (this.someHighlighted) return OPACITY_HIGHLT_DIM;
 
       return OPACITY_REGULAR;
-
     });
-
-    
 
     const nonSelectedOpacityZero = this.ui.opacitySelectDim < 0.01;
 
     // when pointer events need update...
     if (nonSelectedOpacityZero !== this.nonSelectedOpacityZero) {
-      this.mountainsAtomic.style("pointer-events", d => (!this.someSelected || !nonSelectedOpacityZero || this.MDL.selectedF.has(d)) ?
-        "visible" : "none");
+      this.mountainsAtomic.style("pointer-events", d => {
+        if (!this.someSelected || !nonSelectedOpacityZero || this.MDL.selectedF.has(d)) 
+          return "visible";
+        else
+          return "none";
+      });
     }
 
-    this.nonSelectedOpacityZero = this.ui.opacitySelectDim < 0.01;
+    this.nonSelectedOpacityZero = nonSelectedOpacityZero;
   }
 
 
