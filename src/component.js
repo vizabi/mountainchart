@@ -667,40 +667,23 @@ class _VizabiMountainChart extends BaseComponent {
     this.mountainsAtomic = this.DOM.mountainAtomicContainer.selectAll(".vzb-mc-mountain.vzb-mc-aggrlevel0")
       .data(this.atomicSliceData), d => d.KEY();
 
-    //exit selection -- remove shapes
-    this.mountainsMergeStacked.exit().remove();
-    this.mountainsMergeGrouped.exit().remove();
-    this.mountainsAtomic.exit().remove();
+    this.mountainsMergeStacked = this.mountainsMergeStacked.join(
+      enter => enter.append("path")
+        .attr("class", "vzb-mc-mountain vzb-mc-aggrlevel2")
+        .call(this._interact.bind(this))
+    );
+    this.mountainsMergeGrouped = this.mountainsMergeGrouped.join(
+      enter => enter.append("path")
+        .attr("class", "vzb-mc-mountain vzb-mc-aggrlevel1")
+        .call(this._interact.bind(this))
+    );
+    this.mountainsAtomic = this.mountainsAtomic.join(
+      enter => enter.append("path")
+        .attr("class", "vzb-mc-mountain vzb-mc-aggrlevel0")
+        .call(this._interact.bind(this))
+    );    
 
-    //enter selection -- add shapes
-    this.mountainsMergeStacked = this.mountainsMergeStacked.enter().append("path")
-      .attr("class", "vzb-mc-mountain vzb-mc-aggrlevel2")
-      .merge(this.mountainsMergeStacked);
-    this.mountainsMergeGrouped = this.mountainsMergeGrouped.enter().append("path")
-      .attr("class", "vzb-mc-mountain vzb-mc-aggrlevel1")
-      .merge(this.mountainsMergeGrouped);
-    this.mountainsAtomic = this.mountainsAtomic.enter().append("path")
-      .attr("class", "vzb-mc-mountain vzb-mc-aggrlevel0")
-      .merge(this.mountainsAtomic);
-
-    //add interaction
-    this.mountains = this.DOM.mountainAtomicContainer.selectAll(".vzb-mc-mountain")
-      .on("mousemove", (d, i) => {
-        if (utils.isTouchDevice()) return;
-        this._interact()._mousemove(d, i);
-      })
-      .on("mouseout", (d, i) => {
-        if (utils.isTouchDevice()) return;
-        this._interact()._mouseout(d, i);
-      })
-      .on("click", (d, i) => {
-        if (utils.isTouchDevice()) return;
-        this._interact()._click(d, i);
-      })
-      .onTap((d, i) => {
-        this._interact()._click(d, i);
-        d3.event.stopPropagation();
-      });
+    this.mountains = this.DOM.mountainAtomicContainer.selectAll(".vzb-mc-mountain");    
   }
 
   computeAllShapes() {
@@ -859,35 +842,30 @@ class _VizabiMountainChart extends BaseComponent {
     return d[Symbol.for("key")];
   }
 
-  _interact() {
-    const _this = this;
-
-    return {
-      _mousemove(d) {
-        if (_this._isDragging() || _this.MDL.frame.playing) return;
-
-        _this.MDL.highlightedF.set(d);
-
-        //position tooltip
-        _this._setTooltip(_this._getLabelText(d));
-        //_this._selectlist.showCloseCross(d, true);
-      },
-      _mouseout(d) {
-        if (_this._isDragging() || _this.MDL.frame.playing) return;
-
-        _this._setTooltip("");
-        _this.MDL.highlightedF.delete(d);
-        //_this._selectlist.showCloseCross(d, false);
-
-      },
-      _click(d) {
-        const isPlayingOrDragging = _this._isDragging() || _this.MDL.frame.playing;
-        if (!isPlayingOrDragging || _this.MDL.selectedF.has(d)) {
-          _this.MDL.selectedF.toggle(d);
-        }
-      }
-    };
-
+  _interact(selection){
+    selection
+      .on("mousemove", d => {
+        if (utils.isTouchDevice()) return;
+        if (this._isDragging() || this.MDL.frame.playing) return;
+        this.MDL.highlightedF.set(d);
+        this._setTooltip(this._getLabelText(d));
+      })
+      .on("mouseout", d => {
+        if (utils.isTouchDevice()) return;
+        if (this._isDragging() || this.MDL.frame.playing) return;
+        this._setTooltip("");
+        this.MDL.highlightedF.delete(d);
+      })
+      .on("click", d => {
+        if (utils.isTouchDevice()) return;
+        if (this._isDragging() || this.MDL.frame.playing) return;
+        this.MDL.selectedF.toggle(d);
+      })
+      .onTap(d => {
+        if (this._isDragging() || this.MDL.frame.playing) return;
+        this.MDL.selectedF.toggle(d);
+        d3.event.stopPropagation();
+      });
   }
 
   updateSelected() {
