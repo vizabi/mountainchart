@@ -176,6 +176,7 @@ class _VizabiMountainChart extends BaseComponent {
     this.rangeRatio = 1;
     this.rangeShift = 0;
     this.mesh = [];
+    this.stickySortValues = {};
     this.yMaxGlobal = 0;
 
   }
@@ -221,8 +222,8 @@ class _VizabiMountainChart extends BaseComponent {
     this.services.layout.size; //watch
 
     this.processFrameData();
-    this.createAndDeleteSlices();
     this.computeAllShapes();
+    this.createAndDeleteSlices();
     this.renderAllShapes();
   }
 
@@ -601,10 +602,13 @@ class _VizabiMountainChart extends BaseComponent {
       .filter(d => d.x && d.y && d.s)
       .map(d => {
         d.KEY = () => d[Symbol.for("key")];
-        d.sortValue = [d.y || 0, 0];
+        if (this.stickySortValues[d.KEY()] == null) this.stickySortValues[d.KEY()] = d.y;
+        d.sortValue = [this.stickySortValues[d.KEY()] || 0, 0];
         d.aggrLevel = 0;
         return d;
-      });
+      })
+      //1-st level sort: pre-sort atomic slices, this sort will be retained in grouping and stacking
+      .sort((a, b) => b.sortValue[0] - a.sortValue[0]);
 
     const groupManualSort = this.MDL.group.manualSorting;
     const isManualSortCorrect = utils.isArray(groupManualSort) && groupManualSort.length > 1;
@@ -612,7 +616,6 @@ class _VizabiMountainChart extends BaseComponent {
 
     this.groupedSliceData = d3.nest()
       .key(d => this._isProperty(this.MDL.stack)? d.stack: d.group)
-      .sortValues((a, b) => b.sortValue[0] - a.sortValue[0])
       .entries(this.atomicSliceData);
 
     this.groupedSliceData.forEach(group => {
@@ -636,14 +639,13 @@ class _VizabiMountainChart extends BaseComponent {
 
     if (this.MDL.stack.data.constant === "none") {
       this.stackedSliceData = [];
-      this.atomicSliceData.sort((a, b) => b.sortValue[0] - a.sortValue[0]);
 
     } else {
       this.stackedSliceData = d3.nest()
         .key(d => d.stack)
         .key(d => d.group)
+        //groups are sorted inside a stack
         .sortKeys((a, b) => sortValuesForGroups[b] - sortValuesForGroups[a])
-        .sortValues((a, b) => b.sortValue[0] - a.sortValue[0])
         .entries(this.atomicSliceData);
 
       this.stackedSliceData.forEach(stack => {
@@ -652,7 +654,7 @@ class _VizabiMountainChart extends BaseComponent {
         stack.aggrLevel = 2;
       });
 
-      //TODO: sorting too many times?
+      //2-nd level sort: atomic slices are sorted by groups
       this.atomicSliceData.sort((a, b) => b.sortValue[1] - a.sortValue[1]);
     }
   }
@@ -660,33 +662,41 @@ class _VizabiMountainChart extends BaseComponent {
   createAndDeleteSlices() {    
 
     //bind the data to DOM elements
-    this.mountainsMergeStacked = this.DOM.mountainAtomicContainer.selectAll(".vzb-mc-mountain.vzb-mc-aggrlevel2")
+    this.mountainsMergeStacked = this.DOM.mountainAtomicContainer
+      .selectAll(".vzb-mc-mountain.vzb-mc-aggrlevel2")
       .data(this.stackedSliceData, d => d.KEY());
-    this.mountainsMergeGrouped = this.DOM.mountainAtomicContainer.selectAll(".vzb-mc-mountain.vzb-mc-aggrlevel1")
+    this.mountainsMergeGrouped = this.DOM.mountainAtomicContainer
+      .selectAll(".vzb-mc-mountain.vzb-mc-aggrlevel1")
       .data(this.groupedSliceData, d => d.KEY());
-    this.mountainsAtomic = this.DOM.mountainAtomicContainer.selectAll(".vzb-mc-mountain.vzb-mc-aggrlevel0")
-      .data(this.atomicSliceData), d => d.KEY();
+    this.mountainsAtomic = this.DOM.mountainAtomicContainer
+      .selectAll(".vzb-mc-mountain.vzb-mc-aggrlevel0")
+      .data(this.atomicSliceData, d => d.KEY());
 
     this.mountainsMergeStacked = this.mountainsMergeStacked.join(
       enter => enter.append("path")
         .attr("class", "vzb-mc-mountain vzb-mc-aggrlevel2")
+        .attr("id", d => `vzb-mc-slice-${d.KEY()}-${this.id}`)
         .call(this._interact.bind(this))
     );
     this.mountainsMergeGrouped = this.mountainsMergeGrouped.join(
       enter => enter.append("path")
         .attr("class", "vzb-mc-mountain vzb-mc-aggrlevel1")
+        .attr("id", d => `vzb-mc-slice-${d.KEY()}-${this.id}`)
         .call(this._interact.bind(this))
     );
     this.mountainsAtomic = this.mountainsAtomic.join(
       enter => enter.append("path")
         .attr("class", "vzb-mc-mountain vzb-mc-aggrlevel0")
+        .attr("id", d => `vzb-mc-slice-${d.KEY()}-${this.id}`)
         .call(this._interact.bind(this))
-    );    
+    );
 
-    this.mountains = this.DOM.mountainAtomicContainer.selectAll(".vzb-mc-mountain");    
+    this.mountains = this.DOM.mountainAtomicContainer.selectAll(".vzb-mc-mountain")
+      .order();
   }
 
   computeAllShapes() {
+    const stackMode = this.MDL.stack.data.constant;
 
     //spawn the original mountains
     this.atomicSliceData.forEach((d) => {
@@ -697,8 +707,8 @@ class _VizabiMountainChart extends BaseComponent {
     //rbh
     //this._robinhood.adjustCached();
 
-    //recalculate shapes depending on stacking
-    if (this.MDL.stack.data.constant !== "none") {
+    //recalculate shapes depending on stacking: shift baseline y0 of each shape
+    if (stackMode !== "none") {
       this.stackedSliceData.forEach(stack => {
         let slicesToStack = [];
         stack.values.forEach(group => {
@@ -713,7 +723,15 @@ class _VizabiMountainChart extends BaseComponent {
             });
           });
       });
+    }
 
+    //save yMax of each slice, stacked or not
+    this.atomicSliceData.forEach(d => {
+      d.yMax = d3.max(d.shape.map(m => m.y0 + m.y));
+    });
+
+    //recalcuate the merge-stacking slice shape
+    if (stackMode == "all") {
       this.stackedSliceData.forEach(d => {
         const firstLast = this._getFirstAndLastSlicesInGroup(d);
         d.shape = this._getMergedShape(firstLast);
@@ -721,66 +739,68 @@ class _VizabiMountainChart extends BaseComponent {
         d.color = "_default";
         d.yMax = firstLast.first.yMax;
       });
+    }
+
+    //recalculate the merge-grouping slice shapes
+    if (stackMode !== "none") {
       this.groupedSliceData.forEach(d => {
         const firstLast = this._getFirstAndLastSlicesInGroup(d);
         d.shape = this._getMergedShape(firstLast);
         d.y = this._sumLeafSlicesByEncoding(d, "y");
         d.color = firstLast.first.color;
         d.yMax = firstLast.first.yMax;
+        d.values.forEach(v => v.yMaxGroup = d.yMax);
       });
     }
 
     //push yMaxGlobal up so shapes can fit
     this.atomicSliceData.forEach(d => {
-      d.yMax = d3.max(d.shape.map(m => m.y0 + m.y));
       if (this.yMaxGlobal < d.yMax) this.yMaxGlobal = d.yMax;
       if (this.yMaxGlobal < this.ui.yMaxMethod) this.yMaxGlobal = this.ui.yMaxMethod;
     });
 
     this._adjustMaxY();
-    
 
-    // if (!mergeStacked && !mergeGrouped && this.isProperty(this.MDL.stack)) {
-    //   this.groupedSliceData.forEach(d => {
-    //     const visible = d.values.filter(f => !f.hidden);
-    //     d.yMax = visible[0].yMax;
-    //     d.values.forEach(e => {
-    //       e.yMaxGroup = d.yMax;
-    //     });
-    //   });
-    // }
+    //sort slices again: this time to order DOM-elements correctly
+    if (stackMode === "none") {
+      //reorder slices to put the tallest in the back (only now we know yMax, couldn't do this earlier)
+      this.atomicSliceData.sort((a, b) => b.yMax - a.yMax);
+    } else if (stackMode === "all") {
+      //do nothing, retain the DOM order of slices and groups
+    } else {
+      //reorder merged group slices or atomic shapes to put the tallest in the back
+      if (this._isMergingGroups())
+        this.groupedSliceData.sort((a, b) => b.yMax - a.yMax);
+      else
+        this.atomicSliceData.sort((a, b) => b.yMaxGroup - a.yMaxGroup);
+    }
   }
   
   renderAllShapes() {
     const _this = this;
-    const stackMode = this.MDL.stack.data.constant;
     const mergeStacked = this.MDL.stack.config.merge;
-    const mergeGrouped = this.MDL.group.config.merge
-      //merge the grouped entities to save performance during dragging or playing      
-      //except when stacking is off
-      || (this._isDragging() || this.MDL.frame.playing) && stackMode !== "none";
+    const mergeGrouped = this._isMergingGroups();
 
     this.mountainsMergeStacked.each(function(d) {
       const view = d3.select(this);
       const hidden = !mergeStacked;
-      _this._renderShape(view, d, hidden);
+      const selected = false;
+      _this._renderShape(view, d, hidden, selected);
     });
 
     this.mountainsMergeGrouped.each(function(d) {
       const view = d3.select(this);
-      const hidden = !mergeGrouped || (mergeStacked && !_this.MDL.selectedF.has(d));
-      _this._renderShape(view, d, hidden);
+      const selected = _this.MDL.selectedF.has(d);
+      const hidden = !mergeGrouped || (mergeStacked && !selected);
+      _this._renderShape(view, d, hidden, selected);
     });
 
     this.mountainsAtomic.each(function(d) {
       const view = d3.select(this);
-      const hidden = d.hidden || (mergeGrouped || mergeStacked) && !_this.MDL.selectedF.has(d);
-      _this._renderShape(view, d, hidden);
+      const selected = _this.MDL.selectedF.has(d);
+      const hidden = d.hidden || (mergeGrouped || mergeStacked) && !selected;
+      _this._renderShape(view, d, hidden, selected);
     });
-
-    //reorder shapes to put the tallest in the back (only now we know yMax, couldn't do this earlier)
-    if (stackMode === "none")
-      this.mountainsAtomic.sort((a, b) => b.yMax - a.yMax);
 
     // exporting shapes for shape preloader. is needed once in a while
     // if (!this.shapes) this.shapes = {}
@@ -790,12 +810,12 @@ class _VizabiMountainChart extends BaseComponent {
     // }
   }
 
-  _renderShape(view, d, hidden) {
+  _renderShape(view, d, hidden, selected) {
     view.classed("vzb-hidden", hidden);
 
     if (hidden) return;
 
-    if (this.MDL.selectedF.has(d))
+    if (selected)
       view.attr("d", this.area(d.shape.filter(f => f.y > d.y * THICKNESS_THRESHOLD)));
     else
       view.attr("d", this.area(d.shape));
@@ -805,7 +825,8 @@ class _VizabiMountainChart extends BaseComponent {
     else
       view.style("fill", COLOR_WHITEISH);
 
-    if (!this._isDragging() && !this.MDL.frame.playing && this.MDL.stack.data.constant !== "none") {
+    //fancy appear of the slices that were hidden
+    if (!this._isDragging() && !this.MDL.frame.playing && this.MDL.stack.data.constant !== "none" && !selected) {
       view
         .style("stroke-opacity", 0)
         .transition().duration(Math.random() * 900 + 100).ease(d3.easeCircle)
@@ -991,6 +1012,12 @@ class _VizabiMountainChart extends BaseComponent {
     this.yScale.domain([0, Math.round(this.yMaxGlobal)]);
   }
 
+  _isMergingGroups() {
+    return this.MDL.group.config.merge
+      //merge the grouped entities to save performance during dragging or playing      
+      //except when stacking is off
+      || (this._isDragging() || this.MDL.frame.playing) && this.MDL.stack.data.constant !== "none";
+  }
 
   _isDragging(){
     const timeslider = this.parent.findChild({type: "TimeSlider"});
