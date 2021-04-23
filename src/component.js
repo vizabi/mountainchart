@@ -791,14 +791,9 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   _renderShape(view, d, hidden) {
-    const stack = this.MDL.stack.which;
-
     view.classed("vzb-hidden", hidden);
 
-    if (hidden) {
-      //if (stack !== "none") view.style("stroke-opacity", 0);
-      return;
-    }
+    if (hidden) return;
 
     if (this.MDL.selectedF.has(d))
       view.attr("d", this.area(d.shape.filter(f => f.y > d.y * THICKNESS_THRESHOLD)));
@@ -810,9 +805,12 @@ class _VizabiMountainChart extends BaseComponent {
     else
       view.style("fill", COLOR_WHITEISH);
 
-    if (stack !== "none") view
-      .transition().duration(Math.random() * 900 + 100).ease(d3.easeCircle)
-      .style("stroke-opacity", 0.5);
+    if (!this._isDragging() && !this.MDL.frame.playing && this.MDL.stack.data.constant !== "none") {
+      view
+        .style("stroke-opacity", 0)
+        .transition().duration(Math.random() * 900 + 100).ease(d3.easeCircle)
+        .style("stroke-opacity", 0.5);
+    }
 
     // if (this.model.time.record) this._export.write({
     //   type: "path",
