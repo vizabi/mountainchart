@@ -203,6 +203,7 @@ class _VizabiMountainChart extends BaseComponent {
     this._dataNotes = this.parent.findChild({name: "datanotes"});
 
     if (this.updateLayoutProfile()) return; //return if exists with error
+    this.addReaction(this.updateGroupEncoding);
     this.addReaction(this.updateHeaderAndFooter);
     this.addReaction(this.updateScales);
     this.addReaction(this.updateYear);
@@ -225,6 +226,11 @@ class _VizabiMountainChart extends BaseComponent {
     this.computeAllShapes();
     this.createAndDeleteSlices();
     this.renderAllShapes();
+  }
+
+  updateGroupEncoding(){
+    if (this._isProperty(this.MDL.color))
+      this.MDL.group.data.config.concept = this.MDL.color.data.concept;
   }
 
   updateLayoutProfile(){
