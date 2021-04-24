@@ -1,1 +1,1 @@
-module.exports = require("vizabi-tool-bundler").bind(null, 'MountainChart', 'mountainchart', __dirname);
+module.exports = require("vizabi-tool-bundler").bind(null, 'MountainChart', 'mountainchart', __dirname, require("./package.json"));

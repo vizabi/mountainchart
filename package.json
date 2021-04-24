@@ -1,6 +1,6 @@
 {
   "name": "vizabi-mountainchart",
-  "version": "3.3.6",
+  "version": "3.3.7",
   "description": "Gapminder's income mountain chart data visualisation tool",
   "scripts": {
     "prepublishOnly": "npm run build",
@@ -18,7 +18,25 @@
     "url": "git+https://github.com/vizabi/vizabi-mountainchart.git"
   },
   "keywords": [],
-  "author": "",
+  "author": {
+    "name": "Gapminder Foundation",
+    "url": "https://www.gapminder.org",
+    "email": "info@gapminder.org"
+  },
+  "contributors": [
+    {
+      "name": "angie",
+      "url": "https://github.com/angieskazka"
+    },
+    {
+      "name": "jasper",
+      "url": "https://github.com/jheeffer"
+    },
+    {
+      "name": "dab",
+      "url": "https://github.com/dab2000"
+    }
+  ],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/vizabi/vizabi-mountainchart/issues"
@@ -27,6 +45,6 @@
   "devDependencies": {
     "cross-env": "^5.0.0",
     "vizabi-shared-components": "../vizabi-shared-components",
-    "vizabi-tool-bundler": "github:vizabi/vizabi-tool-bundler#switch_to_rollup"
+    "vizabi-tool-bundler": "1.0.0"
   }
 }
