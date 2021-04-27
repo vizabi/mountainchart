@@ -8,7 +8,8 @@
         "d3": true,
         "ENV": true,
         "__VERSION": "readonly",
-        "__BUILD": "readonly"
+        "__BUILD": "readonly",
+        "__PACKAGE_JSON_FIELDS": "readonly"
     },
     "parserOptions": {
         "ecmaVersion": 2018,

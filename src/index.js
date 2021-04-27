@@ -9,7 +9,8 @@ import {
   TreeMenu,
   SteppedSlider,
   Dialogs,
-  ButtonList
+  ButtonList,
+  versionInfo
 } from "VizabiSharedComponents";
 import {VizabiMountainChart} from "./component.js";
 import {Stack} from "./dialogs/stack/stack.js";
@@ -100,4 +101,4 @@ MountainChart.DEFAULT_UI = {
   },
 };
 
-MountainChart.versionInfo = { version: __VERSION, build: __BUILD };
+MountainChart.versionInfo = { version: __VERSION, build: __BUILD, package: __PACKAGE_JSON_FIELDS, sharedComponents: versionInfo};
