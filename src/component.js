@@ -592,13 +592,7 @@ class _VizabiMountainChart extends BaseComponent {
 
   //TODO rewrite old understandings
   _isProperty(mdl){
-    return mdl.data.space && mdl.data.space.length == 1 && !mdl.data.constant;
-  }
-  _isIndicator(mdl){
-    return mdl.data.space && mdl.data.space.length > 1 && !mdl.data.constant;
-  }
-  _isConstant(mdl){
-    return !!mdl.data.constant;
+    return mdl.data.space && mdl.data.space.length == 1 && !mdl.data.constant && mdl.data.concept != this.MDL.frame.data.concept;
   }
 
   processFrameData() {
