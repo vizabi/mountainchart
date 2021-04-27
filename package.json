@@ -1,6 +1,6 @@
 {
   "name": "vizabi-mountainchart",
-  "version": "3.3.9",
+  "version": "3.3.10",
   "description": "Vizabi mountain chart",
   "scripts": {
     "prepublishOnly": "npm run build",
@@ -25,26 +25,27 @@
   },
   "contributors": [
     {
-      "name": "angie",
+      "name": "Angie",
       "url": "https://github.com/angieskazka"
     },
     {
-      "name": "jasper",
+      "name": "Jasper",
       "url": "https://github.com/jheeffer"
     },
     {
-      "name": "dab",
+      "name": "Dima",
       "url": "https://github.com/dab2000"
     }
   ],
-  "license": "ISC",
+  "license": "CC-BY-4.0",
   "bugs": {
     "url": "https://github.com/vizabi/vizabi-mountainchart/issues"
   },
   "homepage": "https://github.com/vizabi/vizabi-mountainchart#readme",
   "devDependencies": {
     "cross-env": "^5.0.0",
+    "css.escape": "^1.5.1",
     "vizabi-shared-components": "../vizabi-shared-components",
-    "vizabi-tool-bundler": "1.0.0"
+    "vizabi-tool-bundler": "1.0.2"
   }
 }
