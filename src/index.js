@@ -1,3 +1,5 @@
+/*eslint no-unused-vars: ["warn", { "varsIgnorePattern": "Stack" }]*/
+
 import "./styles.scss";
 import { 
   BaseComponent,
@@ -10,6 +12,7 @@ import {
   SteppedSlider,
   Dialogs,
   ButtonList,
+  CapitalVizabiService,
   versionInfo
 } from "VizabiSharedComponents";
 import {VizabiMountainChart} from "./component.js";
@@ -22,7 +25,7 @@ export default class MountainChart extends BaseComponent {
 
   constructor(config){
 
-    const frameType = Vizabi.stores.encodings.modelTypes.frame;
+    const frameType = config.Vizabi.stores.encodings.modelTypes.frame;
     const fullMarker = config.model.markers.mountain;
     const { marker, splashMarker } = frameType.splashMarker(fullMarker);
 
@@ -87,6 +90,7 @@ export default class MountainChart extends BaseComponent {
     `;
 
     config.services = {
+      Vizabi: new CapitalVizabiService({Vizabi: config.Vizabi}),
       locale: new LocaleService(config.locale),
       layout: new LayoutService(config.layout)
     };
