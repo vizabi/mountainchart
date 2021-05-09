@@ -13,6 +13,7 @@ import {
   Dialogs,
   ButtonList,
   CapitalVizabiService,
+  Repeater,
   versionInfo
 } from "VizabiSharedComponents";
 import {VizabiMountainChart} from "./component.js";
@@ -33,10 +34,14 @@ export default class MountainChart extends BaseComponent {
     config.name = "mountainchart";
 
     config.subcomponents = [{
-      type: VizabiMountainChart,
-      placeholder: ".vzb-mountainchart",
+      type: Repeater,
+      placeholder: ".vzb-repeater",
       model: marker,
-      name: "chart"
+      options: {
+        ComponentClass: VizabiMountainChart,
+        componentCssName: "vzb-mountainchart"
+      },
+      name: "chart",
     },{
       type: TimeSlider,
       placeholder: ".vzb-timeslider",
@@ -76,7 +81,7 @@ export default class MountainChart extends BaseComponent {
     }];
 
     config.template = `
-      <div class="vzb-mountainchart"></div>
+      <div class="vzb-repeater vzb-mountainchart"></div>
       <div class="vzb-animationcontrols">
         <div class="vzb-timeslider"></div>
         <div class="vzb-speedslider"></div>

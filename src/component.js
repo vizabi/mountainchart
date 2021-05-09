@@ -187,10 +187,10 @@ class _VizabiMountainChart extends BaseComponent {
       selectedF: this.model.encoding.selected.data.filter,
       highlightedF: this.model.encoding.highlighted.data.filter,
       //superHighlightedF: this.model.encoding.superhighlighted.data.filter,
-      y: this.model.encoding.y,
-      x: this.model.encoding.x,
-      s: this.model.encoding.s,
-      color: this.model.encoding.color,
+      norm: this.model.encoding[this.state.alias.norm || "norm"],
+      mu: this.model.encoding[this.state.alias.mu || "mu"],
+      sigma: this.model.encoding[this.state.alias.sigma || "sigma"],
+      color: this.model.encoding[this.state.alias.color || "color"],
       label: this.model.encoding.label,
       stack: this.model.encoding.stack,
       group: this.model.encoding.group
@@ -262,7 +262,7 @@ class _VizabiMountainChart extends BaseComponent {
       const coord = utils.makeAbsoluteContext(this, this.farthestViewportElement)(rect.x - 10, rect.y + rect.height + 10);
       const toolRect = _this.root.element.node().getBoundingClientRect();
       const chartRect = _this.element.node().getBoundingClientRect();
-      _this._dataNotes.setEncoding(_this.MDL.y).show().setPos(coord.x + chartRect.left - toolRect.left, coord.y);
+      _this._dataNotes.setEncoding(_this.MDL.norm).show().setPos(coord.x + chartRect.left - toolRect.left, coord.y);
     });
     this.DOM.info.on("mouseout", () => {
       _this._dataNotes.hide();
@@ -286,8 +286,8 @@ class _VizabiMountainChart extends BaseComponent {
 
   updateScales() {
     //fetch scales, or rebuild scales if there are none, then fetch
-    this.yScale = this.MDL.y.scale.d3Scale.copy();
-    this.xScale = this.MDL.x.scale.d3Scale.copy();
+    this.yScale = this.MDL.norm.scale.d3Scale.copy();
+    this.xScale = this.MDL.mu.scale.d3Scale.copy();
     this.cScale = this.MDL.color.scale.d3Scale.copy();
   }
 
@@ -314,8 +314,8 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   updateMathSettings(){
-    this._math.xScaleFactor = this.MDL.x.config.xScaleFactor;
-    this._math.xScaleShift = this.MDL.x.config.xScaleShift;
+    this._math.xScaleFactor = this.MDL.mu.config.xScaleFactor;
+    this._math.xScaleShift = this.MDL.mu.config.xScaleShift;
   }
 
   updateSize() {
@@ -354,7 +354,7 @@ class _VizabiMountainChart extends BaseComponent {
       .tickPadding(9)
       .tickSizeMinor(3, 0)
       .labelerOptions({
-        scaleType: this.MDL.x.scale.type || "log",
+        scaleType: this.MDL.mu.scale.type || "log",
         toolMargin: margin,
         pivotingLimit: margin.bottom * 1.5,
         method: this.xAxis.METHOD_REPEATING,
@@ -411,7 +411,7 @@ class _VizabiMountainChart extends BaseComponent {
   updateMesh(){
     this.mesh = this._math.generateMesh(
       this.ui.xPoints, 
-      this.MDL.x.scale.type || "log", 
+      this.MDL.mu.scale.type || "log", 
       this.xScale.domain()
     );
     
@@ -425,13 +425,13 @@ class _VizabiMountainChart extends BaseComponent {
     
     // x axis groups used for incomes
     const showxAxisGroups = this.ui.decorations.xAxisGroups 
-      && this.ui.decorations.xAxisGroups[this.MDL.x.data.concept] 
+      && this.ui.decorations.xAxisGroups[this.MDL.mu.data.concept] 
       && this.ui.decorations.enabled
       && this.services.layout.profile !== "SMALL";
     
     this.DOM.xAxisGroups.classed("vzb-invisible", !showxAxisGroups);
     if (showxAxisGroups) {
-      const axisGroupsData = this.ui.decorations.xAxisGroups[this.MDL.x.data.concept];
+      const axisGroupsData = this.ui.decorations.xAxisGroups[this.MDL.mu.data.concept];
       let xAxisGroups = this.DOM.xAxisGroups.selectAll(".vzb-mc-x-axis-group").data(axisGroupsData);
       
       xAxisGroups.exit().remove();
@@ -551,16 +551,16 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   zoom() {
-    const mdlcfg = this.MDL.x.config;
+    const mdlcfg = this.MDL.mu.config;
     const {
       margin,
     } = this.profileConstants;
     const width = this.width - margin.left - margin.right;
 
-    if (mdlcfg.zoomedMin == null && this.MDL.x.scale.domain[0] == null || mdlcfg.zoomedMax == null && this.MDL.x.scale.domain[1] == null) return;
+    if (mdlcfg.zoomedMin == null && this.MDL.mu.scale.domain[0] == null || mdlcfg.zoomedMax == null && this.MDL.mu.scale.domain[1] == null) return;
 
-    const x1 = this.xScale(mdlcfg.zoomedMin || this.MDL.x.scale.domain[0]);
-    const x2 = this.xScale(mdlcfg.zoomedMax || this.MDL.x.scale.domain[1]);
+    const x1 = this.xScale(mdlcfg.zoomedMin || this.MDL.mu.scale.domain[0]);
+    const x2 = this.xScale(mdlcfg.zoomedMax || this.MDL.mu.scale.domain[1]);
     // if we have same x1 and x2 then divider will be 0 and rangeRation will become -Infinity
     if (!isFinite(x1) || !isFinite(x2) || x1 === x2) return;
 
@@ -573,9 +573,9 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   updateMasks() {
-    const tailFatX = this._math.unscale(this.MDL.x.config.tailFatX);
-    const tailCutX = this._math.unscale(this.MDL.x.config.tailCutX);
-    const tailFade = this.MDL.x.config.tailFade;
+    const tailFatX = this._math.unscale(this.MDL.mu.config.tailFatX);
+    const tailCutX = this._math.unscale(this.MDL.mu.config.tailCutX);
+    const tailFade = this.MDL.mu.config.tailFade;
     const k = 2 * Math.PI / (Math.log(tailFatX) - Math.log(tailCutX));
     const m = Math.PI - Math.log(tailFatX) * k;
 
@@ -599,10 +599,10 @@ class _VizabiMountainChart extends BaseComponent {
     
     this.atomicSliceData = this.model.dataArray
       .concat() //copy array in order to avoid sorting in place
-      .filter(d => d.x && d.y && d.s)
+      .filter(d => d[this._alias("mu")] && d[this._alias("norm")] && d[this._alias("sigma")])
       .map(d => {
         d.KEY = () => d[Symbol.for("key")];
-        if (this.stickySortValues[d.KEY()] == null) this.stickySortValues[d.KEY()] = d.y;
+        if (this.stickySortValues[d.KEY()] == null) this.stickySortValues[d.KEY()] = d[this._alias("norm")];
         d.sortValue = [this.stickySortValues[d.KEY()] || 0, 0];
         d.aggrLevel = 0;
         return d;
@@ -735,8 +735,8 @@ class _VizabiMountainChart extends BaseComponent {
       this.stackedSliceData.forEach(d => {
         const firstLast = this._getFirstAndLastSlicesInGroup(d);
         d.shape = this._getMergedShape(firstLast);
-        d.y = this._sumLeafSlicesByEncoding(d, "y");
-        d.color = "_default";
+        d[this._alias("norm")] = this._sumLeafSlicesByEncoding(d, this._alias("norm"));
+        d[this._alias("color")] = "_default";
         d.yMax = firstLast.first.yMax;
       });
     }
@@ -746,8 +746,8 @@ class _VizabiMountainChart extends BaseComponent {
       this.groupedSliceData.forEach(d => {
         const firstLast = this._getFirstAndLastSlicesInGroup(d);
         d.shape = this._getMergedShape(firstLast);
-        d.y = this._sumLeafSlicesByEncoding(d, "y");
-        d.color = firstLast.first.color;
+        d[this._alias("norm")] = this._sumLeafSlicesByEncoding(d, this._alias("norm"));
+        d[this._alias("color")] = firstLast.first[this._alias("color")];
         d.yMax = firstLast.first.yMax;
         d.values.forEach(v => v.yMaxGroup = d.yMax);
       });
@@ -806,7 +806,7 @@ class _VizabiMountainChart extends BaseComponent {
     // if (!this.shapes) this.shapes = {}
     // this.shapes[this.model.time.value.getUTCFullYear()] = {
     //     yMax: d3.format(".2e")(this.yMax),
-    //     shape: this.cached["all"].map(function (d) {return d3.format(".2e")(d.y);})
+    //     shape: this.cached["all"].map(function (d) {return d3.format(".2e")(d[this._alias("norm")]);})
     // }
   }
 
@@ -816,12 +816,13 @@ class _VizabiMountainChart extends BaseComponent {
     if (hidden) return;
 
     if (selected)
-      view.attr("d", this.area(d.shape.filter(f => f.y > d.y * THICKNESS_THRESHOLD)));
+      view.attr("d", this.area(d.shape.filter(f => f.y > d[this._alias("norm")] * THICKNESS_THRESHOLD)));
     else
       view.attr("d", this.area(d.shape));
     
-    if (d.color)
-      view.style("fill", this.cScale(d.color));
+    const color = d[this._alias("color")];
+    if (color)
+      view.style("fill", this.cScale(color));
     else
       view.style("fill", COLOR_WHITEISH);
 
@@ -980,14 +981,14 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   _spawnShape(d) {
-    const norm = d.y;
+    const norm = d[this._alias("norm")];
     const sigma = this.ui.directSigma ?
-      d.s :
-      this._math.giniToSigma(d.s);
+      d[this._alias("sigma")] :
+      this._math.giniToSigma(d[this._alias("sigma")]);
     
     const mu = this.ui.directMu ?
-      d.x :
-      this._math.gdpToMu(d.x, sigma);
+      d[this._alias("mu")] :
+      this._math.gdpToMu(d[this._alias("mu")], sigma);
 
     if (!norm || !mu || !sigma) return [];
 
@@ -1058,6 +1059,10 @@ class _VizabiMountainChart extends BaseComponent {
 
       this.DOM.tooltip.classed("vzb-hidden", true);
     }
+  }
+
+  _alias(enc) {
+    return this.state.alias[enc] || enc;
   }
 
 }
