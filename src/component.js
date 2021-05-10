@@ -200,7 +200,7 @@ class _VizabiMountainChart extends BaseComponent {
   draw() {
 
     this.localise = this.services.locale.auto();
-    this._dataNotes = this.parent.findChild({name: "datanotes"});
+    this._dataNotes = this.root.findChild({name: "datanotes"});
 
     if (this.updateLayoutProfile()) return; //return if exists with error
     this.addReaction(this.updateGroupEncoding);
@@ -1021,7 +1021,7 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   _isDragging(){
-    const timeslider = this.parent.findChild({type: "TimeSlider"});
+    const timeslider = this.root.findChild({type: "TimeSlider"});
     return timeslider && timeslider.ui.dragging;
   }
 
