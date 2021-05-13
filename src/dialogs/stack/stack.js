@@ -80,21 +80,6 @@ class Stack extends Dialog {
     this.addReaction(this.updateView);
   }
 
-
-
-  ready() {
-    if (!this.model.state.marker.color.isDiscrete()) {
-      if (this.stack.use == "property") {
-        this.setModel("stack", "none");
-        return;
-      }
-      else if (this.group.merge) {
-        this.setModel("merge", "none");
-        return;
-      }
-    }
-  }
-
   updateView() {
     const _this = this;
 
