@@ -67,7 +67,7 @@ class MCProbe extends BaseComponent {
     let leftArea = 0;
 
     const _computeAreas = (d) => {
-      sumValue += d.y;
+      sumValue += d.norm;
       d.shape.forEach(vertex => {
         totalArea += vertex.y;
         if (this.parent._math.rescale(vertex.x) < options.level) leftArea += vertex.y;
