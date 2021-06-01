@@ -172,7 +172,7 @@ export class MCSelectList extends BaseComponent {
           name = _this.parent._getLabelText(d);
         }
 
-        const string = name + ": " + _this.localise(d.y) + (i === 0 ? " " + _this.localise("mount/people") : "");
+        const string = name + ": " + _this.localise(d.norm) + (i === 0 ? " " + _this.localise("mount/people") : "");
 
         const text = view.selectAll(".vzb-mc-label-text")
           .attr("x", (isRTL ? -1 : 1) * fontHeight)
@@ -221,7 +221,7 @@ export class MCSelectList extends BaseComponent {
           .attr("r", fontHeight / 3)
           .attr("cx", (isRTL ? -1 : 1) * fontHeight * 0.4)
           .attr("cy", fontHeight / 1.5)
-          .style("fill", _this.parent.cScale(d.color));
+          .style("fill", _this.parent.MDL.color.scale.d3Scale(d.color));
 
         // view.onTap((d, i) => {
         //   d3.event.stopPropagation();
