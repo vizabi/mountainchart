@@ -169,7 +169,6 @@ class _VizabiMountainChart extends BaseComponent {
     // init internal variables
     this.xScale = null;
     this.yScale = null;
-    this.cScale = null;
 
     this.xAxis = axisSmart("bottom");
 
@@ -286,9 +285,8 @@ class _VizabiMountainChart extends BaseComponent {
 
   updateScales() {
     //fetch scales, or rebuild scales if there are none, then fetch
-    this.yScale = this.MDL.norm.scale.d3Scale.copy();
-    this.xScale = this.MDL.mu.scale.d3Scale.copy();
-    this.cScale = this.MDL.color.scale.d3Scale.copy();
+    this.yScale = this.MDL.norm.scale.d3Scale;
+    this.xScale = this.MDL.mu.scale.d3Scale;
   }
 
   drawForecastOverlay() {
@@ -822,7 +820,7 @@ class _VizabiMountainChart extends BaseComponent {
     
     const color = d[this._alias("color")];
     if (color)
-      view.style("fill", this.cScale(color));
+      view.style("fill", this.MDL.color.scale.d3Scale(color));
     else
       view.style("fill", COLOR_WHITEISH);
 
@@ -838,7 +836,7 @@ class _VizabiMountainChart extends BaseComponent {
     //   type: "path",
     //   id: key,
     //   time: this.model.time.value.getUTCFullYear(),
-    //   fill: this.cScale(valuesPointer.color[key]),
+    //   fill: this.MDL.color.scale.d3Scale(valuesPointer.color[key]),
     //   d: this.area(this.cached[key])
     // });
   }

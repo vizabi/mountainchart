@@ -98,7 +98,7 @@ class Stack extends Dialog {
         if (d3.select(this).node().value === "all") 
           return null; // always enabled
         if (d3.select(this).node().value === "bycolor")
-          return _this.MDL.color.data.space.length !== 1 ? true : null;
+          return _this.MDL.color.data.isConstant || _this.MDL.color.data.space.length !== 1 ? true : null;
       });
 
     //_this.ui.chart.manualSortingEnabled = _this.MDL.stack.data.constant == "all";
@@ -116,7 +116,7 @@ class Stack extends Dialog {
         if (d3.select(this).node().value === "none") 
           return null; // always enabled
         if (d3.select(this).node().value === "grouped") 
-          return _this.MDL.stack.data.constant === "none" || _this.MDL.color.data.space.length !== 1 ? true : null;
+          return _this.MDL.stack.data.constant === "none" || _this.MDL.color.data.isConstant || _this.MDL.color.data.space.length !== 1 ? true : null;
         if (d3.select(this).node().value === "stacked") 
           return _this.MDL.stack.data.constant === "all" ? null : true;
       });
