@@ -54,13 +54,13 @@ const DraggableList = Component.extend({
     this.updateData = utils.debounce(this.updateData, 1000);
 
     this.itemDragger = d3.drag()
-      .on("start", (draggedData, i) => {
+      .on("start", (event, draggedData) => {
         if (_this.dataUpdateFlag || !_this.draggable) return;
-        d3.event.sourceEvent.stopPropagation();
+        event.sourceEvent.stopPropagation();
         _this.parentBoundRect = _this.element.node().getBoundingClientRect();
         _this.element
           .selectAll("div")
-          .each(function(d, i) {
+          .each(function(d) {
             const boundRect = this.getBoundingClientRect();
             d._y = boundRect.top;
             d._top = 0;
@@ -73,9 +73,12 @@ const DraggableList = Component.extend({
           .classed("dragged", true);
       })
 
-      .on("drag", (draggedData, draggedIndex) => {
+      .on("drag", function (event, draggedData) {
+        //workaround to get the index becuse "i" is deprecated in d3 v6 
+        //https://observablehq.com/@d3/d3v6-migration-guide#events
+        const draggedIndex = _this.itemsEl.nodes().indexOf(this); 
         if (_this.dataUpdateFlag || !_this.draggable) return;
-        draggedData._top += d3.event.dy;
+        draggedData._top += event.dy;
         const newDraggedY = draggedData._y + draggedData._top;
         if (newDraggedY > _this.parentBoundRect.top
           && newDraggedY + draggedData._height < _this.parentBoundRect.top + _this.parentBoundRect.height)
@@ -97,7 +100,7 @@ const DraggableList = Component.extend({
         }
       })
 
-      .on("end", (d, i) => {
+      .on("end", () => {
         if (_this.dataUpdateFlag || !_this.draggable) return;
         _this.getData();
       });
@@ -122,8 +125,8 @@ const DraggableList = Component.extend({
       .on("mouseout", function() {
         d3.select(this).classed("hover", false);
       })
-      .on("touchstart", () => {
-        d3.event.preventDefault();
+      .on("touchstart", (event) => {
+        event.preventDefault();
       });
 
   },

@@ -78,9 +78,9 @@ export class MCSelectList extends BaseComponent {
 
     const labelCloseGroup = view.append("g")
       .attr("class", "vzb-mc-label-x vzb-label-shadow vzb-invisible")
-      .on("click", () => {
+      .on("click", (event) => {
         if (utils.isTouchDevice()) return;
-        d3.event.stopPropagation();
+        event.stopPropagation();
         this.MDL.highlightedF.delete(d);
         this.MDL.selectedF.toggle(d);
       });
@@ -223,8 +223,8 @@ export class MCSelectList extends BaseComponent {
           .attr("cy", fontHeight / 1.5)
           .style("fill", _this.parent.MDL.color.scale.d3Scale(d.color));
 
-        // view.onTap((d, i) => {
-        //   d3.event.stopPropagation();
+        // view.onTap((event, d) => {
+        //   event.stopPropagation();
         //   _this.model.marker.highlightMarker(d.KEYS());
         //   setTimeout(() => {
         //     _this.model.marker.unhighlightMarker(d.KEYS());

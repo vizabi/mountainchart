@@ -1,7 +1,7 @@
 import {
   BaseComponent,
   Icons,
-  //Utils,
+  Utils,
   LegacyUtils as utils,
   axisSmart,
   DynamicBackground,
@@ -143,8 +143,8 @@ class _VizabiMountainChart extends BaseComponent {
     this._selectlist = this.findChild({name: "selectlist"});
     this._probe = this.findChild({name: "probe"});
     
-    // this.element.onTap((d, i) => {
-    //   this._interact()._mouseout(d, i);
+    // this.element.onTap((event, d) => {
+    //   this._interact()._mouseout(event, d);
     // });
 
     this._math = new MountainChartMath(this);
@@ -268,11 +268,11 @@ class _VizabiMountainChart extends BaseComponent {
     });
 
     this.DOM.eventArea
-      .on("mousemove", function() {
+      .on("mousemove", function(event) {
         if (_this._isDragging()) return;
         if (!_this.ui.showProbeX) return;
         _this._probe.redraw({
-          level: _this.xScale.invert(d3.mouse(this)[0]),
+          level: _this.xScale.invert(d3.pointer(event)[0]),
           full: true
         });
       })
@@ -429,7 +429,7 @@ class _VizabiMountainChart extends BaseComponent {
     
     this.DOM.xAxisGroups.classed("vzb-invisible", !showxAxisGroups);
     if (showxAxisGroups) {
-      const axisGroupsData = this.ui.decorations.xAxisGroups[this.MDL.mu.data.concept];
+      const axisGroupsData = Utils.injectIndexes(this.ui.decorations.xAxisGroups[this.MDL.mu.data.concept]);
       let xAxisGroups = this.DOM.xAxisGroups.selectAll(".vzb-mc-x-axis-group").data(axisGroupsData);
       
       xAxisGroups.exit().remove();
@@ -514,8 +514,8 @@ class _VizabiMountainChart extends BaseComponent {
           .attr("x", calcs.boundaryMaxX_px);
       });
 
-      xAxisGroups.select("text.vzb-mc-x-axis-group-text").on("mouseenter", function(d, i) {
-        const calcs = xAxisGroups_calcs[i];
+      xAxisGroups.select("text.vzb-mc-x-axis-group-text").on("mouseenter", function(event, d) {
+        const calcs = xAxisGroups_calcs[d.i];
         const parentView = d3.select(this.parentNode);
 
         d3.select(this).attr("font-weight", "bold");
@@ -612,9 +612,8 @@ class _VizabiMountainChart extends BaseComponent {
     const isManualSortCorrect = utils.isArray(groupManualSort) && groupManualSort.length > 1;
     const sortValuesForGroups = {};
 
-    this.groupedSliceData = d3.nest()
-      .key(d => this._isProperty(this.MDL.stack)? d.stack: d.group)
-      .entries(this.atomicSliceData);
+    this.groupedSliceData = d3.groups(this.atomicSliceData, d => this._isProperty(this.MDL.stack)? d.stack: d.group)
+      .map(([key, values]) => ({key, values}));
 
     this.groupedSliceData.forEach(group => {
       let groupSortValue = 0;
@@ -639,13 +638,12 @@ class _VizabiMountainChart extends BaseComponent {
       this.stackedSliceData = [];
 
     } else {
-      this.stackedSliceData = d3.nest()
-        .key(d => d.stack)
-        .key(d => d.group)
-        //groups are sorted inside a stack
-        .sortKeys((a, b) => sortValuesForGroups[b] - sortValuesForGroups[a])
-        .entries(this.atomicSliceData);
-
+      this.stackedSliceData = d3.groups(this.atomicSliceData, d => d.stack, d => d.group)
+        .map(([key,values])=>({key,values: values.map(([key,values])=>({key,values}))}));
+      //groups are sorted inside a stack
+      this.stackedSliceData 
+        .forEach(stack => stack.values.sort((a, b) => sortValuesForGroups[b.key] - sortValuesForGroups[a.key]));
+    
       this.stackedSliceData.forEach(stack => {
         stack[Symbol.for("key")] = stack.key;
         stack.KEY = () => stack.key;
@@ -816,7 +814,7 @@ class _VizabiMountainChart extends BaseComponent {
     if (selected)
       view.attr("d", this.area(d.shape.filter(f => f.y > d[this._alias("norm")] * THICKNESS_THRESHOLD)));
     else
-      view.attr("d", this.area(d.shape));
+      view.transition().duration(200).attr("d", this.area(d.shape));
     
     const color = d[this._alias("color")];
     if (color)
@@ -862,27 +860,27 @@ class _VizabiMountainChart extends BaseComponent {
 
   _interact(selection){
     selection
-      .on("mousemove", d => {
+      .on("mousemove", (event, d) => {
         if (utils.isTouchDevice()) return;
         if (this._isDragging() || this.MDL.frame.playing) return;
         this.MDL.highlightedF.set(d);
-        this._setTooltip(this._getLabelText(d));
+        this._setTooltip(event, this._getLabelText(d));
       })
-      .on("mouseout", d => {
+      .on("mouseout", (event, d) => {
         if (utils.isTouchDevice()) return;
         if (this._isDragging() || this.MDL.frame.playing) return;
-        this._setTooltip("");
+        this._setTooltip();
         this.MDL.highlightedF.delete(d);
       })
-      .on("click", d => {
+      .on("click", (event, d) => {
         if (utils.isTouchDevice()) return;
         if (this._isDragging() || this.MDL.frame.playing) return;
         this.MDL.selectedF.toggle(d);
       })
-      .onTap(d => {
+      .onTap((event, d) => {
         if (this._isDragging() || this.MDL.frame.playing) return;
         this.MDL.selectedF.toggle(d);
-        d3.event.stopPropagation();
+        event.stopPropagation();
       });
   }
 
@@ -1023,9 +1021,9 @@ class _VizabiMountainChart extends BaseComponent {
     return timeslider && timeslider.ui.dragging;
   }
 
-  _setTooltip(tooltipText) {
+  _setTooltip(event, tooltipText) {
     if (tooltipText) {
-      const mouse = d3.mouse(this.DOM.graph.node()).map(d => parseInt(d));
+      const mouse = d3.pointer(event);
 
       //position tooltip
       this.DOM.tooltip.classed("vzb-hidden", false)
