@@ -196,6 +196,14 @@ class _VizabiMountainChart extends BaseComponent {
     };
   }
 
+  get duration(){
+    //smooth animation is needed when playing, except for the case when time jumps from end to start
+    if(!this.MDL.frame || !this.MDL.frame.playing) return 0;
+    this.frameValue_1 = this.frameValue;
+    this.frameValue = this.MDL.frame.value;
+    return this.frameValue > this.frameValue_1 ? this.MDL.frame.speed : 0;
+  }
+
   draw() {
 
     this.localise = this.services.locale.auto();
@@ -298,17 +306,8 @@ class _VizabiMountainChart extends BaseComponent {
     );
   }
 
-  _getDuration() {
-    //smooth animation is needed when playing, except for the case when time jumps from end to start
-    if(!this.MDL.frame) return 0;
-    this.frameValue_1 = this.frameValue;
-    this.frameValue = this.MDL.frame.value;
-    return this.__duration = this.MDL.frame.playing && (this.frameValue - this.frameValue_1 > 0) ? this.MDL.frame.speed : 0;
-  }
-
   updateYear() {
-    const duration = this._getDuration();
-    this._year.setText(this.localise(this.MDL.frame.value), duration);    
+    this._year.setText(this.localise(this.MDL.frame.value), this.duration);    
   }
 
   updateMathSettings(){
@@ -812,16 +811,20 @@ class _VizabiMountainChart extends BaseComponent {
 
     if (hidden) return;
 
+    const transition = this.duration 
+      ? view.transition().duration(this.duration).ease(d3.easeLinear) 
+      : view.interrupt();
+
     if (selected)
-      view.attr("d", this.area(d.shape.filter(f => f.y > d[this._alias("norm")] * THICKNESS_THRESHOLD)));
-    else
-      view.transition().duration(200).attr("d", this.area(d.shape));
-    
+      transition.attr("d", this.area(d.shape.filter(f => f.y > d[this._alias("norm")] * THICKNESS_THRESHOLD)));
+    else        
+      transition.attr("d", this.area(d.shape));
+
     const color = d[this._alias("color")];
     if (color)
-      view.style("fill", this.MDL.color.scale.d3Scale(color));
+      transition.style("fill", this.MDL.color.scale.d3Scale(color));
     else
-      view.style("fill", COLOR_WHITEISH);
+      transition.style("fill", COLOR_WHITEISH);
 
     //fancy appear of the slices that were hidden
     if (!this._isDragging() && !this.MDL.frame.playing && this.MDL.stack.data.constant !== "none" && !selected) {
@@ -1091,5 +1094,6 @@ _VizabiMountainChart.DEFAULT_UI = {
 
 
 export const VizabiMountainChart = decorate(_VizabiMountainChart, {
-  "MDL": computed
+  "MDL": computed,
+  "duration": computed
 });
