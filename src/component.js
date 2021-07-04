@@ -613,6 +613,7 @@ class _VizabiMountainChart extends BaseComponent {
     const sortValuesForGroups = {};
 
     this.groupedSliceData = d3.groups(this.atomicSliceData, d => this._isProperty(this.MDL.stack)? d.stack: d.group)
+      //the output comes in a form of [[key, values[]],[],[]], convert each array to object
       .map(([key, values]) => ({key, values}));
 
     this.groupedSliceData.forEach(group => {
@@ -639,12 +640,12 @@ class _VizabiMountainChart extends BaseComponent {
 
     } else {
       this.stackedSliceData = d3.groups(this.atomicSliceData, d => d.stack, d => d.group)
-        .map(([key,values])=>({key,values: values.map(([key,values])=>({key,values}))}));
-      //groups are sorted inside a stack
-      this.stackedSliceData 
-        .forEach(stack => stack.values.sort((a, b) => sortValuesForGroups[b.key] - sortValuesForGroups[a.key]));
-    
+        //the output comes in a form of [[key, values[]],[],[]], convert each array to object, do that for both layers
+        .map(([key, values])=>({key, values: values.map(([key, values])=>({key, values}))}));
+        
       this.stackedSliceData.forEach(stack => {
+        //groups are sorted inside a stack
+        stack.values.sort((a, b) => sortValuesForGroups[b.key] - sortValuesForGroups[a.key]);
         stack[Symbol.for("key")] = stack.key;
         stack.KEY = () => stack.key;
         stack.aggrLevel = 2;
