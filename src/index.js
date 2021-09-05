@@ -26,10 +26,13 @@ export default class MountainChart extends BaseComponent {
 
   constructor(config){
 
+    const markerName = config.options.markerName || "mountain";
+    const fullMarker = config.model.markers[markerName];
+
     const frameType = config.Vizabi.stores.encodings.modelTypes.frame;
-    const fullMarker = config.model.markers.mountain;
     const { marker, splashMarker } = frameType.splashMarker(fullMarker);
-    config.model.markers.mountain = marker;
+
+    config.model.markers[markerName] = marker;
 
     config.name = "mountainchart";
 
