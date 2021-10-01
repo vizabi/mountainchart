@@ -7,7 +7,7 @@
   visibility: visible !important;
   $vzb-mc-margin: 10px;
   $vzb-mc-margin-axis: 60px;
-  $vzb-mc-year-size: 15em;
+  $vzb-mc-date-size: 15em;
 
   .vzb-mountainchart {
     @extend %vzb-chart-wrapper;
@@ -167,7 +167,7 @@
         stroke-width: 1px;
       }
 
-      .vzb-mc-year {
+      .vzb-mc-date {
         @include opacity(.3);
         fill: $vzb-color-primary;
         text-anchor: middle;
