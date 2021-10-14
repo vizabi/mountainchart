@@ -208,7 +208,7 @@ class _VizabiMountainChart extends BaseComponent {
 
   draw() {
 
-    this.localise = this.services.locale.auto();
+    this.localise = this.services.locale.auto(this.MDL.frame.interval);
     this._dataNotes = this.root.findChild({name: "datanotes"});
 
     if (this.updateLayoutProfile()) return; //return if exists with error

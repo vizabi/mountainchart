@@ -20,7 +20,7 @@ export class MCSelectList extends BaseComponent {
       selectedF: this.model.encoding.selected.data.filter,
       highlightedF: this.model.encoding.highlighted.data.filter
     };
-    this.localise = this.services.locale.auto();
+    this.localise = this.services.locale.auto(this.MDL.frame.interval);
 
     this.addReaction(this.addAndRemoveLabels);
     this.addReaction(this.updateHighlighted);
