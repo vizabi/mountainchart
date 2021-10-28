@@ -168,10 +168,6 @@ class _VizabiMountainChart extends BaseComponent {
       .order(d3.stackOrderReverse)
       .value((i, slice) => slice.shape[i].y);
 
-    // init internal variables
-    this.xScale = null;
-    this.yScale = null;
-
     this.xAxis = axisSmart("bottom");
 
     this.rangeRatio = 1;
@@ -214,7 +210,6 @@ class _VizabiMountainChart extends BaseComponent {
     if (this.updateLayoutProfile()) return; //return if exists with error
     this.addReaction(this.updateGroupEncoding);
     this.addReaction(this.updateHeaderAndFooter);
-    this.addReaction(this.updateScales);
     this.addReaction(this.updateYear);
     this.addReaction(this.drawForecastOverlay);
     this.addReaction(this.updateMathSettings);
@@ -293,11 +288,9 @@ class _VizabiMountainChart extends BaseComponent {
       });
   }
 
-  updateScales() {
-    //fetch scales, or rebuild scales if there are none, then fetch
-    this.yScale = this.MDL.norm.scale.d3Scale;
-    this.xScale = this.MDL.mu.scale.d3Scale;
-  }
+  //fetch scales, or rebuild scales if there are none, then fetch
+  get yScale() {return this.MDL.norm.scale.d3Scale};
+  get xScale() {return this.MDL.mu.scale.d3Scale};
 
   drawForecastOverlay() {
     this.DOM.forecastOverlay.classed("vzb-hidden", 
@@ -469,9 +462,8 @@ class _VizabiMountainChart extends BaseComponent {
     return mdl.data.space && mdl.data.space.length == 1 && !mdl.data.constant && mdl.data.concept != this.MDL.frame.data.concept;
   }
 
-  processFrameData() {
-    
-    this.atomicSliceData = this.model.dataArray
+  get atomicSliceData(){
+    return this.model.dataArray
       .concat() //copy array in order to avoid sorting in place
       .filter(d => d[this._alias("mu")] && d[this._alias("norm")] && d[this._alias("sigma")])
       .map(d => {
@@ -483,19 +475,21 @@ class _VizabiMountainChart extends BaseComponent {
       })
       //1-st level sort: pre-sort atomic slices, this sort will be retained in grouping and stacking
       .sort((a, b) => b.sortValue[0] - a.sortValue[0]);
+  }
 
+  get groupedSliceData() {
+    
     const groupManualSort = this.MDL.group.manualSorting;
     const isManualSortCorrect = utils.isArray(groupManualSort) && groupManualSort.length > 1;
     const sortValuesForGroups = {};
 
-    this.groupedSliceData = d3.groups(this.atomicSliceData, d => this._isProperty(this.MDL.stack)? d.stack: d.group)
+    return d3.groups(this.atomicSliceData, d => this._isProperty(this.MDL.stack)? d.stack: d.group)
       //the output comes in a form of [[key, values[]],[],[]], convert each array to object
-      .map(([key, values]) => ({key, values}));
+      .map(([key, values]) => ({key, values}))
+      .map(group => {
+        let groupSortValue = 0;
 
-    this.groupedSliceData.forEach(group => {
-      let groupSortValue = 0;
-
-      if (isManualSortCorrect)
+        if (isManualSortCorrect)
         groupSortValue = groupManualSort.includes(group.key) ? groupManualSort.length - 1 - groupManualSort.indexOf(group.key) : -1;
       else
         groupSortValue = d3.sum(group.values.map(m => m.sortValue[0]));
@@ -505,31 +499,42 @@ class _VizabiMountainChart extends BaseComponent {
       });
 
       sortValuesForGroups[group.key] = groupSortValue;
-      group[Symbol.for("key")] = group.key;
-      group.KEY = () => group.key;
-      group.aggrLevel = 1;
-    });
+        group[Symbol.for("key")] = group.key;
+        group.KEY = () => group.key;
+        group.aggrLevel = 1;
 
+        return group;
+      });
+  }
+
+  get stackedSliceData() {
 
     if (this.MDL.stack.data.constant === "none") {
-      this.stackedSliceData = [];
+      return [];
 
     } else {
-      this.stackedSliceData = d3.groups(this.atomicSliceData, d => d.stack, d => d.group)
+      return d3.groups(this.atomicSliceData, d => d.stack, d => d.group)
         //the output comes in a form of [[key, values[]],[],[]], convert each array to object, do that for both layers
-        .map(([key, values])=>({key, values: values.map(([key, values])=>({key, values}))}));
-        
-      this.stackedSliceData.forEach(stack => {
-        //groups are sorted inside a stack
-        stack.values.sort((a, b) => sortValuesForGroups[b.key] - sortValuesForGroups[a.key]);
-        stack[Symbol.for("key")] = stack.key;
-        stack.KEY = () => stack.key;
-        stack.aggrLevel = 2;
-      });
+        .map(([key, values])=>({key, values: values.map(([key, values])=>({key, values}))}))
+        .map(stack => {
+          //groups are sorted inside a stack
+          stack.values.sort((a, b) => sortValuesForGroups[b.key] - sortValuesForGroups[a.key]);
+          stack[Symbol.for("key")] = stack.key;
+          stack.KEY = () => stack.key;
+          stack.aggrLevel = 2;
 
-      //2-nd level sort: atomic slices are sorted by groups
-      this.atomicSliceData.sort((a, b) => b.sortValue[1] - a.sortValue[1]);
+          return stack;
+        });
     }
+  }
+
+  processFrameData() {
+    this.atomicSliceData;
+    this.groupedSliceData;
+    this.stackedSliceData;
+
+    //2-nd level sort: atomic slices are sorted by groups
+    this.atomicSliceData.sort((a, b) => b.sortValue[1] - a.sortValue[1]);
   }
 
   createAndDeleteSlices() {    
@@ -972,5 +977,10 @@ _VizabiMountainChart.DEFAULT_UI = {
 
 export const VizabiMountainChart = decorate(_VizabiMountainChart, {
   "MDL": computed,
-  "duration": computed
+  "duration": computed,
+  "atomicSliceData": computed,
+  "groupedSliceData": computed,
+  "stackedSliceData": computed,
+  "xScale": computed,
+  "yScale": computed
 });
