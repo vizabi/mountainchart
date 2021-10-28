@@ -65,7 +65,7 @@ class _VizabiMountainChart extends BaseComponent {
       placeholder: ".vzb-mc-probe"
     }];
 
-    config.name = "mountainchart";
+    //config.name = "mountainchart";
 
     config.template = `
       <!-- MountainChart Component -->
@@ -490,15 +490,15 @@ class _VizabiMountainChart extends BaseComponent {
         let groupSortValue = 0;
 
         if (isManualSortCorrect)
-        groupSortValue = groupManualSort.includes(group.key) ? groupManualSort.length - 1 - groupManualSort.indexOf(group.key) : -1;
-      else
-        groupSortValue = d3.sum(group.values.map(m => m.sortValue[0]));
+          groupSortValue = groupManualSort.includes(group.key) ? groupManualSort.length - 1 - groupManualSort.indexOf(group.key) : -1;
+        else
+          groupSortValue = d3.sum(group.values.map(m => m.sortValue[0]));
 
-      group.values.forEach(d => {
-        d.sortValue[1] = groupSortValue;
-      });
+        group.values.forEach(d => {
+          d.sortValue[1] = groupSortValue;
+        });
 
-      sortValuesForGroups[group.key] = groupSortValue;
+        sortValuesForGroups[group.key] = groupSortValue;
         group[Symbol.for("key")] = group.key;
         group.KEY = () => group.key;
         group.aggrLevel = 1;
@@ -963,7 +963,7 @@ _VizabiMountainChart.DEFAULT_UI = {
     xAxisGroups: null
   },
   manualSortingEnabled: true,
-  yMaxMethod: 2651276116,
+  yMaxMethod: 0,
   showProbeX: true,
   probeX: 1.85,
   xLogStops: [1, 2, 5],
