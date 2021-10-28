@@ -463,7 +463,7 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   get atomicSliceData(){
-    return this.model.dataArray
+    return this.parent.getDataForSubcomponent(this.name) 
       .concat() //copy array in order to avoid sorting in place
       .filter(d => d[this._alias("mu")] && d[this._alias("norm")] && d[this._alias("sigma")])
       .map(d => {
