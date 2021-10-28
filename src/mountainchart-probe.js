@@ -60,7 +60,8 @@ class MCProbe extends BaseComponent {
     this.DOM.probe.classed("vzb-hidden", !options.level || !this.parent.ui.showProbeX);
     if (!options.level) return;
 
-    this.parent.DOM.xAxis.call(this.parent.xAxis.highlightValue(options.full ? options.level : "none"));
+    if(this.parent.xAxis.scale())
+      this.parent.DOM.xAxis.call(this.parent.xAxis.highlightValue(options.full ? options.level : "none"));
 
     let sumValue = 0;
     let totalArea = 0;
@@ -68,7 +69,7 @@ class MCProbe extends BaseComponent {
 
     const _computeAreas = (d) => {
       sumValue += d.norm;
-      d.shape.forEach(vertex => {
+      if (d.shape) d.shape.forEach(vertex => {
         totalArea += vertex.y;
         if (this.parent._math.rescale(vertex.x) < options.level) leftArea += vertex.y;
       });
