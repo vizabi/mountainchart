@@ -5,21 +5,27 @@ import {
 } from "VizabiSharedComponents";
 const {ICON_CLOSE} = Icons;
 
-export class MCSelectList extends BaseComponent {
+import {decorate, computed} from "mobx";
+
+class _MCSelectList extends BaseComponent {
 
 
   setup() {
 
   }
 
-  draw() {
-
-    this.MDL = {
+  get MDL(){
+    return {
       frame: this.model.encoding.frame,
       color: this.model.encoding.color,
       selectedF: this.model.encoding.selected.data.filter,
       highlightedF: this.model.encoding.highlighted.data.filter
     };
+  }
+
+  draw() {
+
+
     this.localise = this.services.locale.auto(this.MDL.frame.interval);
 
     this.addReaction(this.addAndRemoveLabels);
@@ -244,3 +250,6 @@ export class MCSelectList extends BaseComponent {
 
 }
 
+export const MCSelectList = decorate(_MCSelectList, {
+  "MDL": computed
+});
