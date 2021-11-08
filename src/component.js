@@ -4,7 +4,6 @@ import {
   Utils,
   LegacyUtils as utils,
   axisSmart,
-  DateTimeBackground,
   //Exporter as svgexport,
 } from "VizabiSharedComponents";
 
@@ -53,9 +52,6 @@ class _VizabiMountainChart extends BaseComponent {
 
   constructor(config) {
     config.subcomponents = [{
-      type: DateTimeBackground,
-      placeholder: ".vzb-mc-date"
-    },{
       name: "selectlist",
       type: MCSelectList,
       placeholder: ".vzb-mc-mountains-labels"
@@ -72,7 +68,6 @@ class _VizabiMountainChart extends BaseComponent {
       <svg class="vzb-mountainchart-svg vzb-export">
         <g class="vzb-mc-graph">
           <rect class="vzb-mc-eventarea"></rect>
-          <g class="vzb-mc-date"></g>
 
           <g class="vzb-mc-mountains-mergestacked"></g>
           <g class="vzb-mc-mountains-mergegrouped"></g>
@@ -129,7 +124,6 @@ class _VizabiMountainChart extends BaseComponent {
       xTitle: this.element.select(".vzb-mc-axis-x-title"),
       yTitle: this.element.select(".vzb-mc-axis-y-title"),
       info: this.element.select(".vzb-mc-axis-info"),
-      year: this.element.select(".vzb-mc-date"),      
       mountainMergeStackedContainer: this.element.select(".vzb-mc-mountains-mergestacked"),
       mountainMergeGroupedContainer: this.element.select(".vzb-mc-mountains-mergegrouped"),
       mountainAtomicContainer: this.element.select(".vzb-mc-mountains"),
@@ -140,7 +134,6 @@ class _VizabiMountainChart extends BaseComponent {
       xAxisGroups: this.element.select(".vzb-mc-x-axis-groups")
     };
 
-    this._date = this.findChild({type: "DateTimeBackground"});
     this._selectlist = this.findChild({name: "selectlist"});
     this._probe = this.findChild({name: "probe"});
     
@@ -210,7 +203,6 @@ class _VizabiMountainChart extends BaseComponent {
     if (this.updateLayoutProfile()) return; //return if exists with error
     this.addReaction(this.updateGroupEncoding);
     this.addReaction(this.updateHeaderAndFooter);
-    this.addReaction(this.updateYear);
     this.addReaction(this.drawForecastOverlay);
     this.addReaction(this.updateMathSettings);
     this.addReaction(this.updateSize);
@@ -239,7 +231,6 @@ class _VizabiMountainChart extends BaseComponent {
 
   updateLayoutProfile(){
     this.services.layout.size; //watch
-
 
     this.profileConstants = this.services.layout.getProfileConstants(PROFILE_CONSTANTS, PROFILE_CONSTANTS_FOR_PROJECTOR, this.state.positionInFacet);
     this.height = this.element.node().clientHeight || 0;
@@ -302,10 +293,6 @@ class _VizabiMountainChart extends BaseComponent {
     );
   }
 
-  updateYear() {
-    this._date.setText(this.MDL.frame.value, this.duration);    
-  }
-
   updateMathSettings(){
     this._math.xScaleFactor = this.MDL.mu.config.xScaleFactor;
     this._math.xScaleShift = this.MDL.mu.config.xScaleShift;
@@ -326,16 +313,6 @@ class _VizabiMountainChart extends BaseComponent {
     this.DOM.graph.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     const isRTL = this.services.locale.isRTL();
-
-    //year is centered and resized
-    this._date
-      .setConditions({
-        topOffset: this.services.layout.profile === "LARGE" ? margin.top * 2 : 0,
-        xAlign: this.services.layout.profile === "LARGE" ? (isRTL ? "left" : "right") : "center",
-        yAlign: this.services.layout.profile === "LARGE" ? "top" : "center",
-        widthRatio: this.services.layout.profile === "LARGE" ? 3 / 8 : 8 / 10
-      })
-      .resizeText(width, height);
 
     //update scales to the new range
     this.yScale.range([height, 0]);
