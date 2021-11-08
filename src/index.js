@@ -42,11 +42,11 @@ export default class MountainChart extends BaseComponent {
       placeholder: ".vzb-repeater",
       model: marker,
       options: {
-        ComponentClass: Facet,
-        componentCssName: "vzb-facet",
-        componentOptions: {
-          ComponentClass: VizabiMountainChart,
-          componentCssName: "vzb-mountainchart"
+        repeatedComponent: Facet,
+        repeatedComponentCssClass: "vzb-facet",
+        repeatedComponentOptions: {
+          facetedComponent: VizabiMountainChart,
+          facetedComponentCssClass: "vzb-mountainchart"
         }
       },
       name: "chart",
