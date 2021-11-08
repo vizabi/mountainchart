@@ -240,7 +240,8 @@ class _VizabiMountainChart extends BaseComponent {
   updateLayoutProfile(){
     this.services.layout.size; //watch
 
-    this.profileConstants = this.services.layout.getProfileConstants(PROFILE_CONSTANTS, PROFILE_CONSTANTS_FOR_PROJECTOR);
+
+    this.profileConstants = this.services.layout.getProfileConstants(PROFILE_CONSTANTS, PROFILE_CONSTANTS_FOR_PROJECTOR, this.state.positionInFacet);
     this.height = this.element.node().clientHeight || 0;
     this.width = this.element.node().clientWidth || 0;
 
