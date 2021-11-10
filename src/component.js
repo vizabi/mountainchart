@@ -281,8 +281,8 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   //fetch scales, or rebuild scales if there are none, then fetch
-  get yScale() {return this.MDL.norm.scale.d3Scale};
-  get xScale() {return this.MDL.mu.scale.d3Scale};
+  get yScale() {return this.MDL.norm.scale.d3Scale.copy()};
+  get xScale() {return this.MDL.mu.scale.d3Scale.copy()};
 
   drawForecastOverlay() {
     this.DOM.forecastOverlay.classed("vzb-hidden", 
