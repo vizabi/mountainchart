@@ -13,13 +13,13 @@ export default class MCDecorations{
     
     // x axis groups used for incomes
     const showxAxisGroups = this.ui.decorations.xAxisGroups 
-      && this.ui.decorations.xAxisGroups[this.MDL.mu.data.concept] 
+      && this.ui.decorations.xAxisGroups[this.MDL.mu.data.concept || "any"] 
       && this.ui.decorations.enabled
       && this.services.layout.profile !== "SMALL";
     
     this.DOM.xAxisGroups.classed("vzb-invisible", !showxAxisGroups);
     if (showxAxisGroups) {
-      const axisGroupsData = Utils.injectIndexes(this.ui.decorations.xAxisGroups[this.MDL.mu.data.concept]);
+      const axisGroupsData = Utils.injectIndexes(this.ui.decorations.xAxisGroups[this.MDL.mu.data.concept || "any"]);
       let xAxisGroups = this.DOM.xAxisGroups.selectAll(".vzb-mc-x-axis-group").data(axisGroupsData);
       
       xAxisGroups.exit().remove();
