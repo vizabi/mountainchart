@@ -464,10 +464,9 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   get groupedSliceData() {
-    
     const groupManualSort = this.MDL.group.manualSorting;
     const isManualSortCorrect = utils.isArray(groupManualSort) && groupManualSort.length > 1;
-    const sortValuesForGroups = {};
+    this.sortValuesForGroups = {};
 
     return d3.groups(this.atomicSliceData, d => this._isProperty(this.MDL.stack)? d.stack: d.group)
       //the output comes in a form of [[key, values[]],[],[]], convert each array to object
@@ -484,7 +483,7 @@ class _VizabiMountainChart extends BaseComponent {
           d.sortValue[1] = groupSortValue;
         });
 
-        sortValuesForGroups[group.key] = groupSortValue;
+        this.sortValuesForGroups[group.key] = groupSortValue;
         group[Symbol.for("key")] = group.key;
         group.KEY = () => group.key;
         group.aggrLevel = 1;
@@ -504,7 +503,7 @@ class _VizabiMountainChart extends BaseComponent {
         .map(([key, values])=>({key, values: values.map(([key, values])=>({key, values}))}))
         .map(stack => {
           //groups are sorted inside a stack
-          stack.values.sort((a, b) => sortValuesForGroups[b.key] - sortValuesForGroups[a.key]);
+          stack.values.sort((a, b) => this.sortValuesForGroups[b.key] - this.sortValuesForGroups[a.key]);
           stack[Symbol.for("key")] = stack.key;
           stack.KEY = () => stack.key;
           stack.aggrLevel = 2;
