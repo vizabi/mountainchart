@@ -151,7 +151,7 @@ class _VizabiMountainChart extends BaseComponent {
 
     // define path generator
     this.area = d3.area()
-      .curve(d3.curveBasis)
+      .curve(d3.curveCatmullRom) //curveBasis curveLinear curveMonotoneX curveCatmullRom
       .x(d => this.xScale(d.x))
       .y0(d => this.yScale(d.y0))
       .y1(d => this.yScale(d.y0 + d.y));
