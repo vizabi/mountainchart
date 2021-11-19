@@ -168,14 +168,6 @@ class _VizabiMountainChart extends BaseComponent {
     this.mesh = [];
     this.stickySortValues = {};
     this.yMaxGlobal = 0;
-
-    //i.e. "10 - 1000" => 100
-    const getMiddleOfAnIntervalOnLogScale = (interval) => Math.sqrt(+interval.split(" - ")[0] * +interval.split(" - ")[1]);
-
-    this.fetchIncomeBrackets()
-      .then(response => {
-        this.incomeBrackets = response.map(getMiddleOfAnIntervalOnLogScale)
-      })
   }
 
   get MDL(){
@@ -228,20 +220,6 @@ class _VizabiMountainChart extends BaseComponent {
     this.computeAllShapes();
     this.createAndDeleteSlices();
     this.renderAllShapes();
-  }
-
-  fetchIncomeBrackets(){
-    const datasource = this.model.data.source;
-
-    const query = {
-      select: {
-        key: ["income_bracket_50"],
-        value: ["name"]
-      },
-      from: "entities"
-    };
-
-    return datasource.query(query).then(result => result.raw.map(m => m.name));
   }
 
   updateGroupEncoding(){
@@ -404,7 +382,12 @@ class _VizabiMountainChart extends BaseComponent {
     //   this.MDL.mu.scale.type || "log", 
     //   this.xScale.domain()
     // );
-    this.mesh = this.incomeBrackets;
+    const start = this.ui.xStart;
+    const end = this.ui.xEnd;
+    const nbrackets = this.ui.xPoints;
+    const step = Math.pow(end/start, 1/nbrackets);
+
+    this.mesh = d3.range(nbrackets).map(m => start * Math.pow(step, m + 0.5) );
     
     //rbh
     //this._robinhood.findMeshIndexes(this.mesh);
@@ -979,6 +962,8 @@ _VizabiMountainChart.DEFAULT_UI = {
   probeX: 1.85,
   xLogStops: [1, 2, 5],
   xPoints: 50,
+  xStart: 0.0078125,
+  xEnd: 8192.0,
   directSigma: false, //false = input is gini, true = input is standatd deviation of the distribution
   directMu: false, //false = input is GDP/capita, true = input is mean of the distribution
   preload: "income_mountains",
