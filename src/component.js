@@ -4,7 +4,6 @@ import {
   Utils,
   LegacyUtils as utils,
   axisSmart,
-  DateTimeBackground,
   //Exporter as svgexport,
 } from "VizabiSharedComponents";
 
@@ -14,7 +13,7 @@ import {MCSelectList} from "./mountainchart-selectlist";
 import {MCProbe} from "./mountainchart-probe";
 //import RobinHood from "./mountainchart-robinhood";
 
-import {decorate, computed} from "mobx";
+import {decorate, computed, observable} from "mobx";
 
 const {ICON_QUESTION} = Icons;
 //const COLOR_BLACKISH = "rgb(51, 51, 51)";
@@ -53,9 +52,6 @@ class _VizabiMountainChart extends BaseComponent {
 
   constructor(config) {
     config.subcomponents = [{
-      type: DateTimeBackground,
-      placeholder: ".vzb-mc-date"
-    },{
       name: "selectlist",
       type: MCSelectList,
       placeholder: ".vzb-mc-mountains-labels"
@@ -72,7 +68,6 @@ class _VizabiMountainChart extends BaseComponent {
       <svg class="vzb-mountainchart-svg vzb-export">
         <g class="vzb-mc-graph">
           <rect class="vzb-mc-eventarea"></rect>
-          <g class="vzb-mc-date"></g>
 
           <g class="vzb-mc-mountains-mergestacked"></g>
           <g class="vzb-mc-mountains-mergegrouped"></g>
@@ -129,7 +124,6 @@ class _VizabiMountainChart extends BaseComponent {
       xTitle: this.element.select(".vzb-mc-axis-x-title"),
       yTitle: this.element.select(".vzb-mc-axis-y-title"),
       info: this.element.select(".vzb-mc-axis-info"),
-      year: this.element.select(".vzb-mc-date"),      
       mountainMergeStackedContainer: this.element.select(".vzb-mc-mountains-mergestacked"),
       mountainMergeGroupedContainer: this.element.select(".vzb-mc-mountains-mergegrouped"),
       mountainAtomicContainer: this.element.select(".vzb-mc-mountains"),
@@ -140,7 +134,6 @@ class _VizabiMountainChart extends BaseComponent {
       xAxisGroups: this.element.select(".vzb-mc-x-axis-groups")
     };
 
-    this._date = this.findChild({type: "DateTimeBackground"});
     this._selectlist = this.findChild({name: "selectlist"});
     this._probe = this.findChild({name: "probe"});
     
@@ -158,8 +151,8 @@ class _VizabiMountainChart extends BaseComponent {
 
     // define path generator
     this.area = d3.area()
-      .curve(d3.curveBasis)
-      .x(d => this.xScale(this._math.rescale(d.x)))
+      .curve(d3.curveCatmullRom) //curveBasis curveLinear curveMonotoneX curveCatmullRom
+      .x(d => this.xScale(d.x))
       .y0(d => this.yScale(d.y0))
       .y1(d => this.yScale(d.y0 + d.y));
 
@@ -175,7 +168,6 @@ class _VizabiMountainChart extends BaseComponent {
     this.mesh = [];
     this.stickySortValues = {};
     this.yMaxGlobal = 0;
-
   }
 
   get MDL(){
@@ -184,9 +176,8 @@ class _VizabiMountainChart extends BaseComponent {
       selectedF: this.model.encoding.selected.data.filter,
       highlightedF: this.model.encoding.highlighted.data.filter,
       //superHighlightedF: this.model.encoding.superhighlighted.data.filter,
-      norm: this.model.encoding[this.state.alias.norm || "norm"],
       mu: this.model.encoding[this.state.alias.mu || "mu"],
-      sigma: this.model.encoding[this.state.alias.sigma || "sigma"],
+      shapedata: this.model.encoding[this.state.alias.shapedata || "shapedata"],
       color: this.model.encoding[this.state.alias.color || "color"],
       label: this.model.encoding.label,
       stack: this.model.encoding.stack,
@@ -210,13 +201,12 @@ class _VizabiMountainChart extends BaseComponent {
     if (this.updateLayoutProfile()) return; //return if exists with error
     this.addReaction(this.updateGroupEncoding);
     this.addReaction(this.updateHeaderAndFooter);
-    this.addReaction(this.updateYear);
     this.addReaction(this.drawForecastOverlay);
     this.addReaction(this.updateMathSettings);
     this.addReaction(this.updateSize);
     this.addReaction(this.updateMesh);
     this.addReaction(this.zoom);
-    this.addReaction(this.updateMasks);
+    //this.addReaction(this.updateMasks);
     this.addReaction(this.drawData);
     this.addReaction(this.updateSelected);
     this.addReaction(this.updateAllSlicesOpacity);
@@ -240,7 +230,7 @@ class _VizabiMountainChart extends BaseComponent {
   updateLayoutProfile(){
     this.services.layout.size; //watch
 
-    this.profileConstants = this.services.layout.getProfileConstants(PROFILE_CONSTANTS, PROFILE_CONSTANTS_FOR_PROJECTOR);
+    this.profileConstants = this.services.layout.getProfileConstants(PROFILE_CONSTANTS, PROFILE_CONSTANTS_FOR_PROJECTOR, this.state.positionInFacet);
     this.height = this.element.node().clientHeight || 0;
     this.width = this.element.node().clientWidth || 0;
 
@@ -289,8 +279,8 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   //fetch scales, or rebuild scales if there are none, then fetch
-  get yScale() {return this.MDL.norm.scale.d3Scale};
-  get xScale() {return this.MDL.mu.scale.d3Scale};
+  get yScale() {return this.MDL.shapedata.scale.d3Scale.copy()};
+  get xScale() {return this.MDL.mu.scale.d3Scale.copy()};
 
   drawForecastOverlay() {
     this.DOM.forecastOverlay.classed("vzb-hidden", 
@@ -299,10 +289,6 @@ class _VizabiMountainChart extends BaseComponent {
       !this.ui.endBeforeForecast || 
       (this.MDL.frame.value <= this.MDL.frame.parseValue(this.ui.endBeforeForecast))
     );
-  }
-
-  updateYear() {
-    this._date.setText(this.MDL.frame.value, this.duration);    
   }
 
   updateMathSettings(){
@@ -326,17 +312,8 @@ class _VizabiMountainChart extends BaseComponent {
 
     const isRTL = this.services.locale.isRTL();
 
-    //year is centered and resized
-    this._date
-      .setConditions({
-        topOffset: this.services.layout.profile === "LARGE" ? margin.top * 2 : 0,
-        xAlign: this.services.layout.profile === "LARGE" ? (isRTL ? "left" : "right") : "center",
-        yAlign: this.services.layout.profile === "LARGE" ? "top" : "center",
-        widthRatio: this.services.layout.profile === "LARGE" ? 3 / 8 : 8 / 10
-      })
-      .resizeText(width, height);
-
     //update scales to the new range
+    //this.yScale.range([height, height - this.parent.scaleDomainRange.range]);
     this.yScale.range([height, 0]);
     this.xScale.range([this.rangeShift, width * this.rangeRatio + this.rangeShift]);
 
@@ -401,11 +378,17 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   updateMesh(){
-    this.mesh = this._math.generateMesh(
-      this.ui.xPoints, 
-      this.MDL.mu.scale.type || "log", 
-      this.xScale.domain()
-    );
+    // this.mesh = this._math.generateMesh(
+    //   this.ui.xPoints, 
+    //   this.MDL.mu.scale.type || "log", 
+    //   this.xScale.domain()
+    // );
+    const start = this.ui.xStart;
+    const end = this.ui.xEnd;
+    const nbrackets = this.ui.xPoints;
+    const step = Math.pow(end/start, 1/nbrackets);
+
+    this.mesh = d3.range(nbrackets).map(m => start * Math.pow(step, m + 0.5) );
     
     //rbh
     //this._robinhood.findMeshIndexes(this.mesh);
@@ -463,11 +446,15 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   get atomicSliceData(){
-    return this.model.dataArray
+    return this.model.dataArray//.parent.getDataForSubcomponent(this.name) 
       .concat() //copy array in order to avoid sorting in place
-      .filter(d => d[this._alias("mu")] && d[this._alias("norm")] && d[this._alias("sigma")])
+      .filter(d => d[this._alias("shapedata")] || d[this._alias("mu")] && d[this._alias("norm")] && d[this._alias("sigma")])
       .map(d => {
         d.KEY = () => d[Symbol.for("key")];
+        if(typeof d.shapedata === "string"){
+          d.distribution = d.shapedata.split(",").map(m => +m);
+          d.norm = d3.sum(d.distribution);
+        }
         if (this.stickySortValues[d.KEY()] == null) this.stickySortValues[d.KEY()] = d[this._alias("norm")];
         d.sortValue = [this.stickySortValues[d.KEY()] || 0, 0];
         d.aggrLevel = 0;
@@ -478,10 +465,9 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   get groupedSliceData() {
-    
     const groupManualSort = this.MDL.group.manualSorting;
     const isManualSortCorrect = utils.isArray(groupManualSort) && groupManualSort.length > 1;
-    const sortValuesForGroups = {};
+    this.sortValuesForGroups = {};
 
     return d3.groups(this.atomicSliceData, d => this._isProperty(this.MDL.stack)? d.stack: d.group)
       //the output comes in a form of [[key, values[]],[],[]], convert each array to object
@@ -498,7 +484,7 @@ class _VizabiMountainChart extends BaseComponent {
           d.sortValue[1] = groupSortValue;
         });
 
-        sortValuesForGroups[group.key] = groupSortValue;
+        this.sortValuesForGroups[group.key] = groupSortValue;
         group[Symbol.for("key")] = group.key;
         group.KEY = () => group.key;
         group.aggrLevel = 1;
@@ -518,7 +504,7 @@ class _VizabiMountainChart extends BaseComponent {
         .map(([key, values])=>({key, values: values.map(([key, values])=>({key, values}))}))
         .map(stack => {
           //groups are sorted inside a stack
-          stack.values.sort((a, b) => sortValuesForGroups[b.key] - sortValuesForGroups[a.key]);
+          stack.values.sort((a, b) => this.sortValuesForGroups[b.key] - this.sortValuesForGroups[a.key]);
           stack[Symbol.for("key")] = stack.key;
           stack.KEY = () => stack.key;
           stack.aggrLevel = 2;
@@ -698,6 +684,7 @@ class _VizabiMountainChart extends BaseComponent {
       : view.interrupt();
 
     if (selected)
+      //filter by thickness to avoid stroke of any selected shape cover the entire axis
       transition.attr("d", this.area(d.shape.filter(f => f.y > d[this._alias("norm")] * THICKNESS_THRESHOLD)));
     else        
       transition.attr("d", this.area(d.shape));
@@ -863,6 +850,13 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   _spawnShape(d) {
+    //in case of the direct shapes the distribution is already known
+    if(d.distribution) return this.mesh.map((dX, i) => ({
+      x: dX,
+      y0: 0,
+      y: d.distribution[i]
+    }));
+
     const norm = d[this._alias("norm")];
     const sigma = this.ui.directSigma ?
       d[this._alias("sigma")] :
@@ -893,6 +887,7 @@ class _VizabiMountainChart extends BaseComponent {
 
   _adjustMaxY() {
     this.yScale.domain([0, Math.round(this.yMaxGlobal)]);
+    //this.yScale.domain([0, this.parent.scaleDomainRange.domain]);
   }
 
   _isMergingGroups() {
@@ -968,6 +963,8 @@ _VizabiMountainChart.DEFAULT_UI = {
   probeX: 1.85,
   xLogStops: [1, 2, 5],
   xPoints: 50,
+  xStart: 0.0078125,
+  xEnd: 8192.0,
   directSigma: false, //false = input is gini, true = input is standatd deviation of the distribution
   directMu: false, //false = input is GDP/capita, true = input is mean of the distribution
   preload: "income_mountains",
@@ -982,5 +979,6 @@ export const VizabiMountainChart = decorate(_VizabiMountainChart, {
   "groupedSliceData": computed,
   "stackedSliceData": computed,
   "xScale": computed,
-  "yScale": computed
+  "yScale": computed,
+  "incomeBrackets": observable
 });

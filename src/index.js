@@ -3,6 +3,7 @@
 import "./styles.scss";
 import { 
   BaseComponent,
+  DateTimeBackground,
   TimeSlider,
   DataNotes,
   DataWarning,
@@ -41,10 +42,15 @@ export default class MountainChart extends BaseComponent {
       placeholder: ".vzb-repeater",
       model: marker,
       options: {
-        ComponentClass: VizabiMountainChart,
-        componentCssName: "vzb-mountainchart"
+        repeatedComponent: VizabiMountainChart,
+        repeatedComponentCssClass: "vzb-mountainchart"
       },
       name: "chart",
+    },{
+      type: DateTimeBackground,
+      placeholder: ".vzb-datetime",
+      name: "datetime",
+      model: marker
     },{
       type: TimeSlider,
       placeholder: ".vzb-timeslider",
@@ -84,7 +90,10 @@ export default class MountainChart extends BaseComponent {
     }];
 
     config.template = `
-      <div class="vzb-repeater vzb-mountainchart"></div>
+      <div class="vzb-chart">
+        <div class="vzb-datetime"></div>
+        <div class="vzb-repeater"></div>
+      </div>
       <div class="vzb-animationcontrols">
         <div class="vzb-timeslider"></div>
         <div class="vzb-speedslider"></div>

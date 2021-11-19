@@ -9,6 +9,20 @@
   $vzb-mc-margin-axis: 60px;
   $vzb-mc-date-size: 15em;
 
+  .vzb-facet {
+    .vzb-facet-inner:not(.vzb-facet-row-first) {
+      .vzb-mc-decorations,
+      .vzb-mc-axis-y-title,
+      .vzb-mc-axis-info {
+        visibility: hidden;
+      }
+    }
+    .vzb-facet-inner:not(.vzb-facet-row-last) {
+      .vzb-mc-axis-x .tick text {visibility: hidden;}
+      .vzb-mc-axis-x-title{visibility: hidden;}
+    }
+  }
+
   .vzb-mountainchart {
     @extend %vzb-chart-wrapper;
 
@@ -165,15 +179,6 @@
         fill: none;
         stroke: $vzb-color-grey;
         stroke-width: 1px;
-      }
-
-      .vzb-mc-date {
-        @include opacity(.3);
-        fill: $vzb-color-primary;
-        text-anchor: middle;
-        -webkit-touch-callout: none;
-        user-select: none;
-        pointer-events: none;
       }
 
       .vzb-mc-tooltip {
