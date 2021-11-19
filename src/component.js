@@ -206,7 +206,7 @@ class _VizabiMountainChart extends BaseComponent {
     this.addReaction(this.updateSize);
     this.addReaction(this.updateMesh);
     this.addReaction(this.zoom);
-    this.addReaction(this.updateMasks);
+    //this.addReaction(this.updateMasks);
     this.addReaction(this.drawData);
     this.addReaction(this.updateSelected);
     this.addReaction(this.updateAllSlicesOpacity);
@@ -313,6 +313,7 @@ class _VizabiMountainChart extends BaseComponent {
     const isRTL = this.services.locale.isRTL();
 
     //update scales to the new range
+    //this.yScale.range([height, height - this.parent.scaleDomainRange.range]);
     this.yScale.range([height, 0]);
     this.xScale.range([this.rangeShift, width * this.rangeRatio + this.rangeShift]);
 
@@ -445,7 +446,7 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   get atomicSliceData(){
-    return this.parent.getDataForSubcomponent(this.name) 
+    return this.model.dataArray//.parent.getDataForSubcomponent(this.name) 
       .concat() //copy array in order to avoid sorting in place
       .filter(d => d[this._alias("shapedata")] || d[this._alias("mu")] && d[this._alias("norm")] && d[this._alias("sigma")])
       .map(d => {
@@ -886,6 +887,7 @@ class _VizabiMountainChart extends BaseComponent {
 
   _adjustMaxY() {
     this.yScale.domain([0, Math.round(this.yMaxGlobal)]);
+    //this.yScale.domain([0, this.parent.scaleDomainRange.domain]);
   }
 
   _isMergingGroups() {
