@@ -151,7 +151,6 @@ class _VizabiMountainChart extends BaseComponent {
 
     // define path generator
     this.area = d3.area()
-      .curve(d3.curveCatmullRom) //curveBasis curveLinear curveMonotoneX curveCatmullRom
       .x(d => this.xScale(d.x))
       .y0(d => this.yScale(d.y0))
       .y1(d => this.yScale(d.y0 + d.y));
@@ -199,6 +198,7 @@ class _VizabiMountainChart extends BaseComponent {
     this._dataNotes = this.root.findChild({name: "datanotes"});
 
     if (this.updateLayoutProfile()) return; //return if exists with error
+    this.addReaction(this.updateCurveMethod);
     this.addReaction(this.updateGroupEncoding);
     this.addReaction(this.updateHeaderAndFooter);
     this.addReaction(this.drawForecastOverlay);
@@ -220,6 +220,10 @@ class _VizabiMountainChart extends BaseComponent {
     this.computeAllShapes();
     this.createAndDeleteSlices();
     this.renderAllShapes();
+  }
+
+  updateCurveMethod(){
+    this.area.curve(d3[this.ui.curve]);
   }
 
   updateGroupEncoding(){
@@ -957,6 +961,7 @@ _VizabiMountainChart.DEFAULT_UI = {
     enabled: true,
     xAxisGroups: null
   },
+  curve: "curveBasis", //curveBasis curveLinear curveMonotoneX curveCatmullRom
   manualSortingEnabled: true,
   yMaxMethod: 0,
   showProbeX: true,
