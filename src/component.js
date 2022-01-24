@@ -961,7 +961,7 @@ _VizabiMountainChart.DEFAULT_UI = {
     enabled: true,
     xAxisGroups: null
   },
-  curve: "curveBasis", //curveBasis curveLinear curveMonotoneX curveCatmullRom
+  curve: "curveNatural", //curveBasis curveLinear curveMonotoneX curveCatmullRom curveNatural
   manualSortingEnabled: true,
   yMaxMethod: 0,
   showProbeX: true,
