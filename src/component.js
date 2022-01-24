@@ -474,7 +474,7 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   get groupedSliceData() {
-    const groupManualSort = this.MDL.group.manualSorting;
+    const groupManualSort = this.MDL.group.config.manualSorting;
     const isManualSortCorrect = utils.isArray(groupManualSort) && groupManualSort.length > 1;
     this.sortValuesForGroups = {};
 
