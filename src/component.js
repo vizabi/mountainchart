@@ -13,7 +13,7 @@ import {MCSelectList} from "./mountainchart-selectlist";
 import {MCProbe} from "./mountainchart-probe";
 //import RobinHood from "./mountainchart-robinhood";
 
-import {decorate, computed, observable} from "mobx";
+import {decorate, computed, observable, runInAction} from "mobx";
 
 const {ICON_QUESTION} = Icons;
 //const COLOR_BLACKISH = "rgb(51, 51, 51)";
@@ -227,8 +227,13 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   updateGroupEncoding(){
-    if (this._isProperty(this.MDL.color))
-      this.MDL.group.data.config.concept = this.MDL.color.data.concept;
+    if (this.MDL.color.scale.isDiscrete()) {
+      runInAction(() => {
+        this.MDL.group.data.config.concept = this.MDL.color.data.config.concept;
+        this.MDL.group.data.config.source = this.MDL.color.data.config.source;
+        this.MDL.group.data.config.space = this.MDL.color.data.config.space;
+      });
+    }
   }
 
   updateLayoutProfile(){
