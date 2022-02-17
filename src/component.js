@@ -322,8 +322,11 @@ class _VizabiMountainChart extends BaseComponent {
     const isRTL = this.services.locale.isRTL();
 
     //update scales to the new range
-    //this.yScale.range([height, height - this.parent.scaleDomainRange.range]);
-    this.yScale.range([height, 0]);
+    if(this.parent.constructor.name === "_Facet" && this.parent.scaleDomainRange.domain)
+      this.yScale.range([height, height - this.parent.scaleDomainRange.range]);
+    else
+      this.yScale.range([height, 0]);
+
     this.xScale.range([this.rangeShift, width * this.rangeRatio + this.rangeShift]);
 
     //axis is updated
@@ -454,8 +457,15 @@ class _VizabiMountainChart extends BaseComponent {
     return mdl.data.space && mdl.data.space.length == 1 && !mdl.data.constant && mdl.data.concept != this.MDL.frame.data.concept;
   }
 
+  _getDataArrayForFacet(){
+    if(this.parent.constructor.name === "_Facet")
+      return this.parent.getDataForSubcomponent(this.name);
+    else
+      return this.model.dataArray;
+  }
+
   get atomicSliceData(){
-    return this.model.dataArray//.parent.getDataForSubcomponent(this.name) 
+    return this._getDataArrayForFacet()
       .concat() //copy array in order to avoid sorting in place
       .filter(d => d[this._alias("shapedata")] || d[this._alias("mu")] && d[this._alias("norm")] && d[this._alias("sigma")])
       .map(d => {
@@ -699,10 +709,8 @@ class _VizabiMountainChart extends BaseComponent {
       transition.attr("d", this.area(d.shape));
 
     const color = d[this._alias("color")];
-    if (color)
-      transition.style("fill", this.MDL.color.scale.d3Scale(color));
-    else
-      transition.style("fill", COLOR_WHITEISH);
+    transition.style("fill", this.MDL.color.scale.d3Scale(color || d[Symbol.for("key")] ));
+    //transition.style("fill", COLOR_WHITEISH);
 
     //fancy appear of the slices that were hidden
     if (!this._isDragging() && !this.MDL.frame.playing && this.MDL.stack.data.constant !== "none" && !selected) {
@@ -895,8 +903,10 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   _adjustMaxY() {
-    this.yScale.domain([0, Math.round(this.yMaxGlobal)]);
-    //this.yScale.domain([0, this.parent.scaleDomainRange.domain]);
+    if(this.parent.constructor.name === "_Facet" && this.parent.scaleDomainRange.domain)
+      this.yScale.domain([0, this.parent.scaleDomainRange.domain]);
+    else
+      this.yScale.domain([0, Math.round(this.yMaxGlobal)]);
   }
 
   _isMergingGroups() {
