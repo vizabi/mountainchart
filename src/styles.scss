@@ -25,6 +25,7 @@
 
   .vzb-mountainchart {
     @extend %vzb-chart-wrapper;
+    transform: translateZ(0);
 
     .vzb-mountainchart-svg {
       @extend %vzb-chart-svg;
