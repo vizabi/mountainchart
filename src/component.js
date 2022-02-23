@@ -920,7 +920,7 @@ class _VizabiMountainChart extends BaseComponent {
         .attr("transform", "translate(" + (mouse[0]) + "," + (mouse[1]) + ")")
         .selectAll("text")
         .attr("text-anchor", "middle")
-        .attr("alignment-baseline", "middle")
+        .attr("dominant-baseline", "middle")
         .text(tooltipText);
 
       const contentBBox = this.DOM.tooltip.select("text").node().getBBox();
