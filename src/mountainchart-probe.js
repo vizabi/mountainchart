@@ -43,7 +43,7 @@ class MCProbe extends BaseComponent {
 
   draw() {
     this.localise = this.services.locale.auto(this.MDL.frame.interval);
-    this.addReaction(this.redraw);
+    //this.addReaction(this.redraw);
   }
 
 

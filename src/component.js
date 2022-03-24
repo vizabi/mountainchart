@@ -211,6 +211,7 @@ class _VizabiMountainChart extends BaseComponent {
     this.addReaction(this.updateSelected);
     this.addReaction(this.updateAllSlicesOpacity);
     this.addReaction(this.updateDecorations);
+    this.addReaction(this.updateProbe);
   }
 
   drawData() {
@@ -220,6 +221,10 @@ class _VizabiMountainChart extends BaseComponent {
     this.computeAllShapes();
     this.createAndDeleteSlices();
     this.renderAllShapes();
+  }
+
+  updateProbe(){
+    this._probe.redraw();
   }
 
   updateCurveMethod(){
