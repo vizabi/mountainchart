@@ -227,7 +227,7 @@ class _MCSelectList extends BaseComponent {
           .attr("r", fontHeight / 3)
           .attr("cx", (isRTL ? -1 : 1) * fontHeight * 0.4)
           .attr("cy", fontHeight / 1.5)
-          .style("fill", _this.parent.MDL.color.scale.d3Scale(d.color));
+          .style("fill", _this.parent.MDL.color.scale.d3Scale(d.color || d[Symbol.for("key")]));
 
         // view.onTap((event, d) => {
         //   event.stopPropagation();
