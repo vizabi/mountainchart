@@ -1,0 +1,21 @@
+.vzb-dialogs {
+  .vzb-dialogs-dialog {
+    &[data-dlg="povertyline"] {
+      .vzb-dialog-content {
+        .vzb-povertylinetype {
+          label {
+            display: block;
+          }
+        }
+        .vzb-povertylinecustomvalue-field {
+          margin-left: 5px;
+          margin-right: 10px;
+          width: auto;
+          max-width: 30%;
+          padding: 5px;
+          display: inline-block;
+        }  
+      }
+    }
+  }
+}

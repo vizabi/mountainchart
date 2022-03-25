@@ -56,6 +56,10 @@
         }
       }
 
+      .vzb-mc-probe .vzb-mc-probe-value-head {
+        text-anchor: middle;
+      }
+
       .vzb-mc-probe .vzb-mc-probe-value-ul,
       .vzb-mc-probe .vzb-mc-probe-value-dl {
         text-anchor: end;
@@ -291,4 +295,5 @@
   }
 
   @import 'dialogs/stack/_stack.scss';
+  @import 'dialogs/povertyline/_povertyline.scss';
 }

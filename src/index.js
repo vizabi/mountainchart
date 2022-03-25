@@ -20,6 +20,7 @@ import {
 } from "VizabiSharedComponents";
 import {VizabiMountainChart} from "./component.js";
 import {Stack} from "./dialogs/stack/stack.js";
+import {PovertyLine} from "./dialogs/povertyline/povertyline.js";
 
 //import "./dialogs/axesmc/axesmc";
 //import "./dialogs/robinhood/robinhood";
