@@ -1,0 +1,90 @@
+//responsiveness
+&.vzb-large {
+  &.vzb-dialog-expand-true {
+    .vzb-dialogs-dialog {
+      &.vzb-sidebar {
+        &[data-dlg="presets"] {
+          flex: none;
+          overflow: visible;
+
+          .vzb-dialog-modal {
+            overflow: visible;
+          }
+
+          .vzb-dialog-title{
+            display: none;
+          }
+
+        }
+      }
+    }
+  }
+}
+
+.vzb-dialogs-dialog {
+  &[data-dlg="presets"] {
+
+      .vzb-form {
+        height: 100px;
+      }
+
+      .vzb-radio-svg-group {
+        border: none;
+        padding: 0;
+      }
+
+      .vzb-radio-svg-item {
+        display: block;
+        position: absolute;
+        box-sizing: border-box;
+        background-color: #fff;
+        text-align: center;
+      }
+
+      label {
+        white-space: initial;
+        border: 1px solid #888;
+        box-sizing: border-box;
+        display: block;
+        height: 100%;
+        width: 100%;
+        border-radius: 4px;
+        //padding: 10px 10px 10px 10px;
+        opacity: 0.6;
+        cursor: pointer;
+        background-color: $vzb-color-grey-lightest;
+        transition: all .5s ease-in-out;
+        &:hover, &:focus, &:active {
+          border: 1px solid #000;
+          opacity: 1;
+        }
+        path {
+          stroke: #000;
+          fill: #FFF;
+        }
+      }
+
+      input[type="radio"] {
+        display: none;
+      }
+
+      input[type="radio"]:active ~ label {
+        opacity: 1;
+      }
+
+      input[type="radio"]:checked ~ label {
+        opacity: 1;
+        border: 2px solid #000;
+        background-color: $vzb-gapminder-main;
+      }
+
+  }
+}
+
+
+
+
+
+
+
+
