@@ -89,7 +89,7 @@ const PRESETS = [
     inherit: "filter",
     config: {
       data: {
-        filter: {dimensions: { "geo": { "is--world_4region": true } }}
+        filter: {dimensions: { "geo": { "$or": [{"is--world_4region": true}, {"geo": {"$in": ["chn"]}}] } }}
       },
       encoding: {
         stack: {data: {constant:"all", space: null, concept: null}},
