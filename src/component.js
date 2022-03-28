@@ -986,6 +986,14 @@ _VizabiMountainChart.DEFAULT_UI = {
   yMaxMethod: 0,
   showProbeX: true,
   probeX: 1.85,
+  probeXCustom: 4,
+  probeXType: "extreme",
+  probeXDetails: {
+    belowProc: true,
+    belowCount: false,
+    aboveProc: false,
+    aboveCount: false
+  },
   xLogStops: [1, 2, 5],
   xPoints: 50,
   xStart: 0.0078125,
