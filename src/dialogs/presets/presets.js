@@ -4,6 +4,20 @@ import {runInAction, decorate, computed} from "mobx";
 import {ICONS} from "./icons.js"
 import {PRESETS} from "./configs.js"
 
+
+function compareConfigs(source, target) {
+  let score = 0;
+  for (const key in source) {
+     if (typeof source[key] === "object" && !Array.isArray(source[key]) && source[key] != null && target[key] != null) {
+       score += compareConfigs(source[key], target[key], score);
+     } else {
+       if (source[key] == target[key]) score++;
+     }
+  }
+  return score;
+}
+
+
 /*
  * Presets dialog
  */
@@ -51,8 +65,7 @@ class Presets extends Dialog {
               .attr("type", "radio")
               .attr("name", "presets")
               .attr("id", id)
-              .attr("value", id)
-              .property("checked", d.default);
+              .attr("value", id);
 
             view.append("label")
               .attr("for", id)
@@ -87,15 +100,21 @@ class Presets extends Dialog {
   expand(radioGroup){
     this.unfolded = radioGroup;
 
+    PRESETS.flat().forEach(p => {
+      p.score = compareConfigs(p.config, this.model.config); 
+    })
+
+    const topScore = d3.max(PRESETS.flat(), d => d.score);
+
     this.DOM.container.selectAll("fieldset").each(function(d, i){
       const fieldset = d3.select(this);
       const fields = fieldset.selectAll("p");
       const nFields = fields.size();
 
-      fields.data(Array(nFields).fill("").map(m => ({}) ) )
       fields
-        .each(function(f){
-          f["selected"] = d3.select(this).select("input").property("checked")
+        .each(function(d){
+          d3.select(this).select("input").property("checked", d.score == topScore);
+          d.selected = d.score == topScore;
         })
         .sort((b,a)=>{
           return a.selected - b.selected;
