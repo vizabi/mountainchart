@@ -30,10 +30,6 @@ class Presets extends Dialog {
     super.setup(options);
     const _this = this;
 
-    let startTime;
-    let endTime;
-    let longpress = 1000;
-
     this.DOM.container = this.element.select(".vzb-dialog-preset-container");
     this.DOM.form = this.DOM.container.select(".vzb-form").append("form");
 
@@ -62,33 +58,10 @@ class Presets extends Dialog {
               .attr("for", id)
               .html(ICONS[d.icon])
               .on("click", function(evt, d){ _this.setModel(d.config); })
-              })
           })
-
-    // this.DOM.inputs = this.DOM.container.selectAll("input")
-    //   .on("change", function() {
-    //     _this.setModel("stack", d3.select(this).node().value);
-    //   });
-
-    // this.DOM.howToMerge = this.element.select(".vzb-howtomerge").selectAll("input")
-    //   .on("change", function() {
-    //     _this.setModel("merge", d3.select(this).node().value);
-    //   });
-
-
-      // .on('mousedown', function() { startTime = new Date(); })
-      // .on('mouseup',function(d) { 
-      //     endTime = new Date(); 
-      //     if ((endTime - startTime) > longpress) { 
-      //         _this.expand(d3.select(this).attr("group"));
-      //     }
-      //     else {
-      //         console.log("regular click, " + (endTime - startTime) + " milliseconds long");
-      //     }
-      // })
-
-      .on("mouseover", function() {
-        _this.expand(d3.select(this).attr("group"));
+      })
+      .on("mouseover", function(evt) {
+        if(evt.shiftKey) _this.expand(d3.select(this).attr("group"));
       })
       .on("mouseout", function(){
         _this.expand();
