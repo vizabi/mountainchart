@@ -14,6 +14,15 @@ class PovertyLine extends Dialog {
         </div>
     
         <div class="vzb-dialog-content">
+
+          <form class="vzb-dialog-paragraph">
+            <div class="vzb-povertyline-show"></div>
+          </form>
+
+          <p class="vzb-dialog-sublabel">
+            <span data-localise="hints/povertylinetype"></span>
+          </p>
+        
           <form class="vzb-povertylinetype vzb-dialog-paragraph">
             <!--p class="vzb-dialog-sublabel" data-localise="hints/mount/povertylinetype"></p-->
             <label>
@@ -50,6 +59,14 @@ class PovertyLine extends Dialog {
       </div>
     `;
     config.subcomponents = [
+      {
+        type: SimpleCheckbox,
+        placeholder: ".vzb-povertyline-show",
+        options: {
+          checkbox: "showProbeX",
+          submodel: "root.ui.chart"
+        }
+      },
       {
         type: SimpleCheckbox,
         placeholder: ".vzb-povertyline-below-perc",
