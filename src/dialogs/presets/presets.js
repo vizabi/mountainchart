@@ -74,10 +74,10 @@ class Presets extends Dialog {
           })
       })
       .on("mouseover", function(evt) {
-        if(evt.shiftKey) _this.expand(d3.select(this).attr("group"));
+        if(evt.shiftKey) _this.updateView(d3.select(this).attr("group"));
       })
       .on("mouseout", function(){
-        _this.expand();
+        _this.updateView();
       });
   }
 
@@ -91,20 +91,17 @@ class Presets extends Dialog {
     this.addReaction(this.updateView);
   }
 
-
-  updateView() {
-    const _this = this;
-    this.expand();
-  }
-
-  expand(radioGroup){
-    this.unfolded = radioGroup;
-
+  getActiveConfig(){
     PRESETS.flat().forEach(p => {
       p.score = compareConfigs(p.config, this.model.config); 
     })
-
     const topScore = d3.max(PRESETS.flat(), d => d.score);
+    return PRESETS.flat().find(f => f.score === topScore);
+  }
+
+  updateView(unfoldedRadioGroup){
+
+    const activeConfig = this.getActiveConfig();
 
     this.DOM.container.selectAll("fieldset").each(function(d, i){
       const fieldset = d3.select(this);
@@ -113,15 +110,18 @@ class Presets extends Dialog {
 
       fields
         .each(function(d){
-          d3.select(this).select("input").property("checked", d.score == topScore);
-          d.selected = d.score == topScore;
+          const isActive = d.icon == activeConfig.icon;
+          d3.select(this).select("input").property("checked", isActive);
+          d.selected = isActive;
         })
         .sort((b,a)=>{
           return a.selected - b.selected;
-        }).order().each(function(d, j){
+        })
+        .order()
+        .each(function(d, j){
           const field = d3.select(this);
 
-          const unfold = field.attr("group") === radioGroup;
+          const unfold = field.attr("group") === unfoldedRadioGroup;
           const width = 80;
           const spacingH = 10;
           const spacingV = 4;
