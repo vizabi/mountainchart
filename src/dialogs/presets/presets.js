@@ -83,12 +83,15 @@ class Presets extends Dialog {
 
 
   get MDL() {
-    this.model
+    return {
+      color: this.model.encoding["color"]
+    }
   }  
 
   draw(){
     super.draw();
     this.addReaction(this.updateView);
+    this.addReaction(this.setGroup);
   }
 
   getActiveConfig(){
@@ -97,6 +100,21 @@ class Presets extends Dialog {
     })
     const topScore = d3.max(PRESETS.flat(), d => d.score);
     return PRESETS.flat().find(f => f.score === topScore);
+  }
+
+  setGroup(){
+    const concept = this.MDL.color.data.concept;
+    const path = this.getActiveConfig().groupPath;
+    if(!path) return;
+    const filterConfig = path.reduce((a, p)=>{return a[p]},this.model.config);
+    if (!filterConfig["is--" + concept]) {
+      runInAction(() => {
+        //clear filter config 
+        Object.keys(filterConfig).forEach(k => {if(k.includes("is--")) delete filterConfig[k] });
+        //set new filter config
+        filterConfig["is--" + concept] = true;        
+      });
+    }
   }
 
   updateView(unfoldedRadioGroup){
