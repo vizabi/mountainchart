@@ -79,8 +79,16 @@ class _VizabiMountainChart extends BaseComponent {
   
           <g class="vzb-mc-mountains-labels"></g>
 
-          <g class="vzb-mc-axis-y-title">
+          <g class="vzb-mc-title">
             <text></text>
+          </g>
+
+          <g class="vzb-mc-subtitle">
+            <text></text>
+          </g>
+
+          <g class="vzb-mc-closecross">
+            <text>⨯</text>
           </g>
 
           <g class="vzb-mc-axis-x-title">
@@ -122,7 +130,9 @@ class _VizabiMountainChart extends BaseComponent {
       graph: this.element.select(".vzb-mc-graph"),
       xAxis: this.element.select(".vzb-mc-axis-x"),
       xTitle: this.element.select(".vzb-mc-axis-x-title"),
-      yTitle: this.element.select(".vzb-mc-axis-y-title"),
+      yTitle: this.element.select(".vzb-mc-title"),
+      ySubtitle: this.element.select(".vzb-mc-subtitle"),
+      closeCross: this.element.select(".vzb-mc-closecross"),
       info: this.element.select(".vzb-mc-axis-info"),
       mountainMergeStackedContainer: this.element.select(".vzb-mc-mountains-mergestacked"),
       mountainMergeGroupedContainer: this.element.select(".vzb-mc-mountains-mergegrouped"),
@@ -268,6 +278,30 @@ class _VizabiMountainChart extends BaseComponent {
     this.DOM.yTitle.select("text")
       .text(this.localise("mount/title"));
 
+    //if a mountain is alone on the chart: spell out its name
+    this.DOM.ySubtitle
+      .classed("vzb-hidden", !this.isManyFacets)
+      .select("text")
+      .text(
+        this.atomicSliceData.length > 1
+          ? this.name.includes("is--")
+            ? this.model.data.source.getConcept(this.name.replace("is--",""))?.name 
+            : this.name
+          : this._getLabelText(this.atomicSliceData[0])
+      );
+
+    this.DOM.closeCross
+      .classed("vzb-hidden", !this.isManyFacets || this.atomicSliceData.length > 1)
+      .on("mouseover", () => {
+        this.element.classed("vzb-chart-removepreview", true);
+      })
+      .on("mouseout", () => {
+        this.element.classed("vzb-chart-removepreview", false);
+      })
+      .on("click", () => {
+        this.model.data.filter.delete(this.atomicSliceData[0]);
+      });
+
     utils.setIcon(this.DOM.info, ICON_QUESTION).select("svg").attr("width", "0px").attr("height", "0px");
 
     this.DOM.info.on("click", () => {
@@ -367,6 +401,18 @@ class _VizabiMountainChart extends BaseComponent {
     this.DOM.yTitle
       .style("font-size", infoElHeight + "px")
       .attr("transform", "translate(" + (isRTL ? width : 0) + "," + margin.top + ")");
+
+    this.DOM.ySubtitle
+      .style("font-size", infoElHeight + "px")
+      .attr("transform", "translate(" + (isRTL ? width : 0) + "," + height + ")")
+      .select("text")
+      .attr("dy", "-0.36em");
+
+    this.DOM.closeCross
+      .style("font-size", infoElHeight + "px")
+      .attr("transform", "translate(" + (isRTL ? 0 : width) + "," + height + ")")
+      .select("text")
+      .attr("dy", "-0.36em");
 
     this.DOM.xAxisGroups
       .style("font-size", infoElHeight * 0.8 + "px");

@@ -106,7 +106,7 @@ class Presets extends Dialog {
     const concept = this.MDL.color.data.concept;
     const path = this.getActiveConfig().groupPath;
     if(!path) return;
-    const filterConfig = path.reduce((a, p)=>{return a[p]},this.model.config);
+    const filterConfig = path.reduce((a, p)=>{return a[p]},this.model.config.data.filter.dimensions);
     if (!filterConfig["is--" + concept]) {
       runInAction(() => {
         //clear filter config 

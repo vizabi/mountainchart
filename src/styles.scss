@@ -12,7 +12,7 @@
   .vzb-facet {
     .vzb-facet-inner:not(.vzb-facet-row-first) {
       .vzb-mc-decorations,
-      .vzb-mc-axis-y-title,
+      .vzb-mc-title,
       .vzb-mc-axis-info {
         visibility: hidden;
       }
@@ -140,7 +140,7 @@
         pointer-events: none;
       }
 
-      .vzb-mc-axis-y-title {
+      .vzb-mc-title, .vzb-mc-subtitle {
         @extend %vzb-chart-axis-title;
         @include rtl {
           text {
@@ -149,6 +149,11 @@
           }
         }
         pointer-events: none;
+      }
+
+      .vzb-mc-closecross {
+        cursor: pointer;
+        text-anchor: end;
       }
 
       .vzb-mc-axis-x-title {
@@ -203,7 +208,7 @@
     .vzb-mountainchart {
 
       .vzb-mc-axis-x-title,
-      .vzb-mc-axis-y-title {
+      .vzb-mc-title, .vzb-mc-subtitle, .vzb-mc-closecross {
         @extend %vzb-chart-axis-title-large;
       }
 
@@ -227,7 +232,7 @@
     .vzb-mountainchart {
 
       .vzb-mc-axis-x-title,
-      .vzb-mc-axis-y-title {
+      .vzb-mc-title, .vzb-mc-subtitle, .vzb-mc-closecross {
         @extend %vzb-chart-axis-title-medium;
       }
 
@@ -250,7 +255,7 @@
     .vzb-mountainchart {
 
       .vzb-mc-axis-x-title,
-      .vzb-mc-axis-y-title {
+      .vzb-mc-title, .vzb-mc-subtitle, .vzb-mc-closecross {
         @extend %vzb-chart-axis-title-small;
       }
 
