@@ -184,6 +184,14 @@ class _VizabiMountainChart extends BaseComponent {
     };
   }
 
+  get isInFacet(){
+    return this.parent.constructor.name === "_Facet";
+  }
+
+  get isManyFacets(){
+    return this.isInFacet && this.parent.howManyFacets() > 1;
+  }
+
   get duration(){
     //smooth animation is needed when playing, except for the case when time jumps from end to start
     if(!this.MDL.frame || !this.MDL.frame.playing) return 0;
@@ -327,7 +335,7 @@ class _VizabiMountainChart extends BaseComponent {
     const isRTL = this.services.locale.isRTL();
 
     //update scales to the new range
-    if(this.parent.constructor.name === "_Facet" && this.parent.scaleDomainRange.domain)
+    if(this.isInFacet && this.parent.scaleDomainRange.domain)
       this.yScale.range([height, height - this.parent.scaleDomainRange.range]);
     else
       this.yScale.range([height, 0]);
@@ -353,7 +361,7 @@ class _VizabiMountainChart extends BaseComponent {
       .call(this.xAxis);
 
     this.DOM.xTitle.select("text")
-      .attr("transform", "translate(" + width + "," + height + ")")
+      .attr("transform", "translate(" + (width - (this.DOM.closeCross.classed("vzb-hidden") ? 0 : 20)) + "," + height + ")")
       .attr("dy", "-0.36em");
 
     this.DOM.yTitle
@@ -463,7 +471,7 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   _getDataArrayForFacet(){
-    if(this.parent.constructor.name === "_Facet")
+    if(this.isInFacet)
       return this.parent.getDataForSubcomponent(this.name);
     else
       return this.model.dataArray;
@@ -908,7 +916,7 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   _adjustMaxY() {
-    if(this.parent.constructor.name === "_Facet" && this.parent.scaleDomainRange.domain)
+    if(this.isInFacet && this.parent.scaleDomainRange.domain)
       this.yScale.domain([0, this.parent.scaleDomainRange.domain]);
     else
       this.yScale.domain([0, Math.round(this.yMaxGlobal)]);
@@ -1007,6 +1015,8 @@ _VizabiMountainChart.DEFAULT_UI = {
 
 export const VizabiMountainChart = decorate(_VizabiMountainChart, {
   "MDL": computed,
+  "isInFacet": computed,
+  "isManyFacets": computed,
   "duration": computed,
   "atomicSliceData": computed,
   "groupedSliceData": computed,
