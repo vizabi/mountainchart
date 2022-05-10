@@ -1,7 +1,8 @@
 export const PRESETS = [
   [{
     icon: "show_countries--stack_none--facet_none",
-    inherit: "filter",
+    mode: "show",
+    loosePath: ["geo", "geo", "$in"],
     config: {
       data: {
         filter: {dimensions: {"geo": {"geo": {$in: ["usa", "chn", "rus", "nga"]}}}}
@@ -13,7 +14,7 @@ export const PRESETS = [
     }
   },{
     icon: "show_countries--stack_region--facet_none",
-    inherit: "selection",
+    mode: "select",
     config: {
       data: {
         filter: {dimensions: { "geo": { "un_state": true } }}
@@ -25,10 +26,12 @@ export const PRESETS = [
     }
   },{
     icon: "show_regions--stack_none--facet_none",
-    inherit: "none",
+    mode: "none",
+    groupPath: ["geo"],
     config: {
       data: {
         filter: {dimensions: { "geo": { "is--world_4region": true } }}
+        //filter: {dimensions: {"geo": {"geo": {$in: ["americas", "europe", "africa", "asia"]}}}}
       },
       encoding: {
         stack: {data: {constant:"none", space: null, concept: null}},
@@ -40,7 +43,7 @@ export const PRESETS = [
 
   [{
     icon: "show_countries--stack_all--facet_none",
-    inherit: "selection",
+    mode: "select",
     config: {
       data: {
         filter: {dimensions: { "geo": { "un_state": true } }}
@@ -52,10 +55,12 @@ export const PRESETS = [
     }
   },{
     icon: "show_regions--stack_all--facet_none",
-    inherit: "none",
+    mode: "none",
+    groupPath: ["geo"],
     config: {
       data: {
         filter: {dimensions: { "geo": { "is--world_4region": true } }}
+        //filter: {dimensions: {"geo": {"geo": {$in: ["americas", "europe", "africa", "asia"]}}}}
       },
       encoding: {
         stack: {data: {constant:"all", space: null, concept: null}},
@@ -64,10 +69,11 @@ export const PRESETS = [
     }
   },{
     icon: "show_world--stack_all--facet_none",
-    inherit: "none",
+    mode: "none",
     config: {
       data: {
         filter: {dimensions: { "geo": { "is--global": true } }}
+        //filter: {dimensions: {"geo": {"geo": {$in: ["world"]}}}}
       },
       encoding: {
         stack: {data: {constant:"all", space: null, concept: null}},
@@ -79,10 +85,13 @@ export const PRESETS = [
 
   [{
     icon: "show_geo--stack_all--facet_isness",
-    inherit: "filter",
+    mode: "show",
+    groupPath: ["geo", "$or", 0],
+    loosePath: ["geo", "$or", 1, "geo", "$in"],
     config: {
       data: {
         filter: {dimensions: { "geo": { "$or": [{"is--world_4region": true}, {"geo": {"$in": ["chn"]}}] } }}
+        //filter: {dimensions: {"geo": {"geo": {$in: ["americas", "europe", "africa", "asia", "chn"]}}}}
       },
       encoding: {
         stack: {data: {constant:"all", space: null, concept: null}},
@@ -91,10 +100,12 @@ export const PRESETS = [
     }
   },{
     icon: "show_regions--stack_all--facet_regions",
-    inherit: "none",
+    mode: "none",
+    groupPath: ["geo"],
     config: {
       data: {
         filter: {dimensions: { "geo": { "is--world_4region": true } }}
+        //filter: {dimensions: {"geo": {"geo": {$in: ["americas", "europe", "africa", "asia"]}}}}
       },
       encoding: {
         stack: {data: {constant:"all", space: null, concept: null}},
@@ -103,7 +114,7 @@ export const PRESETS = [
     }
   },{
     icon: "show_countries--stack_all--facet_regions",
-    inherit: "selection",
+    mode: "select",
     config: {
       data: {
         filter: {dimensions: { "geo": { "un_state": true } }}
