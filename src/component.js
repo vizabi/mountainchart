@@ -21,32 +21,6 @@ const COLOR_WHITEISH = "rgb(253, 253, 253)";
 
 const THICKNESS_THRESHOLD = 0.001;
 
-const PROFILE_CONSTANTS = {
-  SMALL: {
-    margin: { top: 10, right: 10, left: 10, bottom: 18 },
-    infoElHeight: 16
-  },
-  MEDIUM: {
-    margin: { top: 20, right: 20, left: 20, bottom: 30 },
-    infoElHeight: 20
-  },
-  LARGE: {
-    margin: { top: 30, right: 30, left: 30, bottom: 35 },
-    infoElHeight: 22
-  }
-};
-
-const PROFILE_CONSTANTS_FOR_PROJECTOR = {
-  MEDIUM: {
-    margin: { top: 20, right: 20, left: 20, bottom: 50 },
-    infoElHeight: 26
-  },
-  LARGE: {
-    margin: { top: 30, right: 30, left: 30, bottom: 50 },
-    infoElHeight: 32
-  }
-};
-
 // MOUNTAIN CHART COMPONENT
 class _VizabiMountainChart extends BaseComponent {
 
@@ -1034,6 +1008,37 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
 }
+
+const PROFILE_CONSTANTS = _VizabiMountainChart.PROFILE_CONSTANTS = {
+  SMALL: {
+    margin: { top: 10, right: 10, left: 10, bottom: 18 },
+    infoElHeight: 16,
+    minHeight: 35
+  },
+  MEDIUM: {
+    margin: { top: 20, right: 20, left: 20, bottom: 30 },
+    infoElHeight: 20,
+    minHeight: 45
+  },
+  LARGE: {
+    margin: { top: 30, right: 30, left: 30, bottom: 35 },
+    infoElHeight: 22,
+    minHeight: 55
+  }
+};
+
+const PROFILE_CONSTANTS_FOR_PROJECTOR = _VizabiMountainChart.PROFILE_CONSTANTS_FOR_PROJECTOR = {
+  MEDIUM: {
+    margin: { top: 20, right: 20, left: 20, bottom: 50 },
+    infoElHeight: 26,
+    minHeight: 55
+  },
+  LARGE: {
+    margin: { top: 30, right: 30, left: 30, bottom: 50 },
+    infoElHeight: 32,
+    minHeight: 100
+  }
+};
 
 _VizabiMountainChart.DEFAULT_UI = {
   //TODO: why must forecast options be in page config for speed dialog to work
