@@ -11,7 +11,7 @@
 
   .vzb-facet {
     .vzb-facet-inner:not(.vzb-facet-row-first) {
-      .vzb-mc-decorations,
+      .vzb-mc-decorations .vzb-mc-x-axis-group,
       .vzb-mc-title,
       .vzb-mc-axis-info {
         visibility: hidden;

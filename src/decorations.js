@@ -106,33 +106,34 @@ export default class MCDecorations{
 
       xAxisGroups.select("text.vzb-mc-x-axis-group-text").on("mouseenter", function(event, d) {
         const calcs = xAxisGroups_calcs[d.i];
-        const parentView = d3.select(this.parentNode);
-
         d3.select(this).attr("font-weight", "bold");
-        parentView.append("rect").lower()
-          .attr("x", calcs.boundaryMinX_px)
-          .attr("width", calcs.boundaryMaxX_px - calcs.boundaryMinX_px)
-          .attr("y", -_this.profileConstants.margin.top)
-          .attr("height", _this.height + _this.profileConstants.margin.top);
+        
+        _this.runHereOrPossiblyInAllFacets(function(context){
+          context.DOM.xAxisGroups.append("rect").lower()
+            .attr("x", calcs.boundaryMinX_px)
+            .attr("width", calcs.boundaryMaxX_px - calcs.boundaryMinX_px)
+            .attr("y", -context.profileConstants.margin.top)
+            .attr("height", context.height + context.profileConstants.margin.top);
 
-        if (calcs.min || calcs.min === 0) parentView.append("line").lower()
-          .attr("x1", calcs.boundaryMinX_px)
-          .attr("x2", calcs.boundaryMinX_px)
-          .attr("y1", -_this.profileConstants.margin.top)
-          .attr("y2", _this.height);
+          if (calcs.min || calcs.min === 0) context.DOM.xAxisGroups.append("line").lower()
+            .attr("x1", calcs.boundaryMinX_px)
+            .attr("x2", calcs.boundaryMinX_px)
+            .attr("y1", -context.profileConstants.margin.top)
+            .attr("y2", context.height);
 
-        if (calcs.max || calcs.max === 0) parentView.append("line").lower()
-          .attr("x1", calcs.boundaryMaxX_px)
-          .attr("x2", calcs.boundaryMaxX_px)
-          .attr("y1", -_this.profileConstants.margin.top)
-          .attr("y2", _this.height);
-
+          if (calcs.max || calcs.max === 0) context.DOM.xAxisGroups.append("line").lower()
+            .attr("x1", calcs.boundaryMaxX_px)
+            .attr("x2", calcs.boundaryMaxX_px)
+            .attr("y1", -context.profileConstants.margin.top)
+            .attr("y2", context.height);
+        })
       }).on("mouseleave", function() {
-        const parentView = d3.select(this.parentNode);
-
         d3.select(this).attr("font-weight", null);
-        parentView.selectAll("rect").remove();
-        parentView.selectAll("line").remove();
+
+        _this.runHereOrPossiblyInAllFacets(function(context){
+          context.DOM.xAxisGroups.selectAll("rect").remove();
+          context.DOM.xAxisGroups.selectAll("line").remove();
+        })
       });
     }
     

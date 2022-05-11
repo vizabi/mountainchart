@@ -322,16 +322,29 @@ class _VizabiMountainChart extends BaseComponent {
       .on("mousemove", function(event) {
         if (_this._isDragging()) return;
         if (!_this.ui.showProbeX) return;
-        _this._probe.redraw({
-          level: _this.xScale.invert(d3.pointer(event)[0]),
-          full: true
-        });
+
+        _this.runHereOrPossiblyInAllFacets(function(context){
+          context._probe.redraw({
+            level: _this.xScale.invert(d3.pointer(event)[0]),
+            full: true
+          });
+        })
       })
       .on("mouseout", () => {
         if (this._isDragging()) return;
         if (!this.ui.showProbeX) return;
-        this._probe.redraw();
+
+        _this.runHereOrPossiblyInAllFacets(function(context){
+          context._probe.redraw();
+        })
       });
+  }
+
+  runHereOrPossiblyInAllFacets(func){
+    if (this.isInFacet)
+      this.parent.propagateInteractivity(func);
+    else
+      func(this);
   }
 
   //fetch scales, or rebuild scales if there are none, then fetch
