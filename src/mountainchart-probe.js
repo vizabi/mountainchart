@@ -119,8 +119,16 @@ class MCProbe extends BaseComponent {
       .attr("dx", "0.5em")
       .attr("transform", "rotate(-90)");
 
+    let epTextBBox = this.DOM.extremepovertyText.node().getBBox();
+
+    if(epTextBBox.width > height * 0.5) {
+      this.DOM.extremepovertyText.classed("vzb-hidden", true);
+      epTextBBox = {width: 0, height: 0};
+    }
+
+
     if(!options.full) 
-      this.heightOfLabels = nationalMode ? height : height - this.DOM.extremepovertyText.node().getBBox().width - this.DOM.extremepovertyText.node().getBBox().height * 1.75;
+      this.heightOfLabels = nationalMode ? height : height - epTextBBox.width - epTextBBox.height * 1.75;
 
     this.DOM.probeValues
       .text((d, i) => {
@@ -151,7 +159,7 @@ class MCProbe extends BaseComponent {
       .attr("y1", height + 6)
       .attr("y2", 0);
 
-    const povertyLabelHeight = extremeMode ? this.DOM.extremepovertyText.node().getBBox().width + this.DOM.extremepovertyText.node().getBBox().height * 0.5 : (height * 0.25);
+    const povertyLabelHeight = extremeMode ? epTextBBox.width + epTextBBox.height * 0.5 : (height * 0.25);
   
     if (!options.full) {
       this.DOM.probeBlocks.attr("transform", (d, i) => `translate (0, ${height - (nationalMode ? 0 : povertyLabelHeight)})`);
