@@ -1014,17 +1014,17 @@ const PROFILE_CONSTANTS = _VizabiMountainChart.PROFILE_CONSTANTS = {
   SMALL: {
     margin: { top: 10, right: 10, left: 10, bottom: 18 },
     infoElHeight: 16,
-    minHeight: 35
+    minHeight: 40
   },
   MEDIUM: {
     margin: { top: 20, right: 20, left: 20, bottom: 30 },
     infoElHeight: 20,
-    minHeight: 45
+    minHeight: 50
   },
   LARGE: {
     margin: { top: 30, right: 30, left: 30, bottom: 35 },
     infoElHeight: 22,
-    minHeight: 55
+    minHeight: 65
   }
 };
 
@@ -1032,12 +1032,12 @@ const PROFILE_CONSTANTS_FOR_PROJECTOR = _VizabiMountainChart.PROFILE_CONSTANTS_F
   MEDIUM: {
     margin: { top: 20, right: 20, left: 20, bottom: 50 },
     infoElHeight: 26,
-    minHeight: 55
+    minHeight: 65
   },
   LARGE: {
     margin: { top: 30, right: 30, left: 30, bottom: 50 },
     infoElHeight: 32,
-    minHeight: 100
+    minHeight: 105
   }
 };
 
