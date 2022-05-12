@@ -1,9 +1,11 @@
 //import draggablelist from "components/draggablelist/draggablelist";
-import {Dialog} from "VizabiSharedComponents";
-import {runInAction, decorate, computed} from "mobx";
+import {
+  Dialog,
+  LegacyUtils as utils,
+} from "VizabiSharedComponents";
+import {runInAction, decorate, computed, toJS} from "mobx";
 import {ICONS} from "./icons.js"
 import {PRESETS_DEFAULT} from "./configs-example.js"
-
 
 function compareConfigs(source, target) {
   let score = 0;
@@ -17,6 +19,9 @@ function compareConfigs(source, target) {
   return score;
 }
 
+function followPath(base, path){
+  return path.reduce((a, p)=>{return a[p] ? a[p] : a}, base)
+}
 
 /*
  * Presets dialog
@@ -57,7 +62,7 @@ class Presets extends Dialog {
     this.DOM.searchInput = this.DOM.container.select(".vzb-find-search");
     this.DOM.searchList = this.DOM.container.select("ul");
 
-    const PRESETS = this.root.model.config.presets || PRESETS_DEFAULT;
+    const PRESETS = toJS(this.root.model.config.presets) || PRESETS_DEFAULT;
 
     this.DOM.radioGroups = this.DOM.form.selectAll("fieldset")
       .data(PRESETS).enter().append("fieldset")
@@ -82,7 +87,7 @@ class Presets extends Dialog {
             view.append("label")
               .attr("for", id)
               .html(ICONS[d.icon])
-              .on("click", function(evt, d){ _this.setModel(d.config); })
+              .on("click", function(evt, d){ _this.setModel(d); })
           })
       })
       .on("mouseover", function(evt) {
@@ -175,7 +180,8 @@ class Presets extends Dialog {
     const concept = this.MDL.color.data.concept;
     const path = this.getActiveConfig().groupPath;
     if(!path) return;
-    const filterConfig = path.reduce((a, p)=>{return a[p]},this.model.config.data.filter.dimensions);
+    const filterConfig = followPath(this.model.config.data.filter.dimensions, path);
+
     if (!filterConfig["is--" + concept]) {
       runInAction(() => {
         //clear filter config 
@@ -227,23 +233,43 @@ class Presets extends Dialog {
     this.DOM.addGeo.classed("vzb-hidden", activeConfig.mode !== "show");
   }
 
-  setModel(config){
-    const prevConfig = this.getActiveConfig();
+  setModel(target){
+    const source = this.getActiveConfig();
     runInAction(() => {
-      if(prevConfig.mode === "show" && config.mode === "select") {
+      target = utils.deepClone(target);
 
-      } else if(prevConfig.mode === "select" && config.mode === "show") {
+      if(source.mode === "show" && target.mode === "select") {
+        
+        const show = followPath(this.model.config.data.filter.dimensions, source.loosePath);
+        this.model.encoding.selected.data.filter.set(show);
 
-      } else if(prevConfig.mode === "show" && config.mode === "show") {
+      } else if(source.mode === "select" && target.mode === "show") {
+        if(this.model.encoding.selected.data.filter.any()) {
+          const $in = target.loosePath.pop();
+          const show = followPath(target.config.data.filter.dimensions, target.loosePath);
+          show[$in] = [...this.model.encoding.selected.data.filter.markers.keys()];
+          //clear select
+          this.model.encoding.selected.data.filter.clear();
+        }
+      } else if(source.mode === "show" && target.mode === "show") {
+        const $in = target.loosePath.pop();
+        const show1 = followPath(this.model.config.data.filter.dimensions, source.loosePath);
+        const show2 = followPath(target.config.data.filter.dimensions, target.loosePath);
+        show2[$in] = [...show1];
 
+        this.model.encoding.selected.data.filter.clear();
+
+      } else if(source.mode === "select" && target.mode === "none") {
+        //clear select
+        this.model.encoding.selected.data.filter.clear();
       }
-      this.model.config.data.filter = config.data.filter;
-      this.model.config.encoding.stack.data = config.encoding.stack.data;
+      this.model.config.data.filter = target.config.data.filter;
+      this.model.config.encoding.stack.data = target.config.encoding.stack.data;
 
-      config.encoding.facet_row.data.modelType = "entityMembershipDataConfig";
-      config.encoding.facet_row.data.space = this.model.config.encoding.facet_row.data.space.slice();
+      target.config.encoding.facet_row.data.modelType = "entityMembershipDataConfig";
+      target.config.encoding.facet_row.data.space = this.model.config.encoding.facet_row.data.space.slice();
 
-      this.model.config.encoding.facet_row.data = config.encoding.facet_row.data;
+      this.model.config.encoding.facet_row.data = target.config.encoding.facet_row.data;
     })
   }
 }
