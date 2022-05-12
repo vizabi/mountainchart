@@ -16,7 +16,9 @@ import {
   CapitalVizabiService,
   Repeater,
   Facet,
-  versionInfo
+  AddGeo,
+  versionInfo,
+  LegacyUtils as utils,
 } from "VizabiSharedComponents";
 import {VizabiMountainChart} from "./mountain-cmp.js";
 import {Stack} from "./dialogs/stack/stack.js";
@@ -53,6 +55,21 @@ export default class MountainChart extends BaseComponent {
         }
       },
       name: "chart",
+    },{
+      type: AddGeo,
+      placeholder: ".vzb-addgeo",
+      name: "addgeo",
+      model: marker,
+      options: {
+        PROFILE_CONSTANTS: utils.deepExtend({}, VizabiMountainChart.PROFILE_CONSTANTS, {
+          LARGE: {dy: 10}, MEDIUM: {dy: 4}, SMALL: {dy: -3}
+        }),
+        PROFILE_CONSTANTS_FOR_PROJECTOR: utils.deepExtend({}, VizabiMountainChart.PROFILE_CONSTANTS_FOR_PROJECTOR, {
+          LARGE: {dy: 9}, MEDIUM: {dy: 3}
+        }),
+        xAlign: "right",
+        yAlign: "top"
+      }
     },{
       type: DateTimeBackground,
       placeholder: ".vzb-datetime",
@@ -100,6 +117,7 @@ export default class MountainChart extends BaseComponent {
       <div class="vzb-chart">
         <div class="vzb-datetime"></div>
         <div class="vzb-repeater"></div>
+        <div class="vzb-addgeo"></div>
       </div>
       <div class="vzb-animationcontrols">
         <div class="vzb-timeslider"></div>

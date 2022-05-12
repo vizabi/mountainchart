@@ -32,14 +32,8 @@ class Presets extends Dialog {
     config.template = `
       <div class='vzb-dialog-modal'>
         <div class="vzb-dialog-title"> <span data-localise="buttons/presets"></span> </div>
-      
         <div class="vzb-dialog-content">
           <div class="vzb-dialog-preset-container">
-            <div class="vzb-dialog-addgeo">❇️ Add a geography</div>
-            <div class="vzb-dialog-search vzb-hidden">
-              <input class="vzb-find-search" type="search" required="" placeholder="Search...">
-              <ul></ul>
-            </div>
             <div class="vzb-form"></div>
           </div>
         </div>
@@ -56,11 +50,6 @@ class Presets extends Dialog {
 
     this.DOM.container = this.element.select(".vzb-dialog-preset-container");
     this.DOM.form = this.DOM.container.select(".vzb-form").append("form");
-    
-    this.DOM.addGeo = this.DOM.container.select(".vzb-dialog-addgeo");
-    this.DOM.search = this.DOM.container.select(".vzb-dialog-search");
-    this.DOM.searchInput = this.DOM.container.select(".vzb-find-search");
-    this.DOM.searchList = this.DOM.container.select("ul");
 
     const PRESETS = toJS(this.root.model.config.presets) || PRESETS_DEFAULT;
 
@@ -96,19 +85,6 @@ class Presets extends Dialog {
       .on("mouseout", function(){
         _this.updateView();
       });
-
-      this.DOM.addGeo
-        .on("click", () => {
-          _this.DOM.search.classed("vzb-hidden", false);
-        })
-
-      this.DOM.searchInput
-        .on("keyup", function(){
-          _this.search(this.value);
-        });
-
-      this.catalog = [];
-      this.entitySetsColorScale = d3.scaleOrdinal(d3.schemePastel2);
   }
 
 
@@ -122,49 +98,8 @@ class Presets extends Dialog {
     super.draw();
     this.addReaction(this.updateView);
     this.addReaction(this.setGroup);
-    this.addReaction(this.buildList);
   }
 
-
-  buildList(){
-    this.model.data.spaceCatalog.then(spaceCatalog => {
-      for (const dim in spaceCatalog) {
-        if (spaceCatalog[dim].entities) this.catalog = [...spaceCatalog[dim].entities.values()];
-      };
-    });
-  }
-
-  search(string){
-    if(!string || string.length < 3) {
-      this.DOM.searchList.selectAll("li").remove();
-      return;
-    }
-
-    const matches = this.catalog.filter(f => f.name.toLowerCase().trim().includes(string.toLowerCase().trim()) || f[Symbol.for("key")].includes(string.toLowerCase().trim()))
-      .map(d => {
-        d.isness = Object.keys(d).filter(f => f.includes("is--") && d[f]).map(m => {
-          return {
-            id: m,
-            name: this.model.data.source.getConcept(m.replace("is--",""))?.name
-          }
-        });
-        return d;
-      })
-      .sort((x, y) => d3.ascending(x.isness.map(k => k.id).join(), y.isness.map(k => k.id).join()));
-    
-    this.DOM.searchList.selectAll("li").remove();
-    this.DOM.searchList.selectAll("li")
-      .data(matches)
-      .enter().append("li")
-      .html((d) => {
-        return d.name + d.isness.map(m => `<span class="vzb-dialog-isness" style="background-color:${this.entitySetsColorScale(m.id)}">${m.name}</span>`).join("");
-      })
-      .on("click", (event, d) => {
-        this.model.data.filter.addToDimensionsFirstINstatement(d, this.getActiveConfig().loosePath)
-        this.DOM.search.classed("vzb-hidden", true);
-        this.DOM.searchInput.node().value = "";
-      });
-  }
 
   getActiveConfig(){
     const PRESETS = this.root.model.config.presets || PRESETS_DEFAULT;
@@ -219,7 +154,7 @@ class Presets extends Dialog {
           const spacingH = 10;
           const spacingV = 4;
           const deckEffect = 2;
-          const marginLeft = 0;
+          const marginLeft = 22;
           const marginTop = 5;
           field
             .style('width', width + "px")
@@ -230,7 +165,6 @@ class Presets extends Dialog {
         })
     })
 
-    this.DOM.addGeo.classed("vzb-hidden", activeConfig.mode !== "show");
   }
 
   setModel(target){
@@ -259,7 +193,7 @@ class Presets extends Dialog {
 
         this.model.encoding.selected.data.filter.clear();
 
-      } else if(source.mode === "select" && target.mode === "none") {
+      } else if(source.mode === "none" || target.mode === "none") {
         //clear select
         this.model.encoding.selected.data.filter.clear();
       }

@@ -26,7 +26,6 @@
 
       .vzb-form {
         height: 100px;
-        position: relative;
       }
 
       .vzb-radio-svg-group {
@@ -79,48 +78,6 @@
         background-color: $vzb-gapminder-main;
       }
 
-      .vzb-dialog-addgeo {
-        &:hover {
-          text-decoration: underline;
-        }
-        cursor: pointer;
-        margin-top: 5px;
-        margin-bottom: 5px;
-      }
-      .vzb-dialog-search{
-        ul {
-          position: absolute;
-          z-index: 4;
-          background: white;
-          width: 90%;
-          list-style-type: none;
-          padding-left: 10px;
-          padding-bottom: 20px;
-          padding-top: 0px;
-          margin-top: 0px;
-          border-radius: 4px;
-          border: 1px solid $vzb-color-grey-light;
-          overflow-x: hidden;
-          overflow-y: auto;
-
-          li {
-            cursor: pointer;
-            padding-top: 5px;
-            padding-bottom: 5px;
-            .vzb-dialog-isness {
-              font-size: $vzb-font-size-tiny;
-              background-color: $vzb-color-accent-yellow;
-              border: 1px solid $vzb-color-grey-light;
-              border-radius: 2px;
-              padding: 1px 3px 1px 3px;
-              margin-left: 4px;
-            }
-          }
-          li:hover {
-            background-color: $vzb-color-grey-light;
-          }
-        }
-      }
   }
 }
 
