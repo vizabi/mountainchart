@@ -1,4 +1,4 @@
-export const PRESETS = [
+export const PRESETS_DEFAULT = [
   [{
     icon: "show_countries--stack_none--facet_none",
     mode: "show",

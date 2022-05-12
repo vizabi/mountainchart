@@ -2,7 +2,7 @@
 import {Dialog} from "VizabiSharedComponents";
 import {runInAction, decorate, computed} from "mobx";
 import {ICONS} from "./icons.js"
-import {PRESETS} from "./configs.js"
+import {PRESETS_DEFAULT} from "./configs-example.js"
 
 
 function compareConfigs(source, target) {
@@ -56,6 +56,8 @@ class Presets extends Dialog {
     this.DOM.search = this.DOM.container.select(".vzb-dialog-search");
     this.DOM.searchInput = this.DOM.container.select(".vzb-find-search");
     this.DOM.searchList = this.DOM.container.select("ul");
+
+    const PRESETS = this.root.model.config.presets || PRESETS_DEFAULT;
 
     this.DOM.radioGroups = this.DOM.form.selectAll("fieldset")
       .data(PRESETS).enter().append("fieldset")
@@ -160,6 +162,8 @@ class Presets extends Dialog {
   }
 
   getActiveConfig(){
+    const PRESETS = this.root.model.config.presets || PRESETS_DEFAULT;
+
     PRESETS.flat().forEach(p => {
       p.score = compareConfigs(p.config, this.model.config); 
     })
