@@ -7,11 +7,11 @@ import {
   //Exporter as svgexport,
 } from "VizabiSharedComponents";
 
-import MountainChartMath from "./mountainchart-math";
+import MountainChartMath from "./math";
 import MCDecorations from "./decorations.js";
-import {MCSelectList} from "./mountainchart-selectlist";
-import {MCProbe} from "./mountainchart-probe";
-//import RobinHood from "./mountainchart-robinhood";
+import {MCSelectList} from "./selectlist";
+import {MCProbe} from "./probe";
+//import RobinHood from "./robinhood.js";
 
 import {decorate, computed, observable, runInAction} from "mobx";
 
