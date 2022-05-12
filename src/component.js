@@ -227,8 +227,9 @@ class _VizabiMountainChart extends BaseComponent {
     if (this.MDL.color.scale.isDiscrete()) {
       runInAction(() => {
         this.MDL.group.data.config.concept = this.MDL.color.data.config.concept;
-        this.MDL.group.data.config.source = this.MDL.color.data.config.source;
         this.MDL.group.data.config.space = this.MDL.color.data.config.space;
+        if (this.MDL.group.data.source !== this.MDL.color.data.source)
+          this.MDL.group.data.config.source = this.MDL.color.data.config.source;
       });
     }
   }
