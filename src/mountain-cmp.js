@@ -536,6 +536,8 @@ class _VizabiMountainChart extends BaseComponent {
     this.sortValuesForGroups = {};
 
     return d3.groups(this.atomicSliceData, d => this._isProperty(this.MDL.stack)? d.stack: d.group)
+      //no point doing a grouping when there is only one item in a group (i.e. when atomic slices are regions already)
+      .filter(([k,v]) => v.length > 1)
       //the output comes in a form of [[key, values[]],[],[]], convert each array to object
       .map(([key, values]) => ({key, values}))
       .map(group => {
@@ -957,10 +959,12 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   _isMergingGroups() {
-    return this.MDL.group.config.merge
+    return this.groupedSliceData.length && (
+      this.MDL.group.config.merge
       //merge the grouped entities to save performance during dragging or playing      
       //except when stacking is off
-      || (this._isDragging() || this.MDL.frame.playing) && this.MDL.stack.data.constant !== "none";
+      || (this._isDragging() || this.MDL.frame.playing) && this.MDL.stack.data.constant !== "none"
+    );
   }
 
   _isDragging(){
