@@ -257,13 +257,7 @@ class _VizabiMountainChart extends BaseComponent {
     this.DOM.ySubtitle
       .classed("vzb-hidden", !this.isManyFacets)
       .select("text")
-      .text(
-        this.atomicSliceData.length > 1
-          ? this.name.includes("is--")
-            ? this.model.data.source.getConcept(this.name.replace("is--",""))?.name 
-            : this.name
-          : this._getLabelText(this.atomicSliceData[0])
-      );
+      .text(this._getSubtitleText());
 
     this.DOM.closeCross
       .classed("vzb-hidden", !this.isManyFacets || this.atomicSliceData.length > 1)
@@ -776,6 +770,20 @@ class _VizabiMountainChart extends BaseComponent {
     //   fill: this.MDL.color.scale.d3Scale(valuesPointer.color[key]),
     //   d: this.area(this.cached[key])
     // });
+  }
+
+  _getSubtitleText(d) {
+    
+    if (this.atomicSliceData.length == 1) {
+      const slice = this.atomicSliceData[0];
+      const population = this.MDL.selectedF.has(slice)
+        ? ": " + this.localise(slice.norm) + " " + this.localise("mount/people")
+        : "";
+      return this._getLabelText(slice) + population; 
+    } else if (this.name.includes("is--"))
+      return this.model.data.source.getConcept(this.name.replace("is--",""))?.name;
+    else
+      return this.name;
   }
 
   _getLabelText(d) {
