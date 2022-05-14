@@ -32,17 +32,27 @@ class _MCSelectList extends BaseComponent {
     this.addReaction(this.updateHighlighted);
   }
 
+  isManyFacetsAndLonely(){
+    return this.parent.isManyFacets && this.parent.atomicSliceData.length == 1;
+  }
+
+  isChartTooSmall(){
+    return this.parent.height <= this.parent.profileConstants.minHeight;
+  }
+
   addAndRemoveLabels(){
     const _this = this;
     this.MDL.selectedF.markers; //watch
     this.MDL.frame.value; //watch
     this.services.layout.size; //watch
 
-    const listData = this.parent.atomicSliceData
-      .concat(this.parent.groupedSliceData)
-      .concat(this.parent.stackedSliceData)
-      .filter(d => this.MDL.selectedF.has(d))
-      .sort(this._sortLabels);
+    const listData = this.isManyFacetsAndLonely() || this.isChartTooSmall()
+      ? []
+      : this.parent.atomicSliceData
+        .concat(this.parent.groupedSliceData)
+        .concat(this.parent.stackedSliceData)
+        .filter(d => this.MDL.selectedF.has(d))
+        .sort(this._sortLabels);
 
     this.labels = this.element.selectAll("g.vzb-mc-label")
       .data(listData, d => d.KEY());
