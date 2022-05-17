@@ -27,8 +27,17 @@ function compareConfigs(source, target) {
   return result.score / result.total;
 }
 
-function followPath(base, path){
-  return path.reduce((a, p)=>{return a[p] ? a[p] : a}, base)
+function followPath(base, path, createMissingObj = false){
+  return path.reduce((a, p)=>{
+    if (a == null) return null;
+
+    if (Array.isArray(a) && !createMissingObj && (a.length <= p || a[p] == null))
+      return null;    
+
+    if (createMissingObj && a[p] == null) a[p] = {};
+    
+    return a[p];
+  }, base)
 }
 
 /*
@@ -182,13 +191,14 @@ class Presets extends Dialog {
 
       if(source.mode === "show" && target.mode === "select") {
         
-        const show = followPath(this.model.config.data.filter.dimensions, source.loosePath);
+        const show = (followPath(this.model.config.data.filter.dimensions, source.loosePath) || []).filter(f => !!f);
+        this.model.encoding.selected.data.filter.clear();
         this.model.encoding.selected.data.filter.set(show);
 
       } else if(source.mode === "select" && target.mode === "show") {
         if(this.model.encoding.selected.data.filter.any()) {
           const $in = target.loosePath.pop();
-          const show = followPath(target.config.data.filter.dimensions, target.loosePath);
+          const show = followPath(target.config.data.filter.dimensions, target.loosePath, true);
           show[$in] = [...this.model.encoding.selected.data.filter.markers.keys()];
           //clear select
           this.model.encoding.selected.data.filter.clear();
@@ -196,7 +206,7 @@ class Presets extends Dialog {
       } else if(source.mode === "show" && target.mode === "show") {
         const $in = target.loosePath.pop();
         const show1 = followPath(this.model.config.data.filter.dimensions, source.loosePath);
-        const show2 = followPath(target.config.data.filter.dimensions, target.loosePath);
+        const show2 = followPath(target.config.data.filter.dimensions, target.loosePath, true);
         show2[$in] = [...show1];
 
         this.model.encoding.selected.data.filter.clear();
@@ -206,10 +216,19 @@ class Presets extends Dialog {
         this.model.encoding.selected.data.filter.clear();
       }
       this.model.config.data.filter = target.config.data.filter;
+
+      delete this.model.config.encoding.stack.data.constant;
+      delete this.model.config.encoding.stack.data.concept;
+      delete this.model.config.encoding.stack.data.space;
+      delete this.model.config.encoding.stack.data.source;
       this.model.config.encoding.stack.data = target.config.encoding.stack.data;
 
       target.config.encoding.facet_row.data.modelType = "entityMembershipDataConfig";
-      target.config.encoding.facet_row.data.space = this.model.config.encoding.facet_row.data.space.slice();
+      delete this.model.config.encoding.facet_row.data.constant;
+      delete this.model.config.encoding.facet_row.data.concept;
+      delete this.model.config.encoding.facet_row.data.space;
+      delete this.model.config.encoding.facet_row.data.source;
+      delete this.model.config.encoding.facet_row.data.exceptions;
 
       this.model.config.encoding.facet_row.data = target.config.encoding.facet_row.data;
     })
