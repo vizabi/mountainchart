@@ -191,7 +191,6 @@ class _VizabiMountainChart extends BaseComponent {
 
     if (this.updateLayoutProfile()) return; //return if exists with error
     this.addReaction(this.updateCurveMethod);
-    this.addReaction(this.updateGroupEncoding);
     this.addReaction(this.updateHeaderAndFooter);
     this.addReaction(this.drawForecastOverlay);
     this.addReaction(this.updateMathSettings);
@@ -221,17 +220,6 @@ class _VizabiMountainChart extends BaseComponent {
 
   updateCurveMethod(){
     this.area.curve(d3[this.ui.curve]);
-  }
-
-  updateGroupEncoding(){
-    if (this.MDL.color.scale.isDiscrete()) {
-      runInAction(() => {
-        this.MDL.group.data.config.concept = this.MDL.color.data.config.concept;
-        this.MDL.group.data.config.space = this.MDL.color.data.config.space;
-        if (this.MDL.group.data.source !== this.MDL.color.data.source)
-          this.MDL.group.data.config.source = this.MDL.color.data.config.source;
-      });
-    }
   }
 
   updateLayoutProfile(){
