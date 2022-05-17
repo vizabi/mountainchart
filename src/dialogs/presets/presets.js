@@ -8,15 +8,23 @@ import {ICONS} from "./icons.js"
 import {PRESETS_DEFAULT} from "./configs-example.js"
 
 function compareConfigs(source, target) {
-  let score = 0;
-  for (const key in source) {
-     if (typeof source[key] === "object" && !Array.isArray(source[key]) && source[key] != null && target[key] != null) {
-       score += compareConfigs(source[key], target[key], score);
-     } else {
-       if (source[key] == target[key]) score++;
-     }
+  function compare(source, target) {
+      let score = 0;
+      let total = 0;
+      for (const key in source) {
+        if (typeof source[key] === "object" && !Array.isArray(source[key]) && source[key] != null && target[key] != null) {
+          const deeper = compare(source[key], target[key], score);
+          score += deeper.score;
+          total += deeper.total;
+        } else {
+          if (source[key] == target[key]) score++;
+          total++;
+        }
+      }
+      return {score, total};
   }
-  return score;
+  const result = compare(source, target);
+  return result.score / result.total;
 }
 
 function followPath(base, path){
@@ -97,23 +105,23 @@ class Presets extends Dialog {
   draw(){
     super.draw();
     this.addReaction(this.updateView);
-    this.addReaction(this.setGroup);
+    this.addReaction(this.setFilterToMatchColorConcept);
   }
 
 
-  getActiveConfig(){
-    const PRESETS = this.root.model.config.presets || PRESETS_DEFAULT;
+  get activePreset(){
+    const PRESETS = toJS(this.root.model.config.presets) || PRESETS_DEFAULT;
 
     PRESETS.flat().forEach(p => {
-      p.score = compareConfigs(p.config, this.model.config); 
-    })
+      p.score = compareConfigs(p.config, toJS(this.model.config)); 
+    })      
     const topScore = d3.max(PRESETS.flat(), d => d.score);
     return PRESETS.flat().find(f => f.score === topScore);
   }
 
-  setGroup(){
+  setFilterToMatchColorConcept(){
     const concept = this.MDL.color.data.concept;
-    const path = this.getActiveConfig().groupPath;
+    const path = this.activePreset.groupPath;
     if(!path) return;
     const filterConfig = followPath(this.model.config.data.filter.dimensions, path);
 
@@ -129,7 +137,7 @@ class Presets extends Dialog {
 
   updateView(unfoldedRadioGroup){
 
-    const activeConfig = this.getActiveConfig();
+    const activeConfig = this.activePreset;
 
     this.DOM.container.selectAll("fieldset").each(function(d, i){
       const fieldset = d3.select(this);
@@ -168,7 +176,7 @@ class Presets extends Dialog {
   }
 
   setModel(target){
-    const source = this.getActiveConfig();
+    const source = this.activePreset;
     runInAction(() => {
       target = utils.deepClone(target);
 
@@ -209,7 +217,8 @@ class Presets extends Dialog {
 }
  
 const decorated = decorate(Presets, {
-  "MDL": computed
+  "MDL": computed,
+  "activePreset": computed
 });
 Dialog.add("presets", decorated);
 export { decorated as Presets };
