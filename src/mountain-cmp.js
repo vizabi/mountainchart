@@ -164,7 +164,8 @@ class _VizabiMountainChart extends BaseComponent {
       color: this.model.encoding[this.state.alias.color || "color"],
       label: this.model.encoding.label,
       stack: this.model.encoding.stack,
-      group: this.model.encoding.group
+      group: this.model.encoding.group,
+      facet_row: this.model.encoding.facet_row
     };
   }
 
@@ -248,7 +249,11 @@ class _VizabiMountainChart extends BaseComponent {
       .text(this._getSubtitleText());
 
     this.DOM.closeCross
-      .classed("vzb-hidden", !this.isManyFacets || this.atomicSliceData.length > 1)
+      .classed("vzb-hidden", 
+        !this.isManyFacets 
+        || this.MDL.facet_row.data.concept === this.MDL.color.data.concept 
+        || (this.atomicSliceData.length > 1 && this.name.replace("is--","") === this.MDL.color.data.concept)
+      )
       .on("mouseover", () => {
         this.element.classed("vzb-chart-removepreview", true);
       })
@@ -256,7 +261,7 @@ class _VizabiMountainChart extends BaseComponent {
         this.element.classed("vzb-chart-removepreview", false);
       })
       .on("click", () => {
-        this.model.data.filter.delete(this.atomicSliceData[0]);
+        this.model.data.filter.delete(this.atomicSliceData);
       });
 
     utils.setIcon(this.DOM.info, ICON_QUESTION).select("svg").attr("width", "0px").attr("height", "0px");
