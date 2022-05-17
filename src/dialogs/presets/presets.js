@@ -207,9 +207,11 @@ class Presets extends Dialog {
         const $in = target.loosePath.pop();
         const show1 = followPath(this.model.config.data.filter.dimensions, source.loosePath);
         const show2 = followPath(target.config.data.filter.dimensions, target.loosePath, true);
-        show2[$in] = [...show1];
 
-        this.model.encoding.selected.data.filter.clear();
+        if(show1) {
+          show2[$in] = [...show1];
+          this.model.encoding.selected.data.filter.clear();
+        }
 
       } else if(source.mode === "none" || target.mode === "none") {
         //clear select
