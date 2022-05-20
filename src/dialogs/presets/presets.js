@@ -1,31 +1,14 @@
 //import draggablelist from "components/draggablelist/draggablelist";
 import {
   Dialog,
+  Utils,
   LegacyUtils as utils,
 } from "VizabiSharedComponents";
 import {runInAction, decorate, computed, toJS} from "mobx";
 import {ICONS} from "./icons.js"
 import {PRESETS_DEFAULT} from "./configs-example.js"
 
-function compareConfigs(source, target) {
-  function compare(source, target) {
-      let score = 0;
-      let total = 0;
-      for (const key in source) {
-        if (typeof source[key] === "object" && !Array.isArray(source[key]) && source[key] != null && target[key] != null) {
-          const deeper = compare(source[key], target[key], score);
-          score += deeper.score;
-          total += deeper.total;
-        } else {
-          if (source[key] == target[key]) score++;
-          total++;
-        }
-      }
-      return {score, total};
-  }
-  const result = compare(source, target);
-  return result.score / result.total;
-}
+
 
 function followPath(base, path, createMissingObj = false){
   return path.reduce((a, p)=>{
@@ -122,7 +105,7 @@ class Presets extends Dialog {
     const PRESETS = toJS(this.root.model.config.presets) || PRESETS_DEFAULT;
 
     PRESETS.flat().forEach(p => {
-      p.score = compareConfigs(p.config, toJS(this.model.config)); 
+      p.score = Utils.computeObjectsSimilarityScore(p.config, toJS(this.model.config), "is--"); 
     })      
     const topScore = d3.max(PRESETS.flat(), d => d.score);
     return PRESETS.flat().find(f => f.score === topScore);
