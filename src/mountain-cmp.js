@@ -274,7 +274,7 @@ class _VizabiMountainChart extends BaseComponent {
       const coord = utils.makeAbsoluteContext(this, this.farthestViewportElement)(rect.x - 10, rect.y + rect.height + 10);
       const toolRect = _this.root.element.node().getBoundingClientRect();
       const chartRect = _this.element.node().getBoundingClientRect();
-      _this._dataNotes.setEncoding(_this.MDL.norm).show().setPos(coord.x + chartRect.left - toolRect.left, coord.y);
+      _this._dataNotes.setEncoding(_this.MDL.shapedata).show().setPos(coord.x + chartRect.left - toolRect.left, coord.y);
     });
     this.DOM.info.on("mouseout", () => {
       _this._dataNotes.hide();
@@ -396,19 +396,22 @@ class _VizabiMountainChart extends BaseComponent {
 
     if (this.DOM.info.select("svg").node()) {
       const hTranslate = isRTL ? (titleBBox.x + t.translateX - infoElHeight * 1.4) : (titleBBox.x + t.translateX + titleBBox.width + infoElHeight * 0.4);
+      const cpForInfoEl = this.MDL.shapedata.data.conceptProps;
 
       this.DOM.info.select("svg")
         .attr("width", infoElHeight + "px")
         .attr("height", infoElHeight + "px");
-      this.DOM.info.attr("transform", "translate("
+      this.DOM.info
+        .classed("vzb-hidden", !cpForInfoEl.description && !cpForInfoEl.sourceLink || this.services.layout.projector)
+        .attr("transform", "translate("
         + hTranslate + ","
-        + (t.translateY - infoElHeight * 0.8) + ")");
+        + (t.translateY - infoElHeight * 0.1) + ")");
     }
 
     this.DOM.eventArea
       .attr("y", height)
       .attr("width", width)
-      .attr("height", margin.bottom);
+      .attr("height", titleBBox.height);
   }
 
   updateMesh(){
@@ -1005,17 +1008,17 @@ class _VizabiMountainChart extends BaseComponent {
 
 const PROFILE_CONSTANTS = _VizabiMountainChart.PROFILE_CONSTANTS = {
   SMALL: {
-    margin: { top: 10, right: 10, left: 10, bottom: 18 },
+    margin: { top: 2, right: 10, left: 10, bottom: 18 },
     infoElHeight: 16,
     minHeight: 40
   },
   MEDIUM: {
-    margin: { top: 20, right: 20, left: 20, bottom: 30 },
+    margin: { top: 5, right: 20, left: 20, bottom: 60 },
     infoElHeight: 20,
     minHeight: 50
   },
   LARGE: {
-    margin: { top: 30, right: 30, left: 30, bottom: 35 },
+    margin: { top: 10, right: 30, left: 30, bottom: 65 },
     infoElHeight: 22,
     minHeight: 65
   }
@@ -1023,12 +1026,12 @@ const PROFILE_CONSTANTS = _VizabiMountainChart.PROFILE_CONSTANTS = {
 
 const PROFILE_CONSTANTS_FOR_PROJECTOR = _VizabiMountainChart.PROFILE_CONSTANTS_FOR_PROJECTOR = {
   MEDIUM: {
-    margin: { top: 20, right: 20, left: 20, bottom: 50 },
+    margin: { top: 10, right: 20, left: 20, bottom: 70 },
     infoElHeight: 26,
     minHeight: 65
   },
   LARGE: {
-    margin: { top: 30, right: 30, left: 30, bottom: 50 },
+    margin: { top: 15, right: 30, left: 30, bottom: 85 },
     infoElHeight: 32,
     minHeight: 105
   }

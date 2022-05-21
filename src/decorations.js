@@ -92,7 +92,7 @@ export default class MCDecorations{
           .duration(duration || 0)
           .style("text-anchor", isFirst ? "end" : isLast ? "start" : "middle")
           .attr("dy", "-1.2em")
-          .attr("y", calcs.textHeight)
+          .attr("y", _this.height)
           .attr("x", x);
         
         view.select("text.vzb-mc-x-axis-group-line")
@@ -100,7 +100,7 @@ export default class MCDecorations{
           .transition()
           .duration(duration || 0)
           .attr("dy", "-1.2em")
-          .attr("y", calcs.textHeight * 0.9)
+          .attr("y", _this.height - calcs.textHeight * 0.1)
           .attr("x", calcs.boundaryMaxX_px);
       });
 

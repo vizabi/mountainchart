@@ -11,7 +11,6 @@
 
   .vzb-facet {
     .vzb-facet-inner:not(.vzb-facet-row-first) {
-      .vzb-mc-decorations .vzb-mc-x-axis-group,
       .vzb-mc-title,
       .vzb-mc-axis-info {
         visibility: hidden;
@@ -19,7 +18,10 @@
     }
     .vzb-facet-inner:not(.vzb-facet-row-last) {
       .vzb-mc-axis-x .tick text {visibility: hidden;}
-      .vzb-mc-axis-x-title{visibility: hidden;}
+      .vzb-mc-decorations .vzb-mc-x-axis-group,
+      .vzb-mc-axis-x-title {
+        visibility: hidden;
+      }
     }
   }
 
@@ -151,6 +153,10 @@
         pointer-events: none;
       }
 
+      .vzb-mc-title {
+        dominant-baseline: hanging;
+      }
+
       .vzb-mc-closecross {
         cursor: pointer;
         text-anchor: end;
@@ -170,7 +176,7 @@
         .vzb-mc-x-axis-groups {
           text {
             fill: $vzb-color-grey;
-            dominant-baseline: ideographic;
+            dominant-baseline: central;
             text-transform: uppercase;
           }
 
