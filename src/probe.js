@@ -108,7 +108,7 @@ class MCProbe extends BaseComponent {
     else
       this.parent.groupedSliceData.forEach(d => _computeAreas(d, values));
 
-    const formatterPercent = d3.format(".3r");
+    const formatterPercent = (value) => value < 0.1 ? 0 : d3.format(".2r")(value);
 
     this.DOM.extremepovertyText
       .classed("vzb-hidden", options.full || nationalMode || customMode)
