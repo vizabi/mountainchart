@@ -83,7 +83,6 @@ class _VizabiMountainChart extends BaseComponent {
           </g>
           </g>
         <rect class="vzb-mc-forecastoverlay vzb-hidden" x="0" y="0" width="100%" height="100%" fill="url(#vzb-mc-pattern-lines-${config.id})" pointer-events='none'></rect>
-        <g class="vzb-datawarning-button vzb-noexport"></g>
       </svg>
       <svg>
         <defs>
@@ -405,17 +404,6 @@ class _VizabiMountainChart extends BaseComponent {
         + hTranslate + ","
         + (t.translateY - infoElHeight * 0.8) + ")");
     }
-
-    this.root.findChild({type: "_DataWarning"}).setOptions({
-      width: this.width,
-      height: this.height,
-      vertical: "top", 
-      horizontal: isRTL ? "right" : "left",
-      left: margin.left,
-      right: margin.right,
-      top: margin.top + t.translateY + infoElHeight/2,
-      wLimit: this.width - titleBBox.width - infoElHeight * 2
-    });
 
     this.DOM.eventArea
       .attr("y", height)

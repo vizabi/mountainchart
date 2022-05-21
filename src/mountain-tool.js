@@ -6,7 +6,6 @@ import {
   DateTimeBackground,
   TimeSlider,
   DataNotes,
-  DataWarning,
   LocaleService,
   LayoutService,
   TreeMenu,
@@ -96,12 +95,6 @@ export default class MountainChart extends BaseComponent {
       placeholder: ".vzb-datanotes",
       model: marker
     },{
-      type: DataWarning,
-      placeholder: ".vzb-datawarning",
-      options: {button: ".vzb-datawarning-button"},
-      model: marker,
-      name: "data-warning"
-    },{
       type: Dialogs,
       placeholder: ".vzb-dialogs",
       model: marker,
@@ -129,7 +122,6 @@ export default class MountainChart extends BaseComponent {
       </div>
       <div class="vzb-treemenu"></div>
       <div class="vzb-datanotes"></div>
-      <div class="vzb-datawarning"></div>
     `;
 
     config.services = {
