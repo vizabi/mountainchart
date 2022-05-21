@@ -146,6 +146,7 @@ class _VizabiMountainChart extends BaseComponent {
 
     this.xAxis = axisSmart("bottom");
 
+    this.yScale = d3.scaleLinear(); //independent of model
     this.rangeRatio = 1;
     this.rangeShift = 0;
     this.mesh = [];
@@ -310,7 +311,6 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   //fetch scales, or rebuild scales if there are none, then fetch
-  get yScale() {return this.MDL.shapedata.scale.d3Scale.copy()};
   get xScale() {return this.MDL.mu.scale.d3Scale.copy()};
 
   drawForecastOverlay() {
@@ -1092,6 +1092,5 @@ export const VizabiMountainChart = decorate(_VizabiMountainChart, {
   "groupedSliceData": computed,
   "stackedSliceData": computed,
   "xScale": computed,
-  "yScale": computed,
   "incomeBrackets": observable
 });
