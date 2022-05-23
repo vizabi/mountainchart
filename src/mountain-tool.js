@@ -61,10 +61,10 @@ export default class MountainChart extends BaseComponent {
       model: marker,
       options: {
         PROFILE_CONSTANTS: utils.deepExtend({}, VizabiMountainChart.PROFILE_CONSTANTS, {
-          LARGE: {dy: 7}, MEDIUM: {dy: 4}, SMALL: {dy: 1}
+          LARGE: {dy: 5}, MEDIUM: {dy: 1}, SMALL: {dy: 0}
         }),
         PROFILE_CONSTANTS_FOR_PROJECTOR: utils.deepExtend({}, VizabiMountainChart.PROFILE_CONSTANTS_FOR_PROJECTOR, {
-          LARGE: {dy: 17}, MEDIUM: {dy: 12}
+          LARGE: {dy: 16}, MEDIUM: {dy: 10}
         }),
         xAlign: "right",
         yAlign: "top"
