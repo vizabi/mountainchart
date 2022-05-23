@@ -343,11 +343,7 @@ class _VizabiMountainChart extends BaseComponent {
     const isRTL = this.services.locale.isRTL();
 
     //update scales to the new range
-    if(this.isManyFacets && this.parent.scaleDomain)
-      this.yScale.range([height, height - this.parent.scaleRange]);
-    else
-      this.yScale.range([height, 0]);
-
+    this.yScale.range([height, this.isManyFacets ? height - this.parent.scaleRange : 0]);
     this.xScale.range([this.rangeShift, width * this.rangeRatio + this.rangeShift]);
 
     //axis is updated
@@ -944,10 +940,7 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   _adjustMaxY() {
-    if(this.isManyFacets && this.parent.scaleDomain)
-      this.yScale.domain([0, this.parent.scaleDomain]);
-    else
-      this.yScale.domain([0, Math.round(this.yMaxGlobal)]);
+    this.yScale.domain([0, this.isManyFacets ? this.parent.scaleDomain : Math.round(this.yMaxGlobal)]);
   }
 
   _isMergingGroups() {
