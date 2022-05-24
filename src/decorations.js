@@ -105,6 +105,7 @@ export default class MCDecorations{
       });
 
       xAxisGroups.select("text.vzb-mc-x-axis-group-text").on("mouseenter", function(event, d) {
+        if (_this._isDragging()) return;
         const calcs = xAxisGroups_calcs[d.i];
         d3.select(this).attr("font-weight", "bold");
         
@@ -128,6 +129,7 @@ export default class MCDecorations{
             .attr("y2", context.height);
         })
       }).on("mouseleave", function() {
+        if (_this._isDragging()) return;
         d3.select(this).attr("font-weight", null);
 
         _this.runHereOrPossiblyInAllFacets(function(context){
