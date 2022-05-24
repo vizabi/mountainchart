@@ -150,11 +150,11 @@
             unicode-bidi: embed;
           }
         }
-        pointer-events: none;
       }
-
+      
       .vzb-mc-title text {
         dominant-baseline: hanging;
+        pointer-events: none;
       }
 
       .vzb-mc-closecross {

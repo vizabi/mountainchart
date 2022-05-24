@@ -177,6 +177,12 @@ class _VizabiMountainChart extends BaseComponent {
     return this.isInFacet && this.parent.howManyFacets() > 1;
   }
 
+  get isAreaSmall(){
+    this.services.layout.size; //watch
+
+    return !this.ui.inpercent && this.parent.getScaleDomainForSubcomponent(this.name) < this.parent.getScaleDomainForSubcomponent() * 0.01;
+  }
+
   get duration(){
     //smooth animation is needed when playing, except for the case when time jumps from end to start
     if(!this.MDL.frame || !this.MDL.frame.playing) return 0;
@@ -242,13 +248,23 @@ class _VizabiMountainChart extends BaseComponent {
       .text(this.localise("unit/mountainchart_hardcoded_income_per_day"));
 
     this.DOM.yTitle.select("text")
-      .text(this.localise("mount/title"));
+      .text(this.localise(this.ui.inpercent ? "mount/percentofpeople" : "mount/numberofpeople"));
 
-    //if a mountain is alone on the chart: spell out its name
+    //if a mountain is in facets: spell out its name
     this.DOM.ySubtitle
       .classed("vzb-hidden", !this.isManyFacets)
       .select("text")
-      .text(this._getSubtitleText());
+      .text(this._getSubtitleText())
+      .style("pointer-events", this.isAreaSmall ? "all" : "none")
+      .on("mouseenter", function(){
+        if (_this.isAreaSmall) d3.select(this).text(_this.localise("mount/smallpopulation"));
+      })
+      .on("mouseleave", function(){
+        if (_this.isAreaSmall) d3.select(this).text(_this._getSubtitleText());
+      })
+      .on("click", () => {
+        _this.root.ui.chart.inpercent = !_this.root.ui.chart.inpercent;
+      });
 
     this.DOM.closeCross
       .classed("vzb-hidden", 
@@ -758,15 +774,16 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   _getSubtitleText(d) {
+    const prefix = this.isAreaSmall ? "🤏 " : "";
     
     if (this.atomicSliceData.length == 1) {
       const slice = this.atomicSliceData[0];
       const population = this.MDL.selectedF.has(slice)
         ? ": " + this.localise(slice.norm) + " " + this.localise("mount/people")
         : "";
-      return this._getLabelText(slice) + population; 
+      return prefix + this._getLabelText(slice) + population; 
     } else if (this.name.includes("is--"))
-      return this.model.data.source.getConcept(this.name.replace("is--",""))?.name;
+      return prefix + this.model.data.source.getConcept(this.name.replace("is--",""))?.name;
     else
       return this.name;
   }
@@ -1076,6 +1093,7 @@ export const VizabiMountainChart = decorate(_VizabiMountainChart, {
   "MDL": computed,
   "isInFacet": computed,
   "isManyFacets": computed,
+  "isAreaSmall": computed,
   "duration": computed,
   "atomicSliceData": computed,
   "groupedSliceData": computed,
