@@ -10,6 +10,7 @@ export default class MCDecorations{
 
     const _this = this;
     this.services.layout.size; //watch
+    this.ui.inpercent;
     
     // x axis groups used for incomes
     const showxAxisGroups = this.ui.decorations.xAxisGroups 

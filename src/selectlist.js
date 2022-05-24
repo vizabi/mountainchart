@@ -45,6 +45,7 @@ class _MCSelectList extends BaseComponent {
     this.MDL.selectedF.markers; //watch
     this.MDL.frame.value; //watch
     this.services.layout.size; //watch
+    this.parent.ui.inpercent;
 
     const listData = this.isManyFacetsAndLonely() || this.isChartTooSmall()
       ? []

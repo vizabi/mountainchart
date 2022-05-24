@@ -55,6 +55,7 @@ class MCProbe extends BaseComponent {
 
   redraw(options = {}) {
     this.services.layout.size; //watch
+    this.parent.ui.inpercent;
     this.MDL.frame.value; //watch
 
     const stackMode = this.MDL.stack.data.constant;

@@ -134,6 +134,13 @@ export default class MountainChart extends BaseComponent {
     
     this.splashMarker = splashMarker;
   }
+  draw(){
+    this.addReaction(this.updatePercentButton);
+  }
+  updatePercentButton(){
+    const enabled = !!this.model.markers.mountain.encoding.facet_row.data.concept;
+    this.findChild({type: "ButtonList"}).setButtonUnavailable("inpercent", !enabled);
+  }
 }
 MountainChart.DEFAULT_UI = {
   chart: {  

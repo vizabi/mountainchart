@@ -208,6 +208,7 @@ class _VizabiMountainChart extends BaseComponent {
 
   drawData() {
     this.services.layout.size; //watch
+    this.ui.inpercent;
 
     this.processFrameData();
     this.computeAllShapes();
@@ -225,6 +226,7 @@ class _VizabiMountainChart extends BaseComponent {
 
   updateLayoutProfile(){
     this.services.layout.size; //watch
+    this.ui.inpercent;
 
     this.profileConstants = this.services.layout.getProfileConstants(PROFILE_CONSTANTS, PROFILE_CONSTANTS_FOR_PROJECTOR, this.state.positionInFacet);
     this.height = this.element.node().clientHeight || 0;
@@ -328,6 +330,7 @@ class _VizabiMountainChart extends BaseComponent {
 
   updateSize() {
     this.services.layout.size; //watch
+    this.ui.inpercent;
 
     const {
       margin,
@@ -429,6 +432,8 @@ class _VizabiMountainChart extends BaseComponent {
 
   updateDecorations(){
     this.services.layout.size;
+    this.ui.inpercent;
+    
     this.MDL.mu.config;
     this.decorations.update.bind(this)(this.duration);
   }
@@ -940,7 +945,7 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   _adjustMaxY() {
-    this.yScale.domain([0, this.isManyFacets ? this.parent.scaleDomain : Math.round(this.yMaxGlobal)]);
+    this.yScale.domain([0, this.isManyFacets ? this.parent.getScaleDomainForSubcomponent(this.ui.inpercent ? this.name : null) : Math.round(this.yMaxGlobal)]);
   }
 
   _isMergingGroups() {
