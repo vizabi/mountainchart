@@ -145,7 +145,7 @@ class _VizabiMountainChart extends BaseComponent {
 
     this.xAxis = axisSmart("bottom");
 
-    this.yScale = d3.scaleLinear(); //independent of model
+    this.yScaleBase = d3.scaleLinear(); //independent of model
     this.rangeRatio = 1;
     this.rangeShift = 0;
     this.mesh = [];
@@ -327,8 +327,22 @@ class _VizabiMountainChart extends BaseComponent {
       func(this);
   }
 
-  //fetch scales, or rebuild scales if there are none, then fetch
-  get xScale() {return this.MDL.mu.scale.d3Scale.copy()};
+  get xScale() {
+    this.services.layout.size; //watch
+    this.ui.inpercent;
+
+    const {margin} = this.profileConstants;
+    const width = this.width - margin.left - margin.right;
+    return this.MDL.mu.scale.d3Scale.range([this.rangeShift, width * this.rangeRatio + this.rangeShift]);
+  };
+  get yScale() {
+    this.services.layout.size; //watch
+    this.ui.inpercent;
+
+    const {margin} = this.profileConstants;
+    const height = this.height - margin.top - margin.bottom;
+    return this.yScaleBase.range([height, this.isManyFacets ? height - this.parent.scaleRange : 0]);
+  };
 
   drawForecastOverlay() {
     this.DOM.forecastOverlay.classed("vzb-hidden", 
@@ -360,10 +374,6 @@ class _VizabiMountainChart extends BaseComponent {
     this.DOM.graph.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     const isRTL = this.services.locale.isRTL();
-
-    //update scales to the new range
-    this.yScale.range([height, this.isManyFacets ? height - this.parent.scaleRange : 0]);
-    this.xScale.range([this.rangeShift, width * this.rangeRatio + this.rangeShift]);
 
     //axis is updated
     this.xAxis.scale(this.xScale)
@@ -1099,5 +1109,6 @@ export const VizabiMountainChart = decorate(_VizabiMountainChart, {
   "groupedSliceData": computed,
   "stackedSliceData": computed,
   "xScale": computed,
+  "yScale": computed,
   "incomeBrackets": observable
 });
