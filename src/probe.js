@@ -20,9 +20,9 @@ class MCProbe extends BaseComponent {
         <text class="vzb-mc-probe-value vzb-mc-probe-value-ur"></text>
         <text class="vzb-mc-probe-value vzb-mc-probe-value-dl"></text>
         <text class="vzb-mc-probe-value vzb-mc-probe-value-dr"></text>
-        <text class="vzb-mc-probe-value vzb-shadow vzb-mc-probe-value-head"></text>
-        <text class="vzb-mc-probe-value vzb-mc-probe-value-head"></text>
       </g>
+      <text class="vzb-mc-probe-value vzb-shadow vzb-mc-probe-value-head"></text>
+      <text class="vzb-mc-probe-value vzb-mc-probe-value-head"></text>
     `;
 
     super(config);
@@ -67,7 +67,7 @@ class MCProbe extends BaseComponent {
         
     const povertyLineData = this.MDL.povertylineMarker.dataArray
       //filter only the items that match the mountain in the chart
-      .filter(f => getKey(f) === getKey(markerItem))
+      .filter(f => getKey(f) === getKey(markerItem) && f[this.povertylineEncName])
       //take nearest item to current frame value
       .sort((a,b) => Math.abs(this.MDL.frame.value - b[frameConcept]) - Math.abs(this.MDL.frame.value - a[frameConcept]))
       .pop() || {};
@@ -172,8 +172,8 @@ class MCProbe extends BaseComponent {
     this.DOM.probeValuesHead
       .text(`${this.localise(data.level)}$ (${this.localise(data.time)})`)
       .classed("vzb-hidden", !nationalMode || options.full)
-      .attr("dy", "0.1em")
-      .attr("y", -this.parent.profileConstants.minHeight);
+      .attr("dy", "0.3em")
+      .attr("y", 0);
 
     this.DOM.probeLine
       .attr("x1", 0)
