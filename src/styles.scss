@@ -231,6 +231,9 @@
       .vzb-mc-axis-info {
         @extend %vzb-chart-ticks-large;
       }
+      .vzb-mc-probe-value-head {
+        font-size: $vzb-font-size-small;
+      }
     }
   }
 
@@ -255,6 +258,9 @@
       .vzb-mc-axis-info {
         @extend %vzb-chart-ticks-medium;
       }
+      .vzb-mc-probe-value-head {
+        font-size: $vzb-font-size-tiny;
+      }
     }
   }
   &.vzb-small {
@@ -278,6 +284,9 @@
       .vzb-mc-axis-info {
         @extend %vzb-chart-ticks-small;
       }
+      .vzb-mc-probe-value-head {
+        font-size: $vzb-font-size-tiny;
+      }
     }
   }
   &.vzb-presentation {
@@ -288,20 +297,25 @@
       .vzb-mc-axis-y,
       .vzb-mc-probe,
       .vzb-mc-mountains-labels,
+      .vzb-mc-labels,
       .vzb-mc-tooltip {
         text {
           font-size: $vzb-font-size-larger;
         }
-      }
-
-      .vzb-mc-labels {
-        font-size: $vzb-font-size-larger;
+        .vzb-mc-probe-value-head {
+          font-size: $vzb-font-size-regular;
+        }
       }
     }
 
     &.vzb-medium {
-      .vzb-mc-probe text {
-        font-size: $vzb-font-size-medium;
+      .vzb-mc-probe {
+        text {
+          font-size: $vzb-font-size-medium;
+        }
+        .vzb-mc-probe-value-head {
+          font-size: $vzb-font-size-small;
+        }
       }
     }
   }

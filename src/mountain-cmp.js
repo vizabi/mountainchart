@@ -32,7 +32,11 @@ class _VizabiMountainChart extends BaseComponent {
     },{
       name: "probe",
       type: MCProbe,
-      placeholder: ".vzb-mc-probe"
+      placeholder: ".vzb-mc-probe",
+      options: {
+        povertylineMarkerName: "povertyline",
+        povertylineEncName: "povertyline"
+      }
     }];
 
     //config.name = "mountainchart";
@@ -1035,17 +1039,17 @@ const PROFILE_CONSTANTS = _VizabiMountainChart.PROFILE_CONSTANTS = {
   SMALL: {
     margin: { top: 2, right: 10, left: 10, bottom: 18 },
     infoElHeight: 16,
-    minHeight: 40
+    minHeight: 43
   },
   MEDIUM: {
     margin: { top: 5, right: 20, left: 20, bottom: 60 },
     infoElHeight: 20,
-    minHeight: 50
+    minHeight: 55
   },
   LARGE: {
     margin: { top: 10, right: 30, left: 30, bottom: 65 },
     infoElHeight: 22,
-    minHeight: 65
+    minHeight: 70
   }
 };
 
@@ -1053,12 +1057,12 @@ const PROFILE_CONSTANTS_FOR_PROJECTOR = _VizabiMountainChart.PROFILE_CONSTANTS_F
   MEDIUM: {
     margin: { top: 10, right: 20, left: 20, bottom: 70 },
     infoElHeight: 26,
-    minHeight: 65
+    minHeight: 70
   },
   LARGE: {
     margin: { top: 15, right: 30, left: 30, bottom: 85 },
     infoElHeight: 32,
-    minHeight: 105
+    minHeight: 110
   }
 };
 

@@ -1,5 +1,6 @@
 import {
-  BaseComponent
+  BaseComponent,
+  Utils
 } from "VizabiSharedComponents";
 
 import {decorate, computed} from "mobx";
@@ -27,7 +28,7 @@ class MCProbe extends BaseComponent {
     super(config);
   }
 
-  setup() {
+  setup(options) {
     this.DOM = {
       probe: this.element,
       probeLine: this.element.select("line"),
@@ -36,6 +37,9 @@ class MCProbe extends BaseComponent {
       probeValues: this.element.selectAll(".vzb-mc-probe-value:not(.vzb-mc-probe-value-head)"),
       probeValuesHead: this.element.selectAll(".vzb-mc-probe-value-head")
     };
+
+    this.povertylineMarkerName = options.povertylineMarkerName;
+    this.povertylineEncName = options.povertylineEncName;
   }
 
 
@@ -43,14 +47,32 @@ class MCProbe extends BaseComponent {
     return {
       frame: this.model.encoding.frame,
       stack: this.model.encoding.stack,
-      color: this.model.encoding.color,
-      selectedF: this.model.encoding.selected.data.filter
+      povertylineMarker: this.root.model.markers[this.povertylineMarkerName]
     };
   }
 
   draw() {
     this.localise = this.services.locale.auto(this.MDL.frame.interval);
     //this.addReaction(this.redraw);
+  }
+
+  _isProbeModelReady() {
+    return this.MDL.povertylineMarker.state == Utils.STATUS.READY;
+  }
+
+  _getNationalLevel(markerItem){
+    const frameConcept = this.MDL.frame.data.concept;
+    const dims = this.MDL.povertylineMarker.data.space.filter(f => f != frameConcept);
+    const getKey = (d) => dims.map(dim => d[dim]).join("¬");
+        
+    const povertyLineData = this.MDL.povertylineMarker.dataArray
+      //filter only the items that match the mountain in the chart
+      .filter(f => getKey(f) === getKey(markerItem))
+      //take nearest item to current frame value
+      .sort((a,b) => Math.abs(this.MDL.frame.value - b[frameConcept]) - Math.abs(this.MDL.frame.value - a[frameConcept]))
+      .pop() || {};
+    
+    return {level: povertyLineData[this.povertylineEncName], time: povertyLineData[frameConcept]};
   }
 
   redraw(options = {}) {
@@ -65,54 +87,57 @@ class MCProbe extends BaseComponent {
     const nationalMode = this.parent.ui.probeXType == "national";
     const customMode = this.parent.ui.probeXType == "custom";
 
-    if (nationalMode) {
-      if (this.parent.atomicSliceData.length == 1) {
-        if (!options.level) {
-          options.level = this.parent.atomicSliceData[0]["povertyline"];
-        }
+    const data = {
+      level: options.level,
+      time: null,
+      sumValue: 0,
+      totalArea: 0,
+      leftArea: 0
+    }
+
+    if (options.full && data.level){
+      //pass on without modifying          
+    }
+    else if (nationalMode) {
+      if (this.parent.atomicSliceData.length == 1 && this._isProbeModelReady()) {
+        Object.assign(data, this._getNationalLevel(this.parent.atomicSliceData[0]));
       } else {
         this.DOM.probe.classed("vzb-hidden", true);
         return;
       }
-    } else if (customMode && !options.level) {
-      options.level = this.parent.ui.probeXCustom;
-    } else if (!options.level) {
-      options.level = this.parent.ui.probeX; //TODO: move inside
+    } else if (customMode && !data.level) {
+      data.level = this.parent.ui.probeXCustom;
+    } else if (!data.level) {
+      data.level = this.parent.ui.probeX; //TODO: move inside
     }
 
-    this.DOM.probe.classed("vzb-hidden", !options.level || !this.parent.ui.showProbeX);
-    if (!options.level) return;
+    this.DOM.probe.classed("vzb-hidden", !data.level || !this.parent.ui.showProbeX);
+    if (!data.level) return;
 
-    this.element.attr("transform", `translate(${this.parent.xScale(options.level)}, 0)`);
+    this.element.attr("transform", `translate(${this.parent.xScale(data.level)}, 0)`);
     
     if(this.parent.xAxis.scale())
-      this.parent.DOM.xAxis.call(this.parent.xAxis.highlightValue(options.full ? options.level : "none"));
+      this.parent.DOM.xAxis.call(this.parent.xAxis.highlightValue(options.full ? data.level : "none"));
 
     const _computeAreas = (d, result) => {
       result.sumValue += d.norm;
       if (d.shape) d.shape.forEach(vertex => {
         result.totalArea += vertex.y;
-        if (this.parent._math.rescale(vertex.x) < options.level) result.leftArea += vertex.y;
+        if (this.parent._math.rescale(vertex.x) < result.level) result.leftArea += vertex.y;
       });
     };
 
-    const values = {
-        sumValue: 0,
-        totalArea: 0,
-        leftArea: 0
-      }
-
     if (stackMode === "all")
-      this.parent.stackedSliceData.forEach(d => _computeAreas(d, values));
+      this.parent.stackedSliceData.forEach(d => _computeAreas(d, data));
     else if (stackMode === "none")
-      this.parent.atomicSliceData.forEach(d => _computeAreas(d, values));
+      this.parent.atomicSliceData.forEach(d => _computeAreas(d, data));
     else
-      this.parent.groupedSliceData.forEach(d => _computeAreas(d, values));
+      this.parent.groupedSliceData.forEach(d => _computeAreas(d, data));
 
     const formatterPercent = (value) => value < 0.1 ? 0 : d3.format(".2r")(value);
 
     this.DOM.extremepovertyText
-      .classed("vzb-hidden", options.full || nationalMode || customMode)
+      .classed("vzb-hidden", options.full || !extremeMode)
       .text(this.localise("mount/extremepoverty"))
       .attr("x", -height)
       .attr("y", 0)
@@ -120,25 +145,21 @@ class MCProbe extends BaseComponent {
       .attr("dx", "0.5em")
       .attr("transform", "rotate(-90)");
 
-    let epTextBBox = this.DOM.extremepovertyText.node().getBBox();
+    let epTextBBox = extremeMode ? this.DOM.extremepovertyText.node().getBBox() : {width: 0, height: 0};
 
     if(epTextBBox.width > height * 0.5) {
       this.DOM.extremepovertyText.classed("vzb-hidden", true);
       epTextBBox = {width: 0, height: 0};
     }
 
-
-    if(!options.full) 
-      this.heightOfLabels = nationalMode ? height : height - epTextBBox.width - epTextBBox.height * 1.75;
-
+    const suffix = !this.parent.isManyFacets || this.parent.state.positionInFacet.row.first ? " " + this.localise("mount/people") : "";
     this.DOM.probeValues
       .text((d, i) => {
-        if (i === 0 || i === 4) return formatterPercent(values.leftArea / values.totalArea * 100) + "%";
-        if (i === 1 || i === 5) return formatterPercent(100 - values.leftArea / values.totalArea * 100) + "%";
-        if (i === 2 || i === 6) return this.localise(values.sumValue * values.leftArea / values.totalArea);
-        if (i === 3 || i === 7) return this.localise(values.sumValue * (1 - values.leftArea / values.totalArea)) + " " + this.localise("mount/people");
+        if (i === 0 || i === 4) return formatterPercent(data.leftArea / data.totalArea * 100) + "%";
+        if (i === 1 || i === 5) return formatterPercent(100 - data.leftArea / data.totalArea * 100) + "%";
+        if (i === 2 || i === 6) return this.localise(data.sumValue * data.leftArea / data.totalArea);
+        if (i === 3 || i === 7) return this.localise(data.sumValue * (1 - data.leftArea / data.totalArea)) + suffix;
       })
-      //!options.full && (this.parent.someSelected || (i !== 0 && i !== 4)) ||
       .classed("vzb-hidden", (d, i) => !options.full &&
         (((i === 0 || i === 4) && !this.parent.ui.probeXDetails.belowProc) ||
         ((i === 1 || i === 5) && !this.parent.ui.probeXDetails.aboveProc) ||
@@ -146,13 +167,13 @@ class MCProbe extends BaseComponent {
         ((i === 3 || i === 7) && !this.parent.ui.probeXDetails.aboveCount))
       )
       .attr("x", (d, i) => ([0, 4, 2, 6].includes(i) ? -6 : +5))
-      .attr("dy", (d, i) => [0, 1, 4, 5].includes(i) ? (nationalMode ? "-2.3em" : "-2.5em") : "-1.2em");
+      .attr("dy", (d, i) => [0, 1, 4, 5].includes(i) ? "-2.5em" : "-1.2em");
 
     this.DOM.probeValuesHead
-      .text((d, i) => "$" + this.localise(options.level))
-      .classed("vzb-hidden", (d, i) => !nationalMode)
-      .attr("dy", "0.5em")
-      .attr("y", (d, i) => nationalMode ? -height : null);
+      .text(`${this.localise(data.level)}$ (${this.localise(data.time)})`)
+      .classed("vzb-hidden", !nationalMode || options.full)
+      .attr("dy", "0.1em")
+      .attr("y", -this.parent.profileConstants.minHeight);
 
     this.DOM.probeLine
       .attr("x1", 0)
@@ -160,14 +181,13 @@ class MCProbe extends BaseComponent {
       .attr("y1", height + 6)
       .attr("y2", 0);
 
-    const povertyLabelHeight = extremeMode ? epTextBBox.width + epTextBBox.height * 0.5 : (height * 0.25);
-  
-    if (!options.full) {
-      this.DOM.probeBlocks.attr("transform", (d, i) => `translate (0, ${height - (nationalMode ? 0 : povertyLabelHeight)})`);
-    }
+    const riseAllValues = height > this.parent.profileConstants.minHeight 
+      ? Math.max(epTextBBox.width + epTextBBox.height * 0.5, height / 4 )
+      : 0; 
+    
+    this.DOM.probeBlocks.attr("transform", `translate (0, ${height - riseAllValues})`);
   
   }
-
 }
 
 const decorated = decorate(MCProbe, {
