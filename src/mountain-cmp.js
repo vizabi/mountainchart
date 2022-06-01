@@ -66,7 +66,7 @@ class _VizabiMountainChart extends BaseComponent {
           </g>
 
           <g class="vzb-mc-closecross">
-            <text>⨯</text>
+            <text>×</text>
           </g>
 
           <g class="vzb-mc-axis-x-title">
@@ -214,6 +214,7 @@ class _VizabiMountainChart extends BaseComponent {
     this.addReaction(this.updateAllSlicesOpacity);
     this.addReaction(this.updateDecorations);
     this.addReaction(this.updateProbe);
+    this.addReaction(this.updateShowYear);
   }
 
   drawData() {
@@ -322,6 +323,10 @@ class _VizabiMountainChart extends BaseComponent {
           context._probe.redraw();
         })
       });
+  }
+
+  updateShowYear() {
+    this.root.element.select(".vzb-datetime-background").classed("vzb-hidden", !this.ui.timeInBackground);
   }
 
   runHereOrPossiblyInAllFacets(func){

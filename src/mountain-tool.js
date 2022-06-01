@@ -73,7 +73,8 @@ export default class MountainChart extends BaseComponent {
       type: DateTimeBackground,
       placeholder: ".vzb-datetime",
       name: "datetime",
-      model: marker
+      model: marker,
+      options: {xAlign: "right", yAlign: "top", widthRatio: 0.5, topOffset: 100, leftOffset: 10}
     },{
       type: TimeSlider,
       placeholder: ".vzb-timeslider",
