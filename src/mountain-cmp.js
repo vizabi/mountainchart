@@ -240,10 +240,24 @@ class _VizabiMountainChart extends BaseComponent {
     this.ui.inpercent;
 
     this.profileConstants = this.services.layout.getProfileConstants(PROFILE_CONSTANTS, PROFILE_CONSTANTS_FOR_PROJECTOR, this.state.positionInFacet);
-    this.height = this.element.node().clientHeight || 0;
-    this.width = this.element.node().clientWidth || 0;
 
     if (!this.height || !this.width) return utils.warn("Chart _updateProfile() abort: container is too little or has display:none");
+  }
+
+  get height(){
+    this.services.layout.size; //watch
+    this.ui.inpercent;
+    if (this.isInFacet) this.parent.scaleRange;
+
+    return this.element.node().clientHeight || 0;
+  }
+
+  get width(){
+    this.services.layout.size; //watch
+    this.ui.inpercent;
+    if (this.isInFacet) this.parent.scaleRange;
+
+    return this.element.node().clientWidth || 0;
   }
 
   updateHeaderAndFooter() {
@@ -1119,5 +1133,7 @@ export const VizabiMountainChart = decorate(_VizabiMountainChart, {
   "stackedSliceData": computed,
   "xScale": computed,
   "yScale": computed,
+  "height": computed,
+  "width": computed,
   "incomeBrackets": observable
 });
