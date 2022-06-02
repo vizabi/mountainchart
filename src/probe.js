@@ -136,8 +136,10 @@ class MCProbe extends BaseComponent {
 
     const formatterPercent = (value) => value < 0.1 ? 0 : d3.format(".2r")(value);
 
+    const notInLargestFacet = () => this.parent.isManyFacets && this.parent.parent.largetstFacetId !== this.parent.name;
+
     this.DOM.extremepovertyText
-      .classed("vzb-hidden", options.full || !extremeMode)
+      .classed("vzb-hidden", options.full || !extremeMode || notInLargestFacet)
       .text(this.localise("mount/extremepoverty"))
       .attr("x", -height)
       .attr("y", 0)
