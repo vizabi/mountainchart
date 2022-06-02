@@ -152,7 +152,6 @@ class _VizabiMountainChart extends BaseComponent {
     this.yScaleBase = d3.scaleLinear(); //independent of model
     this.rangeRatio = 1;
     this.rangeShift = 0;
-    this.mesh = [];
     this.stickySortValues = {};
     this.yMaxGlobal = 0;
   }
@@ -206,7 +205,7 @@ class _VizabiMountainChart extends BaseComponent {
     this.addReaction(this.drawForecastOverlay);
     this.addReaction(this.updateMathSettings);
     this.addReaction(this.updateSize);
-    this.addReaction(this.updateMesh);
+    //this.addReaction(this.updateMesh);
     this.addReaction(this.zoom);
     //this.addReaction(this.updateMasks);
     this.addReaction(this.drawData);
@@ -462,7 +461,7 @@ class _VizabiMountainChart extends BaseComponent {
       .attr("height", titleBBox.height);
   }
 
-  updateMesh(){
+  get mesh(){
     // this.mesh = this._math.generateMesh(
     //   this.ui.xPoints, 
     //   this.MDL.mu.scale.type || "log", 
@@ -473,7 +472,7 @@ class _VizabiMountainChart extends BaseComponent {
     const nbrackets = this.ui.xPoints;
     const step = Math.pow(end/start, 1/nbrackets);
 
-    this.mesh = d3.range(nbrackets).map(m => start * Math.pow(step, m + 0.5) );
+    return d3.range(nbrackets).map(m => start * Math.pow(step, m + 0.5) );
     
     //rbh
     //this._robinhood.findMeshIndexes(this.mesh);
@@ -1135,5 +1134,6 @@ export const VizabiMountainChart = decorate(_VizabiMountainChart, {
   "yScale": computed,
   "height": computed,
   "width": computed,
+  "mesh": computed,
   "incomeBrackets": observable
 });
