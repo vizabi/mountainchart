@@ -65,7 +65,7 @@ class _VizabiMountainChart extends BaseComponent {
             <text></text>
           </g>
 
-          <g class="vzb-mc-closecross">
+          <g class="vzb-mc-closecross vzb-noexport">
             <text>×</text>
           </g>
 
@@ -90,7 +90,7 @@ class _VizabiMountainChart extends BaseComponent {
       </svg>
       <svg>
         <defs>
-          <pattern id="vzb-mc-pattern-lines-${config.id}" x="0" y="0" patternUnits="userSpaceOnUse" width="50" height="50" viewBox="0 0 10 10"> 
+          <pattern class="vzb-noexport" id="vzb-mc-pattern-lines-${config.id}" x="0" y="0" patternUnits="userSpaceOnUse" width="50" height="50" viewBox="0 0 10 10"> 
             <path d='M-1,1 l2,-2M0,10 l10,-10M9,11 l2,-2' stroke='black' stroke-width='3' opacity='0.08'/>
           </pattern> 
         </defs>
