@@ -11,6 +11,7 @@ import MountainChartMath from "./math";
 import MCDecorations from "./decorations.js";
 import {MCSelectList} from "./selectlist";
 import {MCProbe} from "./probe";
+import { MCUltraRich } from "./ultra-rich.js";
 //import RobinHood from "./robinhood.js";
 
 import {decorate, computed, observable, runInAction} from "mobx";
@@ -36,6 +37,14 @@ class _VizabiMountainChart extends BaseComponent {
       options: {
         povertylineMarkerName: "povertyline",
         povertylineEncName: "povertyline"
+      }
+    },{
+      name: "ultrarich",
+      type: MCUltraRich,
+      placeholder: ".vzb-mc-ultrarich",
+      options: {
+        ultrarichMarkerName: "ultrarich",
+        ultrarichEncName: "povertyline"
       }
     }];
 
@@ -80,6 +89,7 @@ class _VizabiMountainChart extends BaseComponent {
           
           <g class="vzb-mc-axis-labels"></g>
           <g class="vzb-mc-probe"></g>
+          <g class="vzb-mc-ultrarich"></g>
           
           <g class="vzb-mc-tooltip vzb-hidden">
             <rect class="vzb-tooltip-border"></rect>
