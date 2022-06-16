@@ -50,7 +50,8 @@ export default class MountainChart extends BaseComponent {
         repeatedComponentCssClass: "vzb-facet",
         repeatedComponentOptions: {
           facetedComponent: VizabiMountainChart,
-          facetedComponentCssClass: "vzb-mountainchart"
+          facetedComponentCssClass: "vzb-mountainchart",
+          direction: "row"
         }
       },
       name: "chart",

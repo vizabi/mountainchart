@@ -168,7 +168,8 @@ class _VizabiMountainChart extends BaseComponent {
       label: this.model.encoding.label,
       stack: this.model.encoding.stack,
       group: this.model.encoding.group,
-      facet_row: this.model.encoding.facet_row
+      facet_row: this.model.encoding.facet_row,
+      maxheight: this.model.encoding.maxheight
     };
   }
 
@@ -204,6 +205,7 @@ class _VizabiMountainChart extends BaseComponent {
     this.addReaction(this.updateHeaderAndFooter);
     this.addReaction(this.drawForecastOverlay);
     this.addReaction(this.updateMathSettings);
+    this.addReaction(this.updateMaxValues);
     this.addReaction(this.updateSize);
     //this.addReaction(this.updateMesh);
     this.addReaction(this.zoom);
@@ -219,6 +221,7 @@ class _VizabiMountainChart extends BaseComponent {
   drawData() {
     this.services.layout.size; //watch
     this.ui.inpercent;
+    if (this.isInFacet) {this.parent.scaleRange; this.parent.rangePartsHash;}
 
     this.processFrameData();
     this.computeAllShapes();
@@ -246,7 +249,7 @@ class _VizabiMountainChart extends BaseComponent {
   get height(){
     this.services.layout.size; //watch
     this.ui.inpercent;
-    if (this.isInFacet) this.parent.scaleRange;
+    if (this.isInFacet) {this.parent.scaleRange; this.parent.rangePartsHash;}
 
     return this.element.node().clientHeight || 0;
   }
@@ -254,7 +257,7 @@ class _VizabiMountainChart extends BaseComponent {
   get width(){
     this.services.layout.size; //watch
     this.ui.inpercent;
-    if (this.isInFacet) this.parent.scaleRange;
+    if (this.isInFacet) {this.parent.scaleRange; this.parent.rangePartsHash;}
 
     return this.element.node().clientWidth || 0;
   }
@@ -606,6 +609,15 @@ class _VizabiMountainChart extends BaseComponent {
 
           return stack;
         });
+    }
+  }
+
+  updateMaxValues() {
+    if (this.isInFacet) {
+      const data = this._getDataArrayForFacet();
+      const sum = d3.sum(data.map(m => m[this.MDL.maxheight.name]));
+      const limit = this.MDL.maxheight.config.limit;
+      this.parent.maxValues.set(this.name, (!sum || sum > limit) ? limit : sum);
     }
   }
 
@@ -1055,17 +1067,17 @@ class _VizabiMountainChart extends BaseComponent {
 
 const PROFILE_CONSTANTS = _VizabiMountainChart.PROFILE_CONSTANTS = {
   SMALL: {
-    margin: { top: 2, right: 10, left: 10, bottom: 18 },
+    margin: { top: 2, right: 10, left: 10, bottom: 18, betweenRow: 2},
     infoElHeight: 16,
     minHeight: 43
   },
   MEDIUM: {
-    margin: { top: 5, right: 20, left: 20, bottom: 60 },
+    margin: { top: 5, right: 20, left: 20, bottom: 60, betweenRow: 2},
     infoElHeight: 20,
     minHeight: 55
   },
   LARGE: {
-    margin: { top: 10, right: 30, left: 30, bottom: 65 },
+    margin: { top: 10, right: 30, left: 30, bottom: 65, betweenRow: 2},
     infoElHeight: 22,
     minHeight: 70
   }
@@ -1073,12 +1085,12 @@ const PROFILE_CONSTANTS = _VizabiMountainChart.PROFILE_CONSTANTS = {
 
 const PROFILE_CONSTANTS_FOR_PROJECTOR = _VizabiMountainChart.PROFILE_CONSTANTS_FOR_PROJECTOR = {
   MEDIUM: {
-    margin: { top: 10, right: 20, left: 20, bottom: 70 },
+    margin: { top: 10, right: 20, left: 20, bottom: 70, betweenRow: 2},
     infoElHeight: 26,
     minHeight: 70
   },
   LARGE: {
-    margin: { top: 15, right: 30, left: 30, bottom: 85 },
+    margin: { top: 15, right: 30, left: 30, bottom: 85, betweenRow: 2},
     infoElHeight: 32,
     minHeight: 110
   }
