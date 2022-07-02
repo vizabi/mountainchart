@@ -15,7 +15,8 @@ class MCUltraRich extends BaseComponent {
 
   setup(options) {
     this.DOM = {
-      container: this.element
+      container: this.element,
+      defs: this.element.append("defs")
     };
 
     this.ultrarichMarkerName = options.ultrarichMarkerName;
@@ -97,6 +98,29 @@ class MCUltraRich extends BaseComponent {
     
   }
 
+  getBillyImages(person){
+
+    if(this.DOM.defs.select(`#vzb-billy-image-${person}`).node()) return;
+
+    const reader = this.MDL.ultrarichMarker.data.source.reader;
+    
+    reader.getAsset(person + ".png")
+      .then(response => {
+        if(response.url)
+          this.DOM.defs.append("pattern")
+            .attr("id", "vzb-billy-image-" + person)
+            .attr("x", "0%")
+            .attr("y", "0%")
+            .attr("height", "100%")
+            .attr("width", "100%")
+            .attr("viewBox", "0 0 100 100")
+            .html(`<image x="0%" y="0%" width="100" height="100" xlink:href="${response.url}"></image>`);
+      })
+      .catch(() => {
+        throw ("not found a portrait for: " + person);
+      });
+  }
+
 
   redraw(options = {}) {
     const _this = this;
@@ -106,8 +130,15 @@ class MCUltraRich extends BaseComponent {
     if(this.MDL.ultrarichMarker.state !== Utils.STATUS.READY || !this.drilldownsReady || !this.billyReady || !this.colorMapReady) return;
 
     const r = 4;
+    const R = 12;
     const hash = (string) => {
       return d3.sum(string.split("").map(m=>m.charCodeAt(0)) )  
+    }
+
+    const showFaces = this.parent.ui.howManyBilly < 10;
+
+    const getColor = (d) => {
+      return this.parent.MDL.color.scale.d3Scale(this.colorMap[d.geos.split(";").filter(f => this.drilldowns.includes(f))[0]]);
     }
 
     const getBillyData = () => { 
@@ -123,7 +154,6 @@ class MCUltraRich extends BaseComponent {
       .data(getBillyData(), d => d.person);
 
     circles.join("circle")
-      .style("stroke", "black")
       .on("mouseenter", (event, d) => {
         this.parent._setTooltip(event, d.name.split(";")[0] + " " + this.localise(d.x) + " $/day");
         // this.parent.runHereOrPossiblyInAllFacets(function (context) {
@@ -136,11 +166,16 @@ class MCUltraRich extends BaseComponent {
         //   context.DOM.xAxis.call(context.xAxis.highlightValue("none"));
         // })
       })
-      .style("fill", d => 
-        this.parent.MDL.color.scale.d3Scale(this.colorMap[d.geos.split(";")[0]])
+      .style("fill", d => showFaces && this.DOM.defs.select(`#vzb-billy-image-${d.person}`).node()
+        ? `url(#vzb-billy-image-${d.person})` 
+        : getColor(d)
       )
-      .attr("r", r)
-      .attr("cy", d => this.parent.yScale(0) - hash(d.person) % this.parent.profileConstants.minHeight - r)
+      .style("stroke", d => showFaces && this.DOM.defs.select(`#vzb-billy-image-${d.person}`).node() 
+        ? getColor(d)
+        : "black" 
+      )
+      .attr("r", d => showFaces && this.DOM.defs.select(`#vzb-billy-image-${d.person}`).node() ? R : r)
+      .attr("cy", (d, i) => this.parent.yScale(0) - hash(d.person) % (this.parent.yScale(1) / 2) - 2 * r)
       .each(function(d){
         const view = d3.select(this);
 
@@ -149,6 +184,9 @@ class MCUltraRich extends BaseComponent {
           : view.interrupt();
 
         transition.attr("cx", d => _this.parent.xScale(d.x));
+      })
+      .each(d => {
+        if (showFaces) this.getBillyImages(d.person);
       })
       
 
