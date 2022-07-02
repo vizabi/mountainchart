@@ -100,6 +100,8 @@ class MCUltraRich extends BaseComponent {
 
   redraw(options = {}) {
     const _this = this;
+    this.services.layout.size; //watch
+    this.parent.ui.inpercent;
 
     if(this.MDL.ultrarichMarker.state !== Utils.STATUS.READY || !this.drilldownsReady || !this.billyReady || !this.colorMapReady) return;
 
@@ -114,7 +116,7 @@ class MCUltraRich extends BaseComponent {
       else
         return this.MDL.ultrarichMarker.dataArray
           .filter(f => this.billy.has(f.person))
-          .slice(0, 10)
+          .slice(0, this.parent.ui.howManyBilly)
     }
 
     let circles = this.DOM.container.selectAll("circle")
