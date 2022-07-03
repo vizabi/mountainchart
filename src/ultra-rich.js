@@ -67,7 +67,7 @@ class MCUltraRich extends BaseComponent {
   }
 
   copyframevalue() {
-    this.MDL.billyFrame.config.value = this.MDL.frame.value;
+    this.MDL.billyFrame.config.value = this.localise(this.MDL.frame.value);
   }
 
   getDrillDowns() {
@@ -169,7 +169,7 @@ class MCUltraRich extends BaseComponent {
   }
 
   get isShowFaces() {
-    return this.parent.ui.howManyBilly < 11;
+    return this.parent.ui.howManyBilly < 11 && this.parent.ui.billyFaces;
   }
 
   redraw() {
