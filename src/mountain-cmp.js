@@ -43,8 +43,8 @@ class _VizabiMountainChart extends BaseComponent {
       type: MCUltraRich,
       placeholder: ".vzb-mc-ultrarich",
       options: {
-        ultrarichMarkerName: "ultrarich",
-        ultrarichEncName: "povertyline"
+        ultrarichMarkerName: "billy",
+        ultrarichEncName: "slices"
       }
     }];
 
