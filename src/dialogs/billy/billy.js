@@ -64,16 +64,23 @@ class BillyDialog extends Dialog {
     this.localise = this.services.locale.auto();
     super.draw();
 
-    this.addReaction(this.updateView);
+    this.addReaction(this.updateVisibility);
+    this.addReaction(this.updateCount);
   }
 
-  updateView() {
+  updateVisibility() {
     const showBilly = this.root.ui.chart.showBilly;  
-    const howMany = this.root.ui.chart.howManyBilly;  
     this.model.encoding.mu.config.scale.domain[1] = showBilly ? 100000000 : 500;
     this.DOM.slider.classed("vzb-hidden", !showBilly);
-    this.DOM.count.classed("vzb-hidden", !showBilly)
-      .text(Math.round(howMany));
+    this.DOM.count.classed("vzb-hidden", !showBilly);
+    this.findChild({type: "SingleHandleSlider"})._updateSize();
+    this.findChild({type: "SingleHandleSlider"})._updateView();
+  }
+
+  updateCount(){
+    const showBilly = this.root.ui.chart.showBilly; 
+    const howMany = this.root.ui.chart.howManyBilly;
+    if(showBilly) this.DOM.count.text(Math.round(howMany));
   }
 
 }
