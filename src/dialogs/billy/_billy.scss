@@ -1,0 +1,38 @@
+.vzb-dialogs {
+    .vzb-dialogs-dialog {
+      &[data-dlg="billy"] {
+        .vzb-dialog-content {
+          display: flex;
+          flex-direction: row;
+
+          .vzb-billy-show {
+            flex-basis: 150px;
+          }
+          .vzb-billy-howmany {
+            .vzb-slider-holder{top: 8px}
+            flex-basis: 85px;
+          }
+          .vzb-billy-count {
+            padding-top: 9px;
+            flex-basis: 35px;
+          }
+        }
+      }
+    }
+  }
+
+  &.vzb-large {
+    &.vzb-dialog-expand-true {
+      .vzb-dialogs-dialog {
+        &.vzb-sidebar {
+          &[data-dlg="billy"] {
+  
+            .vzb-dialog-title{
+              display: none;
+            }
+  
+          }
+        }
+      }
+    }
+  }
