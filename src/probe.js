@@ -93,7 +93,7 @@ class MCProbe extends BaseComponent {
       sumValue: 0,
       totalArea: 0,
       leftArea: 0
-    }
+    };
 
     if (options.full && data.level){
       //pass on without modifying          

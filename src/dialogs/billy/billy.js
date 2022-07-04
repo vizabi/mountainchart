@@ -41,7 +41,7 @@ class BillyDialog extends Dialog {
           submodel: "root.ui.chart"
         }
       }
-    ]
+    ];
 
     super(config);
   }
@@ -51,7 +51,7 @@ class BillyDialog extends Dialog {
     const _this = this;
     this.DOM.slider = this.element.select(".vzb-billy-howmany");
     this.DOM.count = this.element.select(".vzb-billy-count")
-      .on("click", () => {this.root.ui.chart.billyFaces = !this.root.ui.chart.billyFaces});
+      .on("click", () => {this.root.ui.chart.billyFaces = !this.root.ui.chart.billyFaces;});
 
     this.defaultHowManyBilly = this.root.ui.chart.howManyBilly;
     this.defaultBillyFaces = this.root.ui.chart.billyFaces;
@@ -93,7 +93,7 @@ class BillyDialog extends Dialog {
         this.root.ui.chart.howManyBilly = this.defaultHowManyBilly;
         this.root.ui.chart.billyFaces = this.defaultBillyFaces; 
       }
-    })
+    });
   }
 
   updateVisibility() {

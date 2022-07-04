@@ -99,7 +99,7 @@ class PovertyLine extends Dialog {
           submodel: "root.ui.chart.probeXDetails"
         }
       }
-    ]
+    ];
 
     super(config);
   }

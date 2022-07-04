@@ -55,7 +55,7 @@ const MCRobinHood = Vizabi.Class.extend({
         this.meshAdjusted[i] = {
           index: (rescaledMesh[adjIndex] + rescaledMesh[adjIndex - 1]) * 0.5 < adjustedIncome ? adjIndex : (adjIndex - 1),
           tax: rescaledMesh[i] - adjustedIncome
-        }
+        };
       }
     });
 

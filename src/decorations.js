@@ -128,7 +128,7 @@ export default class MCDecorations{
             .attr("x2", calcs.boundaryMaxX_px)
             .attr("y1", -context.profileConstants.margin.top)
             .attr("y2", context.height);
-        })
+        });
       }).on("mouseleave", function() {
         if (_this._isDragging()) return;
         d3.select(this).attr("font-weight", null);
@@ -136,7 +136,7 @@ export default class MCDecorations{
         _this.runHereOrPossiblyInAllFacets(function(context){
           context.DOM.xAxisGroups.selectAll("rect").remove();
           context.DOM.xAxisGroups.selectAll("line").remove();
-        })
+        });
       });
     }
     

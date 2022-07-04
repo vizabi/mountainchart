@@ -339,7 +339,7 @@ class _VizabiMountainChart extends BaseComponent {
             level: _this.xScale.invert(d3.pointer(event)[0]),
             full: true
           });
-        })
+        });
       })
       .on("mouseout", () => {
         if (this._isDragging()) return;
@@ -347,7 +347,7 @@ class _VizabiMountainChart extends BaseComponent {
 
         _this.runHereOrPossiblyInAllFacets(function(context){
           context._probe.redraw();
-        })
+        });
       });
   }
 
@@ -369,7 +369,7 @@ class _VizabiMountainChart extends BaseComponent {
     const {margin} = this.profileConstants;
     const width = this.width - margin.left - margin.right;
     return this.MDL.mu.scale.d3Scale.range([this.rangeShift, width * this.rangeRatio + this.rangeShift]);
-  };
+  }
   get yScale() {
     this.services.layout.size; //watch
     this.ui.inpercent;
@@ -377,7 +377,7 @@ class _VizabiMountainChart extends BaseComponent {
     const {margin} = this.profileConstants;
     const height = this.height - margin.top - margin.bottom;
     return this.yScaleBase.range([height, this.isManyFacets ? height - this.parent.scaleRange : 0]);
-  };
+  }
 
   drawForecastOverlay() {
     this.DOM.forecastOverlay.classed("vzb-hidden", 

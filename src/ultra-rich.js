@@ -152,7 +152,7 @@ class MCUltraRich extends BaseComponent {
     }
     Promise.all(promises).then(() => {
       this.imagesReady = true;
-    })
+    });
   }
 
   _getBillyData() { 
@@ -161,7 +161,7 @@ class MCUltraRich extends BaseComponent {
     else
       return this.MDL.billyMarker.dataArray
         .filter(f => this.relevantBilly.has(f.person))
-        .slice(0, this.parent.ui.howManyBilly)
+        .slice(0, this.parent.ui.howManyBilly);
   }
 
   get principalDimension() {

@@ -5,8 +5,8 @@ import {
   LegacyUtils as utils,
 } from "VizabiSharedComponents";
 import {runInAction, decorate, computed, toJS} from "mobx";
-import {ICONS} from "./icons.js"
-import {PRESETS_DEFAULT} from "./configs-example.js"
+import {ICONS} from "./icons.js";
+import {PRESETS_DEFAULT} from "./configs-example.js";
 
 
 
@@ -20,7 +20,7 @@ function followPath(base, path, createMissingObj = false){
     if (createMissingObj && a[p] == null) a[p] = {};
     
     return a[p];
-  }, base)
+  }, base);
 }
 
 /*
@@ -76,8 +76,8 @@ class Presets extends Dialog {
             view.append("label")
               .attr("for", id)
               .html(ICONS[d.icon])
-              .on("click", function(evt, d){ _this.setModel(d); })
-          })
+              .on("click", function(evt, d){ _this.setModel(d); });
+          });
       })
       .on("mouseover", function(evt) {
         if(evt.shiftKey) _this.updateView(d3.select(this).attr("group"));
@@ -91,7 +91,7 @@ class Presets extends Dialog {
   get MDL() {
     return {
       color: this.model.encoding["color"]
-    }
+    };
   }  
 
   draw(){
@@ -106,7 +106,7 @@ class Presets extends Dialog {
 
     PRESETS.flat().forEach(p => {
       p.score = Utils.computeObjectsSimilarityScore(p.config, toJS(this.model.config), "is--"); 
-    })      
+    });      
     const topScore = d3.max(PRESETS.flat(), d => d.score);
     return PRESETS.flat().find(f => f.score === topScore);
   }
@@ -120,7 +120,7 @@ class Presets extends Dialog {
     if (!filterConfig["is--" + concept]) {
       runInAction(() => {
         //clear filter config 
-        Object.keys(filterConfig).forEach(k => {if(k.includes("is--")) delete filterConfig[k] });
+        Object.keys(filterConfig).forEach(k => {if(k.includes("is--")) delete filterConfig[k]; });
         //set new filter config
         filterConfig["is--" + concept] = true;        
       });
@@ -157,13 +157,13 @@ class Presets extends Dialog {
           const marginLeft = 22;
           const marginTop = 5;
           field
-            .style('width', width + "px")
-            .style('z-index', nFields - j)
+            .style("width", width + "px")
+            .style("z-index", nFields - j)
             .transition().duration(100)
             .style("top", marginTop + j * (unfold ? width + spacingV : deckEffect) + "px")
             .style("left", marginLeft + i * (width + spacingH) + j * (unfold ? 0 : deckEffect) + "px");
-        })
-    })
+        });
+    });
 
   }
 
@@ -216,7 +216,7 @@ class Presets extends Dialog {
       delete this.model.config.encoding.facet_row.data.exceptions;
 
       this.model.config.encoding.facet_row.data = target.config.encoding.facet_row.data;
-    })
+    });
   }
 }
  
