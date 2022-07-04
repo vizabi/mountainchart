@@ -37,6 +37,7 @@ class MCUltraRich extends BaseComponent {
       frame: this.model.encoding.frame,
       color: this.model.encoding.color,
       billyMarker: this.root.model.markers[this.billyMarkerName],
+      billyX: this.root.model.markers[this.billyMarkerName].encoding.x,
       billyFrame: this.root.model.markers[this.billyMarkerName].encoding.frame,
       billySlices: this.root.model.markers[this.billyMarkerName].encoding[this.billyEncName],
     };
@@ -44,7 +45,7 @@ class MCUltraRich extends BaseComponent {
 
   draw() {
     this.localise = this.services.locale.auto(this.MDL.frame.interval);
-    if(!this.parent.ui.showBilly) return;
+    if(!this.parent.ui.showBilly || !this.MDL.billyX.data.concept) return;
     this.addReaction(this.copyframevalue);
     this.addReaction(this.getDrillDowns);
     this.addReaction(this.getRelevantBillies);

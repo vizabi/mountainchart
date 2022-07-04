@@ -1,5 +1,5 @@
 import {Dialog, SimpleCheckbox, SingleHandleSlider} from "VizabiSharedComponents";
-import {decorate, computed} from "mobx";
+import {decorate, computed, runInAction} from "mobx";
 
 /*
  * billionaire dialog
@@ -50,8 +50,11 @@ class BillyDialog extends Dialog {
     super.setup(options);
     const _this = this;
     this.DOM.slider = this.element.select(".vzb-billy-howmany");
-    this.DOM.count = this.element.select(".vzb-billy-count");
-  
+    this.DOM.count = this.element.select(".vzb-billy-count")
+      .on("click", () => {this.root.ui.chart.billyFaces = !this.root.ui.chart.billyFaces});
+
+    this.defaultHowManyBilly = this.root.ui.chart.howManyBilly;
+    this.defaultBillyFaces = this.root.ui.chart.billyFaces;
   }
 
   get MDL() {
@@ -66,11 +69,35 @@ class BillyDialog extends Dialog {
 
     this.addReaction(this.updateVisibility);
     this.addReaction(this.updateCount);
+    this.addReaction(this.setModel);
+  }
+
+  setModel(){
+    const showBilly = this.root.ui.chart.showBilly;  
+    runInAction(() => {
+      this.model.encoding.mu.config.scale.domain[1] = showBilly ? 100000000 : 500;
+
+      //take the bily config out of stash and apply it, so that the data starts loading
+      //resetting back to null then for cleaning URL state
+      const marker = this.root.model.markers["billy"];
+      const encs = ["x", "name", "slices"];
+      if (showBilly)
+        for (let enc of encs)
+          marker.encoding[enc].data.config.concept = marker.encoding[enc].data.config.stash;
+      else
+        for (let enc of encs)
+          marker.encoding[enc].data.config.concept = null;
+
+      //for cleaning URL state
+      if (!showBilly){
+        this.root.ui.chart.howManyBilly = this.defaultHowManyBilly;
+        this.root.ui.chart.billyFaces = this.defaultBillyFaces; 
+      }
+    })
   }
 
   updateVisibility() {
     const showBilly = this.root.ui.chart.showBilly;  
-    this.model.encoding.mu.config.scale.domain[1] = showBilly ? 100000000 : 500;
     this.DOM.slider.classed("vzb-hidden", !showBilly);
     this.DOM.count.classed("vzb-hidden", !showBilly);
     this.findChild({type: "SingleHandleSlider"})._updateSize();
