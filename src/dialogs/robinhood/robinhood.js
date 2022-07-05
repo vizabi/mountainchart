@@ -1,6 +1,7 @@
 /*
  * RobinHood dialog
  */
+const Vizabi = 0;
 
 const RobinHood = Vizabi.Component.get("_dialog").extend("robinhood", {
 
@@ -34,7 +35,6 @@ const RobinHood = Vizabi.Component.get("_dialog").extend("robinhood", {
     }];
 
     this._super(config, parent);
-    this.template = require("./robinhood.html");
   },
 
   readyOnce() {
@@ -62,8 +62,6 @@ const RobinHood = Vizabi.Component.get("_dialog").extend("robinhood", {
   },
 
   updateView() {
-    const _this = this;
-
     this.enable.property("checked", this.model.ui.chart.robinhood.enable);
     this.xTax.property("value", this.model.ui.chart.robinhood.xTax.join(";"));
     this.yTax.property("value", this.model.ui.chart.robinhood.yTax.join(";"));

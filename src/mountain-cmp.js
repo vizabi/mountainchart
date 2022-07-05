@@ -1,7 +1,6 @@
 import {
   BaseComponent,
   Icons,
-  Utils,
   LegacyUtils as utils,
   axisSmart,
   //Exporter as svgexport,
@@ -14,11 +13,11 @@ import {MCProbe} from "./probe";
 import { MCUltraRich } from "./ultra-rich.js";
 //import RobinHood from "./robinhood.js";
 
-import {decorate, computed, observable, runInAction} from "mobx";
+import {decorate, computed, observable} from "mobx";
 
 const {ICON_QUESTION} = Icons;
 //const COLOR_BLACKISH = "rgb(51, 51, 51)";
-const COLOR_WHITEISH = "rgb(253, 253, 253)";
+//const COLOR_WHITEISH = "rgb(253, 253, 253)";
 
 const THICKNESS_THRESHOLD = 0.001;
 
@@ -135,8 +134,8 @@ class _VizabiMountainChart extends BaseComponent {
     this._probe = this.findChild({name: "probe"});
     
     // this.element.onTap((event, d) => {
-      //   this._interact()._mouseout(event, d);
-      // });
+    //   this._interact()._mouseout(event, d);
+    // });
       
     this.decorations = new MCDecorations(this);
     this._math = new MountainChartMath(this);
@@ -577,7 +576,7 @@ class _VizabiMountainChart extends BaseComponent {
 
     return d3.groups(this.atomicSliceData, d => this._isProperty(this.MDL.stack)? d.stack: d.group)
       //no point doing a grouping when there is only one item in a group (i.e. when atomic slices are regions already)
-      .filter(([k,v]) => v.length > 1)
+      .filter(([,v]) => v.length > 1)
       //the output comes in a form of [[key, values[]],[],[]], convert each array to object
       .map(([key, values]) => ({key, values}))
       .map(group => {
@@ -827,7 +826,7 @@ class _VizabiMountainChart extends BaseComponent {
     // });
   }
 
-  _getSubtitleText(d) {
+  _getSubtitleText() {
     const prefix = this.isAreaSmall ? "🤏 " : "";
     
     if (this.atomicSliceData.length == 1) {

@@ -92,7 +92,7 @@ class MCUltraRich extends BaseComponent {
     this.relevantBillyReady = false;
     const allBilly = this.MDL.billySlices.data.domainData;
     const billySliceConcept = this.MDL.billySlices.data.concept;
-    for(let [_, billy] of allBilly) {
+    for(let [, billy] of allBilly) {
       if(d3.intersection(this.drilldowns, billy[billySliceConcept].split(";")).size) 
         this.relevantBilly.add(billy.person);
       else
@@ -206,7 +206,7 @@ class MCUltraRich extends BaseComponent {
       .style("stroke", d => hasFace(d) ? getColor(d) : "black" )
       .attr("r", d => hasFace(d) ? FACE_R : DOT_R)
       .style("fill", d => hasFace(d) ? `url(#vzb-billy-image-${d.person})` : getColor(d) )
-      .each(function(d){
+      .each(function(){
         const view = d3.select(this);
 
         const transition = _this.parent.duration && view.attr("cx")

@@ -1,6 +1,7 @@
 /*
  * Axes dialog
  */
+const Vizabi = 0;
 
 const Axes = Vizabi.Component.get("_dialog").extend("axesmc", {
 
@@ -35,7 +36,6 @@ const Axes = Vizabi.Component.get("_dialog").extend("axesmc", {
 
 
     this._super(config, parent);
-    this.template = require("./axesmc.html");
   },
 
   readyOnce() {

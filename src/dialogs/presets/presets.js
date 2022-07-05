@@ -63,7 +63,7 @@ class Presets extends Dialog {
           .enter().append("p")
           .attr("class", "vzb-radio-svg-item")
           .attr("group", i)
-          .each(function(d, i){
+          .each(function(d){
             const id = d.icon;
             const view = d3.select(this);
 

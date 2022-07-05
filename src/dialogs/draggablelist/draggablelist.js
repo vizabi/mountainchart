@@ -32,18 +32,18 @@ const DraggableList = Component.extend({
     if (!config.groupID) utils.warn("draggablelist.js complains on 'groupID' property: " + config.groupID);
 
     this.model_binds = {
-      "translate:locale": function(evt) {
+      "translate:locale": function() {
         _this.updateView();
       },
-      "change:group.which": function(evt) {
+      "change:group.which": function() {
         _this.updateView();
       }
     };
 
-    this.model_binds["change:group." + this.groupID] = function(evt) {
+    this.model_binds["change:group." + this.groupID] = function() {
       _this.updateView();
     };
-    this.model_binds["change:chart." + this.isEnabled] = function(evt) {
+    this.model_binds["change:chart." + this.isEnabled] = function() {
       _this.draggable = _this.model.chart[_this.isEnabled];
       _this.updateView();
     };
@@ -118,7 +118,7 @@ const DraggableList = Component.extend({
     this.itemsEl
       .call(_this.itemDragger);
 
-    const test = this.itemsEl.select("li")
+    this.itemsEl.select("li")
       .on("mouseover", function() {
         d3.select(this).classed("hover", true);
       })
@@ -207,8 +207,6 @@ const DraggableList = Component.extend({
   },
 
   readyOnce() {
-    const _this = this;
-
     this.element = d3.select(this.element).select(".list");
 
   }

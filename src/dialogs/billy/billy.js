@@ -48,7 +48,6 @@ class BillyDialog extends Dialog {
 
   setup(options) {
     super.setup(options);
-    const _this = this;
     this.DOM.slider = this.element.select(".vzb-billy-howmany");
     this.DOM.count = this.element.select(".vzb-billy-count")
       .on("click", () => {this.root.ui.chart.billyFaces = !this.root.ui.chart.billyFaces;});

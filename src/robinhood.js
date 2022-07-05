@@ -1,4 +1,5 @@
-const { utils } = Vizabi;
+const utils = 0;
+const Vizabi = 0;
 
 const MCRobinHood = Vizabi.Class.extend({
 
@@ -80,7 +81,7 @@ const MCRobinHood = Vizabi.Class.extend({
     this.taxByPointers = {};
     this.taxSum = 0;
     //adjust rich side
-    _this.mountainPointers.forEach((d, i) => {
+    _this.mountainPointers.forEach((d) => {
       const pKey = d.KEY();
       const cached = _this.cached[pKey];
 
@@ -126,7 +127,7 @@ const MCRobinHood = Vizabi.Class.extend({
 
   },
 
-  redraw(options) {
+  redraw() {
 
   },
 
