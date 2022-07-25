@@ -11,6 +11,7 @@ import MCDecorations from "./decorations.js";
 import {MCSelectList} from "./selectlist";
 import {MCProbe} from "./probe";
 import { MCUltraRich } from "./ultra-rich.js";
+import { MCDollarStreet } from "./dollar-street.js";
 //import RobinHood from "./robinhood.js";
 
 import {decorate, computed, observable} from "mobx";
@@ -45,6 +46,10 @@ class _VizabiMountainChart extends BaseComponent {
         ultrarichMarkerName: "billy",
         ultrarichEncName: "slices"
       }
+    },{
+      name: "dollarstreet",
+      type: MCDollarStreet,
+      placeholder: ".vzb-mc-dollarstreet"
     }];
 
     //config.name = "mountainchart";
@@ -89,6 +94,7 @@ class _VizabiMountainChart extends BaseComponent {
           <g class="vzb-mc-axis-labels"></g>
           <g class="vzb-mc-probe"></g>
           <g class="vzb-mc-ultrarich"></g>
+          <g class="vzb-mc-dollarstreet"></g>
           
           <g class="vzb-mc-tooltip vzb-hidden">
             <rect class="vzb-tooltip-border"></rect>
