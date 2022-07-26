@@ -626,7 +626,8 @@ class _VizabiMountainChart extends BaseComponent {
       const data = this._getDataArrayForFacet();
       const sum = d3.sum(data.map(m => m[this.MDL.maxheight.name]));
       const limit = this.MDL.maxheight.config.limit;
-      this.parent.maxValues.set(this.name, (!sum || sum > limit) ? limit : sum);
+      this.maxValue = (!sum || sum > limit) ? limit : sum;
+      this.parent.maxValues.set(this.name, this.ui.inpercent ? 1 : this.maxValue);
     }
   }
 
@@ -1015,7 +1016,7 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   _adjustMaxY() {
-    this.yScale.domain([0, this.isManyFacets ? this.parent.getScaleDomainForSubcomponent(this.ui.inpercent ? this.name : null) : Math.round(this.yMaxGlobal)]);
+    this.yScale.domain([0, this.isManyFacets ? this.ui.inpercent ? this.maxValue : this.parent.getScaleDomainForSubcomponent(null) : Math.round(this.yMaxGlobal)]);
   }
 
   _isMergingGroups() {
