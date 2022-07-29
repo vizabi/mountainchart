@@ -71,21 +71,23 @@ import {
       if(this.parent.ui.dollarstreet) return;
       this.removeReaction(this.getFamilies);
       this.removeReaction(this.redraw);
-      this.DOM.container.selectAll("circle").remove();
+      this.DOM.container.selectAll("g").remove();
     }
   
   
     getFamilies() {
       this.familiesReady = false;
       const topic = this.parent.ui.dsTopic || "homes";
+      const pageSize = Math.round(+this.parent.ui.dsHowManyHomes);
 
-      const params = {lng: "en", cols: 6, p: 0, pageSize: 100, topic, featuredOnly: false, countries: ["in", "lv"]}
+      const params = {lng: "en", cols: 6, p: 0, pageSize, topic, featuredOnly: false} //, countries: ["in", "lv"]}
       const u = new URLSearchParams(params).toString().replaceAll("%2C", ",");
       fetch(ENDPOINT + 'search/families?' + u, {
         headers: {Authorization: AUTH_TOKEN}
       })
         .then(resp => resp.json())
         .then(json => {
+          console.log(json.hits[6].length)
           this.families = json.hits[6].map(m => ({
             x: +m.place.income/30, 
             id: m.place.slug, 

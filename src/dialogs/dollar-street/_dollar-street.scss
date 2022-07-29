@@ -1,0 +1,49 @@
+.vzb-dialogs {
+    .vzb-dialogs-dialog {
+      &[data-dlg="dollarstreet"] {
+        .vzb-dialog-content {
+          display: flex;
+          flex-direction: row;
+
+          .vzb-ds-show {
+            flex-basis: 90px;
+          }
+          .vzb-ds-topic {
+            font-family: inherit;
+            font-size: $vzb-font-size-regular;
+            color: $vzb-color-grey-dark;
+            padding-bottom: 1px;
+            position: relative;
+            height: 25px;
+            top: 5px;
+            flex-basis: 60px;
+            border-radius: 4px;
+          }
+          .vzb-ds-howmany {
+            .vzb-slider-holder{top: 8px}
+            flex-basis: 85px;
+          }
+          .vzb-ds-count {
+            padding-top: 9px;
+            flex-basis: 35px;
+          }
+        }
+      }
+    }
+  }
+
+  &.vzb-large {
+    &.vzb-dialog-expand-true {
+      .vzb-dialogs-dialog {
+        &.vzb-sidebar {
+          &[data-dlg="dollarstreet"] {
+  
+            .vzb-dialog-title{
+              display: none;
+            }
+  
+          }
+        }
+      }
+    }
+  }
