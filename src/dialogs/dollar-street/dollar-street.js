@@ -14,7 +14,7 @@ class DollarStreetDialog extends Dialog {
         </div>
     
         <div class="vzb-dialog-content">
-
+          <div class="vzb-dialog-flex-container">
             <div class="vzb-ds-show"></div>
             <select class="vzb-ds-topic" name="vzb-ds-topic" id="vzb-ds-topic">
                 <option value="families">families</option>
@@ -26,6 +26,8 @@ class DollarStreetDialog extends Dialog {
             <div class="vzb-ds-howmany"></div>
             <div class="vzb-ds-count"></div>
 
+          </div>
+          <div class="vzb-ds-availability">Data available from 2019</div>
         </div>
       </div>
     `;

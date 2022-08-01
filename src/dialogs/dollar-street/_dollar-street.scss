@@ -1,13 +1,23 @@
 .vzb-dialogs {
-    .vzb-dialogs-dialog {
-      &[data-dlg="dollarstreet"] {
-        .vzb-dialog-content {
+  .vzb-dialogs-dialog {
+    &[data-dlg="dollarstreet"] {
+      .vzb-dialog-content {
+        .vzb-dialog-flex-container {
           display: flex;
           flex-direction: row;
 
           .vzb-ds-show {
             flex-basis: 90px;
+            .vzb-dialog-checkbox{
+              label {
+                a {
+                  text-decoration: underline;
+                  color: $vzb-color-primary-strong;
+                }
+              }
+            }
           }
+
           .vzb-ds-topic {
             font-family: inherit;
             font-size: $vzb-font-size-regular;
@@ -19,31 +29,46 @@
             flex-basis: 60px;
             border-radius: 4px;
           }
+
           .vzb-ds-howmany {
-            .vzb-slider-holder{top: 8px}
+            .vzb-slider-holder {
+              top: 8px
+            }
+
             flex-basis: 85px;
           }
+
           .vzb-ds-count {
             padding-top: 9px;
             flex-basis: 35px;
           }
         }
-      }
-    }
-  }
-
-  &.vzb-large {
-    &.vzb-dialog-expand-true {
-      .vzb-dialogs-dialog {
-        &.vzb-sidebar {
-          &[data-dlg="dollarstreet"] {
-  
-            .vzb-dialog-title{
-              display: none;
-            }
-  
-          }
+        .vzb-ds-availability {
+          margin-top: 10px;
+          font-style: italic;
+          color: $vzb-color-grey;
         }
       }
     }
   }
+}
+
+&.vzb-large {
+  &.vzb-dialog-expand-true {
+    .vzb-dialogs-dialog {
+      &.vzb-sidebar {
+        &[data-dlg="dollarstreet"] {
+
+          .vzb-dialog-title {
+            display: none;
+          }
+
+          .vzb-ds-availability {
+            display: none;
+          }
+
+        }
+      }
+    }
+  }
+}

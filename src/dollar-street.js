@@ -8,6 +8,8 @@ import {
   const AUTH_TOKEN = "";
   const ENDPOINT = "https://api.dollarstreet.org/v1/";
 
+
+
   const COUNTRY_MAPPING = {
     abw: "aw", afg: "af", ago: "ao", aia: "ai", ala: "ax", alb: "al", and: "ad", are: "ae", arg: "ar", arm: "am", asm: "as", ata: "aq", 
     atg: "ag", aus: "au", aut: "at", aze: "az", bdi: "bi", bel: "be", ben: "bj", bfa: "bf", bgd: "bd", bgr: "bg", bhr: "bh", bhs: "bs", 
@@ -32,6 +34,9 @@ import {
     vct: "vc", ven: "ve", vgb: "vg", vir: "vi", vnm: "vn", vut: "vu", wlf: "wf", wsm: "ws", yem: "ye", zaf: "za", zmb: "zm", zwe: "zw"
   };
 
+  const country3to2 = d3.scaleOrdinal().domain(Object.keys(COUNTRY_MAPPING)).range(Object.values(COUNTRY_MAPPING));
+  const country2to3 = d3.scaleOrdinal().domain(Object.values(COUNTRY_MAPPING)).range(Object.keys(COUNTRY_MAPPING));
+
   class MCDollarStreet extends BaseComponent {
   
     constructor(config) {
@@ -54,6 +59,12 @@ import {
   
       this.families = [];
       this.familiesReady = false;
+
+      this.drilldowns = null;
+      this.drilldownsReady = false;
+
+      this.colorMap = {};
+      this.colorMapReady = false;
       
     }
   
@@ -69,6 +80,8 @@ import {
       this.localise = this.services.locale.auto(this.MDL.frame.interval);
       if(!this.parent.ui.dollarstreet) return;
       this.addReaction(this.getFamilies);
+      this.addReaction(this.getDrillDowns);
+      this.addReaction(this.getColorMapping);
       this.addReaction(this.redraw);
   
       this.addReaction(this.disableReactions);
@@ -77,17 +90,58 @@ import {
     disableReactions(){
       if(this.parent.ui.dollarstreet) return;
       this.removeReaction(this.getFamilies);
+      this.removeReaction(this.getDrillDowns);
+      this.removeReaction(this.getColorMapping);
       this.removeReaction(this.redraw);
       this.DOM.container.selectAll("g").remove();
     }
   
   
+    get principalDimension() {
+      const frameConcept = this.MDL.frame.data.concept;
+      return this.model.data.space.filter(f => f !== frameConcept)[0];
+    }
+
+    getDrillDowns() {
+      const dim = this.principalDimension;
+      const entity = this.parent.atomicSliceData.map(m => m[dim]);
+      
+      if(this.drilldownsReady == entity.join("")) return;
+      this.drilldownsReady = false;
+      this.model.data.source.drilldown({dim, entity})
+        .then( catalog => {
+          const drilldownEntitySet = Object.keys(catalog)[0]; //"country"
+          this.drilldowns = catalog[drilldownEntitySet];
+          this.drilldownsReady = entity.join("");
+        });
+    }
+
+   
+
+    getColorMapping(){
+      const dim = this.principalDimension;
+  
+      this.colorMapReady = false;
+      this.model.data.source.drillupCatalog.then(catalog => {
+        const drilldownEntitySet = Object.keys(catalog[dim])[0]; //"country"
+        const entities = catalog[dim][drilldownEntitySet].get(Symbol.for("drill_up"));
+        for(let [key, entity] of entities) {
+          this.colorMap[key] = entity[this.MDL.color.data.concept];
+        }
+        this.colorMapReady = true;
+      });
+      
+    }
+
     getFamilies() {
+      if(!this.drilldownsReady) return;
+
       this.familiesReady = false;
       const topic = this.parent.ui.dsTopic || "homes";
       const pageSize = Math.round(+this.parent.ui.dsHowManyHomes);
-
-      const params = {lng: "en", cols: 6, p: 0, pageSize, topic, featuredOnly: false} //, countries: ["in", "lv"]}
+      const countries = this.drilldowns.map(m => country3to2(m)).filter(f => !!f);
+    
+      const params = {lng: "en", cols: 6, p: 0, pageSize, topic, featuredOnly: false, countries};
       const u = new URLSearchParams(params).toString().replaceAll("%2C", ",");
       fetch(ENDPOINT + 'search/families?' + u, {
         headers: {Authorization: AUTH_TOKEN}
@@ -98,7 +152,7 @@ import {
           this.families = json.hits[6].map(m => ({
             x: +m.place.income/30, 
             id: m.place.slug, 
-            geo: m.place.country.id, 
+            geo: country2to3(m.place.country.id), 
             year: m.place.date_created.split("-")[0],
             image360: m.images.cropped360,
             image180: m.images.cropped180,
@@ -106,8 +160,6 @@ import {
           })).sort((a,b) => a.x - b.x);
           this.familiesReady = true;
       })
-
-  
     }
   
 
@@ -117,11 +169,12 @@ import {
       this.services.layout.size; //watch
       this.parent.ui.inpercent;
       
-      if(!this.familiesReady) return;
+      if(!this.familiesReady || !this.colorMapReady) return;
   
       const icon = `<path d="m25 9.0937l-17.719 16.281h5.563v15.531h24.312v-15.531h5.563l-17.719-16.281z"/>`;
   
       const getTooltip = (d) => d.name + " " + _this.localise(d.x) + " $/day";
+      const getColor = (d) => this.parent.MDL.color.scale.d3Scale(this.colorMap[d.geo]);
   
       const data = this.families;
       this.DOM.container.selectAll("g")
@@ -205,17 +258,21 @@ import {
             .selectAll(".vzb-mc-image-placeholder").remove();
         })
         .html(icon)
-        .style("fill", "yellow")
+        .style("fill", d => +d.year <= this.MDL.frame.value.getUTCFullYear() ? getColor(d) : "#999")
+        .style("opacity", d => +d.year <= this.MDL.frame.value.getUTCFullYear() ? null : 0.2) 
         .style("cursor", "pointer")
         .style("stroke", "black")
         .style("stroke-width", "2px")
-        .attr("transform", d => "translate("+ _this.parent.xScale(d.x) +"," + (_this.parent.yScale.range()[0] - 21) + ") scale(0.5)");
+        .attr("transform", d => "translate("+ _this.parent.xScale(d.x) +"," + (_this.parent.yScale.range()[0] - 20.5) + ") scale(0.5)");
     }
   }
-  
+
   const decorated = decorate(MCDollarStreet, {
     "MDL": computed,
     "familiesReady": observable,
+    "drilldownsReady": observable,
+    "colorMapReady": observable,
+    "principalDimension": computed,
   });
   export { decorated as MCDollarStreet };
   
