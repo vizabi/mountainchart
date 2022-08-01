@@ -35,7 +35,13 @@ import {
   class MCDollarStreet extends BaseComponent {
   
     constructor(config) {
-      config.template = ``;
+      config.template = `
+        <defs>
+          <pattern class="vzb-noexport" id="vzb-mc-pattern-lines-loading" x="0" y="0" patternUnits="userSpaceOnUse" width="50" height="50" viewBox="0 0 10 10"> 
+            <path d='M-1,1 l2,-2M0,10 l10,-10M9,11 l2,-2' stroke='black' stroke-width='3' opacity='0.08'/>
+          </pattern> 
+        </defs>
+      `;
   
       super(config);
     }
@@ -43,6 +49,7 @@ import {
     setup(options) {
       this.DOM = {
         container: this.element,
+        pattern: this.element.select("defs").select("pattern")
       };
   
       this.families = [];
@@ -93,7 +100,9 @@ import {
             id: m.place.slug, 
             geo: m.place.country.id, 
             year: m.place.date_created.split("-")[0],
-            image: m.images.cropped360
+            image360: m.images.cropped360,
+            image180: m.images.cropped180,
+            image80: m.images.cropped180
           })).sort((a,b) => a.x - b.x);
           this.familiesReady = true;
       })
@@ -137,21 +146,63 @@ import {
             })
           }
 
+          const height = _this.parent.yScale.range()[0];
+          const width = _this.parent.xScale.range()[1];
 
-          _this.DOM.container
+          const imageSize = height < 360 - 25 ? height - 30 : 360;
+          const imageY = (height - imageSize - 25);
+          let imageX = _this.parent.xScale(d.x) - imageSize/2;
+          if (imageX + imageSize > width) imageX = width - imageSize;
+          if (imageX < 0) imageX = 0;
+
+          const placeholder = _this.DOM.container
+            .append("g")
+            .attr("class", "vzb-mc-image-placeholder")
+            .attr("transform", "translate("+ imageX +"," + imageY + ")")            
+          placeholder.append("rect")
+            .style("stroke", "black")
+            .style("fill", `url(#vzb-mc-pattern-lines-loading)`)
+            .attr("width", imageSize)
+            .attr("height", imageSize);
+          placeholder.append("text")
+            .text("loading...")
+            .style("text-anchor", "middle")
+            .attr("x", imageSize/2)
+            .attr("y", imageSize/2);
+
+          _this.DOM.pattern.append("animateTransform")
+            .attr("attributeType", "xml")
+            .attr("attributeName", "patternTransform")
+            .attr("type", "rotate")
+            .attr("from", "35")
+            .attr("to", "395")
+            .attr("begin", "0")
+            .attr("dur", "60s")
+            .attr("repeatCount", "indefinite")
+
+
+          const imageChoice = imageSize > 180 ? "image360" : imageSize > 80 ? "image180" : "image80"
+            
+          const img = _this.DOM.container
             .append("image")
-            .attr("xlink:href",d.image)
-            .attr("transform", "translate("+ (_this.parent.xScale(d.x) - 360/2) +"," + (_this.parent.yScale.range()[0] - 360 - 25) + ")")
-            .attr("width", 360)
-            .attr("height", 360);
+            .attr("xlink:href", d[imageChoice])
+            .attr("transform", "translate("+ imageX +"," + imageY + ")")
+            .attr("width", imageSize)
+            .attr("height", imageSize)
+
+          img.node().addEventListener('load', () => { placeholder.remove() });
 
           
         })
         .on("mouseout", function(event, d) {
           _this.parent._setTooltip();
 
+          _this.DOM.pattern.selectAll("animateTransform")
+            .remove();
           _this.DOM.container
             .selectAll("image").remove();
+          _this.DOM.container
+            .selectAll(".vzb-mc-image-placeholder").remove();
         })
         .html(icon)
         .style("fill", "yellow")
