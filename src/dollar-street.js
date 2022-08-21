@@ -1,6 +1,7 @@
 import {
     BaseComponent,
-    Utils
+    Utils,
+    LegacyUtils as utils,
   } from "VizabiSharedComponents";
   
   import { decorate, computed, observable } from "mobx";
@@ -161,16 +162,16 @@ import {
           this.familiesReady = true;
       })
     }
-  
 
-     
     redraw() {
       const _this = this;
       this.services.layout.size; //watch
       this.parent.ui.inpercent;
       
+      this._removeImage();
+      
       if(!this.familiesReady || !this.colorMapReady) return;
-  
+
       const icon = `<path d="m25 9.0937l-17.719 16.281h5.563v15.531h24.312v-15.531h5.563l-17.719-16.281z"/>`;
   
       const getTooltip = (d) => d.name + " " + _this.localise(d.x) + " $/day";
@@ -180,24 +181,11 @@ import {
       this.DOM.container.selectAll("g")
         .data(data, d => d.id)
         .join("g")
-        .on("click", function(event, d){          
-          window.open("https://www.gapminder.org/dollar-street/families/" + d.id, "_blank");
+        .on("click", function(event, d){     
+          if (!utils.isTouchDevice()) window.open("https://www.gapminder.org/dollar-street/families/" + d.id, "_blank");
         })
         .on("mouseenter", function(event, d){
-
-          if(d.name){
-            _this.parent._setTooltip(event, getTooltip(d));
-          } else {
-
-            fetch(ENDPOINT + "families/" + d.id, {
-              headers: {Authorization: AUTH_TOKEN}
-            })
-              .then(resp => resp.json())
-              .then(json => {
-                d.name = json.name;
-                _this.parent._setTooltip(event, getTooltip(d));
-            })
-          }
+          _this._removeImage();
 
           const height = _this.parent.yScale.range()[0];
           const width = _this.parent.xScale.range()[1];
@@ -238,6 +226,7 @@ import {
             
           const img = _this.DOM.container
             .append("image")
+            .attr("class", "vzb-mc-dollarstreet-image")
             .attr("xlink:href", d[imageChoice])
             .attr("transform", "translate("+ imageX +"," + imageY + ")")
             .attr("width", imageSize)
@@ -245,17 +234,46 @@ import {
 
           img.node().addEventListener('load', () => { placeholder.remove() });
 
+          if (utils.isTouchDevice()) {
+            img.on("click", function(event) {     
+              window.open("https://www.gapminder.org/dollar-street/families/" + d.id, "_blank");
+            })
+            .on("mouseout", function(event, d) {
+                _this._removeImage();
+            })
+    
+          }
+
+          if(d.name){
+            if (utils.isTouchDevice()) {
+              _this._addMobileElements(_this.DOM.container, d, {imageX, imageY, imageSize});
+            } else {
+              _this.parent._setTooltip(event, getTooltip(d));
+            }
+          } else {
+
+            fetch(ENDPOINT + "families/" + d.id, {
+              headers: {Authorization: AUTH_TOKEN}
+            })
+            .then(resp => resp.json())
+            .then(json => {
+              d.name = json.name;
+              if (utils.isTouchDevice()) {
+                _this._addMobileElements(_this.DOM.container, d, {imageX, imageY, imageSize});
+              } else {
+                _this.parent._setTooltip(event, getTooltip(d));
+              }
+            });
+          }
           
         })
         .on("mouseout", function(event, d) {
-          _this.parent._setTooltip();
-
-          _this.DOM.pattern.selectAll("animateTransform")
-            .remove();
-          _this.DOM.container
-            .selectAll("image").remove();
-          _this.DOM.container
-            .selectAll(".vzb-mc-image-placeholder").remove();
+          if (!utils.isTouchDevice()) {
+            _this.parent._setTooltip();
+            _this._removeImage();
+          } else if (!d3.select(event.relatedTarget).classed("vzb-mc-dollarstreet-image")) {
+            _this._removeImage();
+          }
         })
         .html(icon)
         .style("fill", d => +d.year <= this.MDL.frame.value.getUTCFullYear() ? getColor(d) : "#999")
@@ -264,6 +282,84 @@ import {
         .style("stroke", "black")
         .style("stroke-width", "2px")
         .attr("transform", d => "translate("+ _this.parent.xScale(d.x) +"," + (_this.parent.yScale.range()[0] - 20.5) + ") scale(0.5)");
+    }
+
+    _removeImage() {
+      this.DOM.pattern.selectAll("animateTransform")
+        .remove();
+      this.DOM.container
+        .selectAll("image").remove();
+      this.DOM.container
+        .selectAll(".vzb-mc-image-mobile-group").remove();
+      this.DOM.container
+        .selectAll(".vzb-mc-image-placeholder").remove();
+    }
+
+    _addMobileElements(container, d, size = {}) {
+      const _this = this;
+
+      const group = container.append("g")
+        .attr("class", "vzb-mc-image-mobile-group")
+        .attr("pointer-events", "none");
+      group.append("text")
+        .text(d.name)
+        .attr("dx", "0.1em")
+        .attr("x", size.imageX)
+        .attr("dy", "1em")
+        .attr("y", size.imageY)
+        .attr("style", "fill:white;stroke:white;stroke-opacity:0.7;stroke-width:0.15em");
+      group.append("text")
+        .text(d.name)
+        .attr("dx", "0.1em")
+        .attr("x", size.imageX)
+        .attr("dy", "1em")
+        .attr("y", size.imageY);
+
+      group.append("text")
+        .text(this.localise(d.x) + " $/day")
+        .attr("dx", "0.1em")
+        .attr("x", size.imageX)
+        .attr("dy", "2.1em")
+        .attr("y", size.imageY)
+        .attr("style", "fill:white;stroke:white;stroke-opacity:0.7;stroke-width:0.15em");
+      group.append("text")
+        .text(this.localise(d.x) + " $/day")
+        .attr("dx", "0.1em")
+        .attr("x", size.imageX)
+        .attr("dy", "2.1em")
+        .attr("y", size.imageY);
+      
+      group.append("text")
+        .text("Click to visit this home")
+        .attr("text-anchor", "middle")
+        .attr("x", size.imageX + size.imageSize*0.5)
+        .attr("dy", "-0.2em")
+        .attr("y", size.imageY + size.imageSize)
+        .attr("style", "fill:white;stroke:white;stroke-opacity:0.7;stroke-width:0.15em");
+      group.append("text")
+        .text("Click to visit this home")
+        .attr("text-anchor", "middle")
+        .attr("x", size.imageX + size.imageSize*0.5)
+        .attr("dy", "-0.2em")
+        .attr("y", size.imageY + size.imageSize);
+
+      group.append("text")
+        .text("×")
+        .attr("dx", "-1em")
+        .attr("x", size.imageX + size.imageSize)
+        .attr("dy", "1em")
+        .attr("y", size.imageY)
+        .attr("style", "fill:white;stroke:white;stroke-opacity:0.7;stroke-width:0.15em");
+      group.append("text")
+        .text("×")
+        .attr("dx", "-1em")
+        .attr("x", size.imageX + size.imageSize)
+        .attr("dy", "1em")
+        .attr("y", size.imageY)
+        .attr("pointer-events", "bounding-box")
+        .on("click",  function(event, d) {
+          _this._removeImage();
+        });
     }
   }
 
