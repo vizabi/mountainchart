@@ -1,6 +1,7 @@
 import {
   BaseComponent,
-  Utils
+  Utils,
+  axisSmart
 } from "VizabiSharedComponents";
 
 import { decorate, computed, observable } from "mobx";
@@ -184,13 +185,100 @@ class MCUltraRich extends BaseComponent {
     const DOT_R = 4;
     const FACE_R = 12;
     const FACEHOVER_R = 50;
-
     const namehash = (string) => d3.sum(string.split("").map(m=>m.charCodeAt(0)) );
     const getColor = (d) => this.parent.MDL.color.scale.d3Scale(this.colorMap[d.slices.split(";").filter(f => this.drilldowns.includes(f))[0]]);
     const hasFace = (d) => this.isShowFaces && this.DOM.defs.select(`#vzb-billy-image-${d.person}`).node();
     const getTooltip = (d) => d.name.split(";")[0] + " " + _this.localise(d.x) + " $/day";
 
-    const data = this._getBillyData();
+    this.zoomAxis = this.zoomAxis || axisSmart("bottom");
+
+    function zoom(event) {
+      const _x = event.transform.rescaleX(xZoomScale);
+      _this.DOM.container.select(".xAxis").call(_this.zoomAxis.scale(_x));
+        
+      if(_this.__scale != event.transform.k)
+        beeswarm(data, _this.parent.yScale(0) - 60, _x);
+		  _this.__scale = event.transform.k;
+
+      _this.DOM.container.selectAll("circle")
+        .transition(10)
+        .attr("cx", d => _x(d.x))
+        .attr("cy", d => d.y)
+
+      _this.DOM.container.select("polygon")
+        .transition(10)
+        .attr("points", `${_this.parent.xScale(1000)},${_this.parent.yScale(0) - 50} ${_this.parent.xScale(1e8)},${_this.parent.yScale(0) - 50} ${_this.parent.xScale(_x.domain()[1])},${_this.parent.yScale(0)} ${_this.parent.xScale(_x.domain()[0])},${_this.parent.yScale(0)}`)
+
+    }
+      
+    const xZoomScale = d3.scaleLog()
+      .domain([1000, 1e8])
+      .range([this.parent.xScale(1000), this.parent.xScale(1e8)]);
+
+    this.DOM.container
+      .attr("pointer-events", "bounding-box")
+      .call(d3.zoom()
+        .scaleExtent([1, 30])
+        .extent([[this.parent.xScale(1000), 0], [this.parent.xScale(1e8), this.parent.yScale(0)]])
+        .translateExtent([[this.parent.xScale(1000),-Infinity],[this.parent.xScale(1e8),+Infinity]])
+        .on("zoom", zoom))
+      .on("wheel", event => event.preventDefault());
+
+
+      this.DOM.container.append("clipPath")
+      .attr("id", "vzb-mc-billy-clip-rect-"+this.parent.root.id)
+      .append("rect")
+        .attr("x", this.parent.xScale(1000))
+        .attr("width", this.parent.xScale(1e8) - this.parent.xScale(1000))
+        .attr("y", 35)
+        .attr("height", this.parent.yScale(0))
+        .attr("rx", 10)
+        .attr("ry", 10)
+    
+      this.DOM.container
+        .attr("clip-path", `url(#${"vzb-mc-billy-clip-rect-"+this.parent.root.id})`)
+
+
+      this.DOM.container.append("rect")
+        .attr("x", this.parent.xScale(1000))
+        .attr("width", this.parent.xScale(1e8) - this.parent.xScale(1000))
+        .attr("y", 35)
+        .attr("height", this.parent.yScale(0) - 85)
+        .attr("rx", 10)
+        .attr("ry", 10)
+        .attr("fill", "none")
+        .attr("stroke", "black")
+      
+      this.DOM.container.append("polygon")
+        .attr("points", `${this.parent.xScale(1000)},${this.parent.yScale(0) - 50} ${this.parent.xScale(1e8)},${this.parent.yScale(0) - 50} ${this.parent.xScale(1e8)},${this.parent.yScale(0)} ${this.parent.xScale(1000)},${this.parent.yScale(0)}`)
+        .attr("fill-opacity", 0.3)
+
+      this.zoomAxis.scale(xZoomScale)
+      .tickSizeOuter(0)
+      .tickPadding(9)
+      .tickSizeMinor(3, 0)
+      .labelerOptions({
+        scaleType: "log",
+        //toolMargin: margin,
+        //pivotingLimit: margin.bottom * 1.5,
+        method: this.zoomAxis.METHOD_REPEATING,
+        //stops: this.ui.xLogStops,
+        formatter: this.localise
+      });
+
+    this.DOM.container.append("g")
+      .attr("class", "xAxis")
+      .attr("transform", "translate(0," + (this.parent.yScale(0) - 50) + ")")
+      .call(this.zoomAxis);
+    
+    const data = this._getBillyData().map(d => {
+      d.y = 0;
+      d.r = hasFace(d) ? FACE_R : DOT_R;
+      return d;
+    });
+
+    beeswarm(data, this.parent.yScale(0) - 60, xZoomScale);
+
     this.DOM.container.selectAll("circle")
       .data(data, d => d.person)
       .join("circle")
@@ -202,9 +290,9 @@ class MCUltraRich extends BaseComponent {
         _this.parent._setTooltip();
         if (hasFace(d)) d3.select(this).attr("r", FACE_R);
       })
-      .attr("cy", d => this.parent.yScale(0) - namehash(d.person) % (this.parent.yScale(1) / 2) - 2 * DOT_R)
+      .attr("cy", d => d.y)//this.parent.yScale(0) - namehash(d.person) % (this.parent.yScale(1) / 2) - 2 * DOT_R)
       .style("stroke", d => hasFace(d) ? getColor(d) : "black" )
-      .attr("r", d => hasFace(d) ? FACE_R : DOT_R)
+      .attr("r", d => d.r)
       .style("fill", d => hasFace(d) ? `url(#vzb-billy-image-${d.person})` : getColor(d) )
       .each(function(){
         const view = d3.select(this);
@@ -215,7 +303,48 @@ class MCUltraRich extends BaseComponent {
 
         transition.attr("cx", d => _this.parent.xScale(d.x));
       });
+
   }
+}
+
+function beeswarm(data, height, xScale) {
+  // reset vertical position
+  data.map(function(d) {
+    d.y = height
+  })
+  for(let iter = 0; iter < 10; iter++) {
+    const q = d3.quadtree(data, d => d.x, d => d.y)
+    for(let i = 0; i < data.length; i++)
+      q.visit(collide(data[i], xScale))
+  }		
+}
+  
+const norm = d3.randomNormal(0, 4.0);
+
+function collide(node, xScale) {
+  var r = node.r * 1.1,
+      nx1 = xScale(node.x) - r,
+      nx2 = xScale(node.x) + r,
+      ny1 = node.y - r,
+      ny2 = node.y + r;
+  return function(quad, x1, y1, x2, y2) {
+    if (!quad.length && quad.data !== node) {
+    //if (quad.point && (quad.point !== node)) {
+      var x = xScale(node.x) - xScale(quad.data.x),
+          y = node.y - quad.data.y,
+          l = Math.sqrt(x * x + y * y),
+          r = node.r + quad.data.r;
+      if (l < r)
+        //node.y -= Math.abs(norm());
+        //node.y += norm();
+        node.y -=r
+    }
+    return xScale(x1) > nx2
+        || xScale(x2) < nx1
+        || y1 > ny2
+        || y2 < ny1	
+  }
+
 }
 
 const decorated = decorate(MCUltraRich, {
