@@ -16,6 +16,7 @@ class MCUltraRich extends BaseComponent {
   setup(options) {
     this.DOM = {
       container: this.element,
+      path: this.element.append("path"),
       defs: this.element.append("defs")
     };
 
@@ -185,12 +186,28 @@ class MCUltraRich extends BaseComponent {
     const FACE_R = 12;
     const FACEHOVER_R = 50;
 
-    const namehash = (string) => d3.sum(string.split("").map(m=>m.charCodeAt(0)) );
+    function reverse(s){
+      return ("" + s).split("").reverse().join("");
+    }
+
+    const namehash = (string) => +("0." + reverse(d3.sum(string.split("").map(m=>m.charCodeAt(0)))) );
     const getColor = (d) => this.parent.MDL.color.scale.d3Scale(this.colorMap[d.slices.split(";").filter(f => this.drilldowns.includes(f))[0]]);
     const hasFace = (d) => this.isShowFaces && this.DOM.defs.select(`#vzb-billy-image-${d.person}`).node();
     const getTooltip = (d) => d.name.split(";")[0] + " " + _this.localise(d.x) + " $/day";
 
+    const height = d3.max(this.parent.yScale.range());
+    const width = d3.max(this.parent.xScale.range());
     const data = this._getBillyData();
+    this.DOM.path
+      .style("stroke", "red")
+      .style("fill", "none")
+      .attr("d", d3.line()
+          .x(function(d) { return d.x; })
+          .y(function(d) { return d.y; })(d3.range( width ).map(m => ({x: m, y: height - Math.pow(0.09 * (width - m), 2) })))
+      );
+
+    const parabolic = (x) => Math.pow(0.09 * (width - x), 2);
+    
     this.DOM.container.selectAll("circle")
       .data(data, d => d.person)
       .join("circle")
@@ -202,7 +219,7 @@ class MCUltraRich extends BaseComponent {
         _this.parent._setTooltip();
         if (hasFace(d)) d3.select(this).attr("r", FACE_R);
       })
-      .attr("cy", d => this.parent.yScale(0) - namehash(d.person) % (this.parent.yScale(1) / 2) - 2 * DOT_R)
+      //.attr("cy", d => this.parent.yScale(0) - namehash(d.person) % (this.parent.yScale(1) / 2) - 2 * DOT_R)
       .style("stroke", d => hasFace(d) ? getColor(d) : "black" )
       .attr("r", d => hasFace(d) ? FACE_R : DOT_R)
       .style("fill", d => hasFace(d) ? `url(#vzb-billy-image-${d.person})` : getColor(d) )
@@ -213,7 +230,9 @@ class MCUltraRich extends BaseComponent {
           ? view.transition().duration(_this.parent.duration).ease(d3.easeLinear) 
           : view.interrupt();
 
-        transition.attr("cx", d => _this.parent.xScale(d.x));
+        transition
+          .attr("cx", d => _this.parent.xScale(d.x))
+          .attr("cy", d => height - namehash(d.person) * parabolic(_this.parent.xScale(d.x)));
       });
   }
 }
