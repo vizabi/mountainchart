@@ -35,7 +35,7 @@ class _VizabiMountainChart extends BaseComponent {
       type: MCProbe,
       placeholder: ".vzb-mc-probe",
       options: {
-        povertylineMarkerName: "povertyline",
+        povertylineMarkerName: config.root.options?.markerNames?.povertyline || "povertyline",
         povertylineEncName: "povertyline"
       }
     },{
@@ -43,7 +43,7 @@ class _VizabiMountainChart extends BaseComponent {
       type: MCUltraRich,
       placeholder: ".vzb-mc-ultrarich",
       options: {
-        ultrarichMarkerName: "billy",
+        ultrarichMarkerName: config.root.options?.markerNames?.billy || "billy",
         ultrarichEncName: "slices"
       }
     },{
@@ -853,7 +853,7 @@ class _VizabiMountainChart extends BaseComponent {
       return this.localise("mount/stacking/world") || d.key;
     if(d.aggrLevel == 1) {
       //TODO: is there a better way?
-      const legend = this.root.model.markers.legend;
+      const legend = this.root.model.markers[this.root.options?.markerNames?.legend || "legend"];
       if (!legend) return d.key;
       const legendItem = legend.dataArray.find(f => f[this.MDL.group.data.concept] == d.key) || {};      
       return legendItem.name || d.key;

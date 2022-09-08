@@ -78,7 +78,7 @@ class BillyDialog extends Dialog {
 
       //take the bily config out of stash and apply it, so that the data starts loading
       //resetting back to null then for cleaning URL state
-      const marker = this.root.model.markers["billy"];
+      const marker = this.root.model.markers[this.root.options?.markerNames?.billy || "billy"];
       const encs = ["x", "name", "slices"];
       if (showBilly)
         for (let enc of encs)

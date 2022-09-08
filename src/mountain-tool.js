@@ -33,7 +33,7 @@ export default class MountainChart extends BaseComponent {
 
   constructor(config){
 
-    const markerName = config.options.markerName || "mountain";
+    const markerName = config.options?.markerNames?.mountain || "mountain";
     const fullMarker = config.model.markers[markerName];
 
     const frameType = config.Vizabi.stores.encodings.modelTypes.frame;
@@ -142,7 +142,7 @@ export default class MountainChart extends BaseComponent {
     this.addReaction(this.updatePercentButton);
   }
   updatePercentButton(){
-    const enabled = !!this.model.markers.mountain.encoding.facet_row.data.concept;
+    const enabled = !!this.model.markers[this.root.options?.markerNames?.mountain || "mountain"].encoding.facet_row.data.concept;
     this.findChild({type: "ButtonList"}).setButtonUnavailable("inpercent", !enabled);
   }
 }
