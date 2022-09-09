@@ -6,6 +6,7 @@
         &[data-dlg="presets"] {
           flex: none;
           overflow: visible;
+          margin: 5px 0 2px -5px;
 
           .vzb-dialog-modal {
             overflow: visible;
@@ -62,6 +63,7 @@
           stroke: #000;
           fill: #FFF;
         }
+        margin-bottom: 0;
       }
 
       input[type="radio"] {
