@@ -199,6 +199,8 @@ import {
       if(!this.familiesReady || !this.colorMapReady) return;
 
       const icon = `<path d="m25 9.0937l-17.719 16.281h5.563v15.531h24.312v-15.531h5.563l-17.719-16.281z"/>`;
+      const iconHeight = 20.5;
+      const parentHeight = _this.parent.yScale(0);
   
       const getColor = (d) => this.parent.MDL.color.scale.d3Scale(this.colorMap[d.geo]);
       const outsideTimeRange = (d) => +d.year > this.MDL.frame.value.getUTCFullYear();
@@ -224,7 +226,7 @@ import {
         .style("cursor", "pointer")
         .style("stroke", "black")
         .style("stroke-width", "2px")
-        .attr("transform", d => "translate("+ _this.parent.xScale(d.x) +"," + (_this.parent.yScale.range()[0] - 20.5) + ") scale(0.5)");
+        .attr("transform", d => "translate("+ _this.parent.xScale(d.x) +"," + (parentHeight - iconHeight) + ") scale(0.5)");
     }
 
     _goToDollarStreet(d) {
@@ -240,8 +242,8 @@ import {
 
     _addImage(d){
       const _this = this;
-      const height = this.parent.yScale.range()[0];
-      const width = this.parent.xScale.range()[1];
+      const height = this.parent.yScale(0);
+      const width = d3.max(this.parent.xScale.range());
 
       const imageSize = height < 360 - 25 ? height - 30 : 360;
       const imageY = (height - imageSize - 25);
