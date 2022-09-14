@@ -159,8 +159,14 @@ class MCProbe extends BaseComponent {
       .text((d, i) => {
         if (i === 0 || i === 4) return formatterPercent(data.leftArea / data.totalArea * 100) + "%";
         if (i === 1 || i === 5) return formatterPercent(100 - data.leftArea / data.totalArea * 100) + "%";
-        if (i === 2 || i === 6) return this.localise(data.sumValue * data.leftArea / data.totalArea);
-        if (i === 3 || i === 7) return this.localise(data.sumValue * (1 - data.leftArea / data.totalArea)) + suffix;
+        if (i === 2 || i === 6) {
+          const count = this.localise(data.sumValue * data.leftArea / data.totalArea);
+          return count != 0 ? count : this.localise("mount/few");
+        }
+        if (i === 3 || i === 7) {
+          const count = this.localise(data.sumValue * (1 - data.leftArea / data.totalArea));
+          return (count != 0 ? count : this.localise("mount/few")) + suffix;
+        }
       })
       .classed("vzb-hidden", (d, i) => !options.full &&
         (((i === 0 || i === 4) && !this.parent.ui.probeXDetails.belowProc) ||
