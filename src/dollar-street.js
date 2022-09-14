@@ -149,16 +149,17 @@ import {
       })
         .then(resp => resp.json())
         .then(json => {
-          console.log(json.hits[6].length)
           this.families = json.hits[6].map(m => ({
             x: +m.place.income/30, 
             id: m.place.slug, 
+            name: m.place.name || m.place.slug.replaceAll("-", " "),
+            year: m.place?.visitDate?.split("-")[0] || m.place?.date_created?.split("-")[0],
             geo: country2to3(m.place.country.id), 
-            year: m.place.date_created.split("-")[0],
             image360: m.images.cropped360,
             image180: m.images.cropped180,
             image80: m.images.cropped180
           })).sort((a,b) => a.x - b.x);
+
           this.familiesReady = true;
       })
     }
@@ -174,125 +175,106 @@ import {
 
       const icon = `<path d="m25 9.0937l-17.719 16.281h5.563v15.531h24.312v-15.531h5.563l-17.719-16.281z"/>`;
   
-      const getTooltip = (d) => d.name + " " + _this.localise(d.x) + " $/day";
       const getColor = (d) => this.parent.MDL.color.scale.d3Scale(this.colorMap[d.geo]);
+      const outsideTimeRange = (d) => +d.year > this.MDL.frame.value.getUTCFullYear();
   
       const data = this.families;
       this.DOM.container.selectAll("g")
         .data(data, d => d.id)
         .join("g")
-        .on("click", function(event, d){     
-          if (!utils.isTouchDevice()) window.open("https://www.gapminder.org/dollar-street/families/" + d.id, "_blank");
+        .on("click", function(_, d){
+          if (!utils.isTouchDevice()) _this._goToDollarStreet(d);
         })
-        .on("mouseenter", function(event, d){
+        .on("mouseenter", function(_, d){
           _this._removeImage();
-
-          const height = _this.parent.yScale.range()[0];
-          const width = _this.parent.xScale.range()[1];
-
-          const imageSize = height < 360 - 25 ? height - 30 : 360;
-          const imageY = (height - imageSize - 25);
-          let imageX = _this.parent.xScale(d.x) - imageSize/2;
-          if (imageX + imageSize > width) imageX = width - imageSize;
-          if (imageX < 0) imageX = 0;
-
-          const placeholder = _this.DOM.container
-            .append("g")
-            .attr("class", "vzb-mc-image-placeholder")
-            .attr("transform", "translate("+ imageX +"," + imageY + ")")            
-          placeholder.append("rect")
-            .style("stroke", "black")
-            .style("fill", `url(#vzb-mc-pattern-lines-loading)`)
-            .attr("width", imageSize)
-            .attr("height", imageSize);
-          placeholder.append("text")
-            .text("loading...")
-            .style("text-anchor", "middle")
-            .attr("x", imageSize/2)
-            .attr("y", imageSize/2);
-
-          _this.DOM.pattern.append("animateTransform")
-            .attr("attributeType", "xml")
-            .attr("attributeName", "patternTransform")
-            .attr("type", "rotate")
-            .attr("from", "35")
-            .attr("to", "395")
-            .attr("begin", "0")
-            .attr("dur", "60s")
-            .attr("repeatCount", "indefinite")
-
-
-          const imageChoice = imageSize > 180 ? "image360" : imageSize > 80 ? "image180" : "image80"
-            
-          const img = _this.DOM.container
-            .append("image")
-            .attr("class", "vzb-mc-dollarstreet-image")
-            .attr("xlink:href", d[imageChoice])
-            .attr("transform", "translate("+ imageX +"," + imageY + ")")
-            .attr("width", imageSize)
-            .attr("height", imageSize)
-
-          img.node().addEventListener('load', () => { placeholder.remove() });
-
-          if (utils.isTouchDevice()) {
-            img.on("click", function(event) {     
-              window.open("https://www.gapminder.org/dollar-street/families/" + d.id, "_blank");
-            })
-            .on("mouseout", function(event, d) {
-                _this._removeImage();
-            })
-    
-          }
-
-          if(d.name){
-            if (utils.isTouchDevice()) {
-              _this._addMobileElements(_this.DOM.container, d, {imageX, imageY, imageSize});
-            } else {
-              _this.parent._setTooltip(event, getTooltip(d));
-            }
-          } else {
-
-            fetch(ENDPOINT + "families/" + d.id, {
-              headers: {Authorization: AUTH_TOKEN}
-            })
-            .then(resp => resp.json())
-            .then(json => {
-              d.name = json.name;
-              if (utils.isTouchDevice()) {
-                _this._addMobileElements(_this.DOM.container, d, {imageX, imageY, imageSize});
-              } else {
-                _this.parent._setTooltip(event, getTooltip(d));
-              }
-            });
-          }
-          
+          _this._addImage(d);
         })
-        .on("mouseout", function(event, d) {
-          if (!utils.isTouchDevice()) {
-            _this.parent._setTooltip();
-            _this._removeImage();
-          } else if (!d3.select(event.relatedTarget).classed("vzb-mc-dollarstreet-image")) {
-            _this._removeImage();
-          }
+        .on("mouseout", function() {
+          _this._removeImage();
         })
         .html(icon)
-        .style("fill", d => +d.year <= this.MDL.frame.value.getUTCFullYear() ? getColor(d) : "#999")
-        .style("opacity", d => +d.year <= this.MDL.frame.value.getUTCFullYear() ? null : 0.2) 
+        .style("fill", d => outsideTimeRange(d) ? "#999" : getColor(d))
+        .style("opacity", d =>  outsideTimeRange(d) ? 0.2 : null) 
         .style("cursor", "pointer")
         .style("stroke", "black")
         .style("stroke-width", "2px")
         .attr("transform", d => "translate("+ _this.parent.xScale(d.x) +"," + (_this.parent.yScale.range()[0] - 20.5) + ") scale(0.5)");
     }
 
+    _goToDollarStreet(d) {
+      window.open("https://www.gapminder.org/dollar-street/families/" + d.id, "_blank")
+    }
+
     _removeImage() {
-      this.DOM.pattern.selectAll("animateTransform")
-        .remove();
-      this.DOM.container
-        .selectAll("image").remove();
-      this.DOM.container
-        .selectAll(".vzb-mc-image-mobile-group").remove();
-      this.DOM.container
-        .selectAll(".vzb-mc-image-placeholder").remove();
+      this.DOM.pattern.selectAll("animateTransform").remove();
+      this.DOM.container.selectAll("image").remove();
+      this.DOM.container.selectAll(".vzb-mc-image-mobile-group").remove();
+      this.DOM.container.selectAll(".vzb-mc-image-placeholder").remove();
+    }
+
+    _addImage(d){
+      const _this = this;
+      const height = this.parent.yScale.range()[0];
+      const width = this.parent.xScale.range()[1];
+
+      const imageSize = height < 360 - 25 ? height - 30 : 360;
+      const imageY = (height - imageSize - 25);
+      let imageX = this.parent.xScale(d.x) - imageSize/2;
+      if (imageX + imageSize > width) imageX = width - imageSize;
+      if (imageX < 0) imageX = 0;
+
+      const placeholder = this.DOM.container
+        .append("g")
+        .attr("class", "vzb-mc-image-placeholder")
+        .attr("transform", "translate("+ imageX +"," + imageY + ")")            
+      placeholder.append("rect")
+        .style("stroke", "black")
+        .style("fill", `url(#vzb-mc-pattern-lines-loading)`)
+        .attr("width", imageSize)
+        .attr("height", imageSize);
+      placeholder.append("text")
+        .text("loading...")
+        .style("text-anchor", "middle")
+        .attr("x", imageSize/2)
+        .attr("y", imageSize/2);
+
+      this.DOM.pattern.append("animateTransform")
+        .attr("attributeType", "xml")
+        .attr("attributeName", "patternTransform")
+        .attr("type", "rotate")
+        .attr("from", "35")
+        .attr("to", "395")
+        .attr("begin", "0")
+        .attr("dur", "60s")
+        .attr("repeatCount", "indefinite")
+
+      const imageChoices = imageSize > 180 ? ["image360", "image180", "image80"] : imageSize > 80 ? ["image180", "image80"] : ["image80"];
+        
+      const tryDownloadImage = (imageChoices) => {
+        this.DOM.container.selectAll("image").remove();
+        if (!imageChoices[0]) return;
+
+        const img = this.DOM.container
+          .append("image")
+          .attr("class", "vzb-mc-dollarstreet-image")
+          .attr("xlink:href", d[imageChoices[0]])
+          .attr("transform", "translate("+ imageX +"," + imageY + ")")
+          .attr("width", imageSize)
+          .attr("height", imageSize)
+          .on("click", function(event) {     
+            _this._goToDollarStreet(d);
+          })
+          .on("mouseout", function(event, d) {
+            _this._removeImage();
+          })
+
+        img.node().addEventListener('load', () => { placeholder.remove() });
+        img.node().addEventListener('error', () => { tryDownloadImage(imageChoices.slice(1)) });
+      }
+
+      tryDownloadImage(imageChoices);
+      
+      _this._addMobileElements(_this.DOM.container, d, {imageX, imageY, imageSize});
     }
 
     _addMobileElements(container, d, size = {}) {
@@ -307,13 +289,14 @@ import {
         .attr("x", size.imageX)
         .attr("dy", "1em")
         .attr("y", size.imageY)
-        .attr("style", "fill:white;stroke:white;stroke-opacity:0.7;stroke-width:0.15em");
+        .attr("style", "fill:white;stroke:white;stroke-opacity:0.7;stroke-width:0.15em;text-transform:capitalize");
       group.append("text")
         .text(d.name)
         .attr("dx", "0.1em")
         .attr("x", size.imageX)
         .attr("dy", "1em")
-        .attr("y", size.imageY);
+        .attr("y", size.imageY)
+        .attr("style", "text-transform:capitalize");
 
       group.append("text")
         .text(this.localise(d.x) + " $/day")
