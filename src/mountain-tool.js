@@ -23,6 +23,7 @@ import {VizabiMountainChart} from "./mountain-cmp.js";
 import {Stack} from "./dialogs/stack/stack.js"; Stack;
 import {PovertyLine} from "./dialogs/povertyline/povertyline.js"; PovertyLine;
 import {BillyDialog} from "./dialogs/billy/billy.js"; BillyDialog;
+import {DollarStreetDialog} from "./dialogs/dollar-street/dollar-street.js"; DollarStreetDialog;
 import {Presets} from "./dialogs/presets/presets.js"; Presets;
 
 //import "./dialogs/axesmc/axesmc";
