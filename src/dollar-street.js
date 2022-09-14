@@ -80,7 +80,7 @@ import {
   
     draw() {
       this.localise = this.services.locale.auto(this.MDL.frame.interval);
-      if(!this.parent.ui.dollarstreet) return;
+      if(!this.parent.ui.dsShow) return;
       this.addReaction(this.getFamilies);
       this.addReaction(this.getDrillDowns);
       this.addReaction(this.getColorMapping);
@@ -90,7 +90,7 @@ import {
     }
   
     disableReactions(){
-      if(this.parent.ui.dollarstreet) return;
+      if(this.parent.ui.dsShow) return;
       this.removeReaction(this.getFamilies);
       this.removeReaction(this.getDrillDowns);
       this.removeReaction(this.getColorMapping);

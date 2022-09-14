@@ -27,7 +27,7 @@ class DollarStreetDialog extends Dialog {
             <div class="vzb-ds-count"></div>
 
           </div>
-          <div class="vzb-ds-availability">Data available from 2019</div>
+          <div class="vzb-ds-availability">Data available from 2015</div>
         </div>
       </div>
     `;
@@ -36,7 +36,7 @@ class DollarStreetDialog extends Dialog {
         type: SimpleCheckbox,
         placeholder: ".vzb-ds-show",
         options: {
-          checkbox: "dollarstreet",
+          checkbox: "dsShow",
           submodel: "root.ui.chart"
         }
       },
@@ -83,7 +83,7 @@ class DollarStreetDialog extends Dialog {
   }
 
   setModel(){
-    const show = this.root.ui.chart.dollarstreet;  
+    const show = this.root.ui.chart.dsShow;  
     runInAction(() => {
 
       //for cleaning URL state
@@ -94,7 +94,7 @@ class DollarStreetDialog extends Dialog {
   }
 
   updateVisibility() {
-    const show = this.root.ui.chart.dollarstreet;  
+    const show = this.root.ui.chart.dsShow;  
     this.DOM.slider.classed("vzb-hidden", !show);
     this.DOM.count.classed("vzb-hidden", !show);
     this.DOM.topic.classed("vzb-hidden", !show);
@@ -104,7 +104,7 @@ class DollarStreetDialog extends Dialog {
   }
 
   updateCount(){
-    const show = this.root.ui.chart.dollarstreet; 
+    const show = this.root.ui.chart.dsShow; 
     const howMany = this.root.ui.chart.dsHowManyHomes;
     if(show) this.DOM.count.text(Math.round(howMany));
 
