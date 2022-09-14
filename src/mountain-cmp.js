@@ -164,7 +164,7 @@ class _VizabiMountainChart extends BaseComponent {
 
     this.xAxis = axisSmart("bottom");
 
-    this.yScaleBase = d3.scaleLinear(); //independent of model
+    this.yDomain = [0,0];
     this.rangeRatio = 1;
     this.rangeShift = 0;
     this.stickySortValues = {};
@@ -381,7 +381,7 @@ class _VizabiMountainChart extends BaseComponent {
 
     const {margin} = this.profileConstants;
     const height = this.height - margin.top - margin.bottom;
-    return this.yScaleBase.range([height, this.isManyFacets ? height - this.parent.scaleRange : 0]);
+    return d3.scaleLinear().domain(this.yDomain).range([height, this.isManyFacets ? height - this.parent.scaleRange : 0]);
   }
 
   drawForecastOverlay() {
@@ -1022,7 +1022,7 @@ class _VizabiMountainChart extends BaseComponent {
   }
 
   _adjustMaxY() {
-    this.yScale.domain([0, this.isManyFacets ? this.ui.inpercent ? this.maxValue : this.parent.getScaleDomainForSubcomponent(null) : Math.round(this.yMaxGlobal)]);
+    this.yDomain = [0, this.isManyFacets ? this.ui.inpercent ? this.maxValue : this.parent.getScaleDomainForSubcomponent(null) : Math.round(this.yMaxGlobal)];
   }
 
   _isMergingGroups() {
