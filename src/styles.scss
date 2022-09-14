@@ -102,6 +102,30 @@
         }
       }
 
+      .vzb-mc-dollarstreet {
+        .vzb-mc-ds-text-group {
+          pointer-events: none;
+          .vzb-mc-ds-name {
+            text-transform: capitalize;
+          }
+          .vzb-mc-ds-closecross.vzb-mc-ds-text {
+            pointer-events: bounding-box;
+          }
+          .vzb-mc-ds-hint {
+            text-anchor: middle;
+          }
+          .vzb-mc-ds-text {
+            fill:white;
+          }
+          .vzb-mc-ds-shadow {
+            fill:black; 
+            stroke:black;
+            stroke-opacity: 0.7;
+            stroke-width: 0.2em;
+          }
+        }
+      }
+
       .vzb-mc-mountains-labels text,
       .vzb-mc-mountains-labels circle {
         cursor: pointer;
@@ -255,9 +279,7 @@
         font-size: $vzb-font-size-tiny;
       }
       .vzb-mc-ultrarich {
-        text {
-          font-size: $vzb-font-size-regular;
-        }
+        font-size: $vzb-font-size-regular;
       }
     }
   }
@@ -287,9 +309,7 @@
         font-size: $vzb-font-size-tiny;
       }
       .vzb-mc-ultrarich {
-        text {
-          font-size: $vzb-font-size-small;
-        }
+        font-size: $vzb-font-size-small;
       }
     }
   }
@@ -318,9 +338,7 @@
         font-size: $vzb-font-size-tiny;
       }
       .vzb-mc-ultrarich {
-        text {
-          font-size: $vzb-font-size-tiny;
-        }
+        font-size: $vzb-font-size-tiny;
       }
     }
   }
@@ -337,30 +355,24 @@
         text {
           font-size: $vzb-font-size-larger;
         }
-        .vzb-mc-probe-value-head {
-          font-size: $vzb-font-size-regular;
-        }
+      }
+      .vzb-mc-probe-value-head {
+        font-size: $vzb-font-size-regular;
       }
       .vzb-mc-ultrarich {
-        text {
-          font-size: $vzb-font-size-medium;
-        }
+        font-size: $vzb-font-size-medium;
       }
     }
 
     &.vzb-medium {
-      .vzb-mc-probe, .vzb-mc-ultrarich {
-        text {
-          font-size: $vzb-font-size-medium;
-        }
+      .vzb-mc-probe {
+        font-size: $vzb-font-size-medium;
         .vzb-mc-probe-value-head {
           font-size: $vzb-font-size-small;
         }
       }
       .vzb-mc-ultrarich {
-        text {
-          font-size: $vzb-font-size-small;
-        }
+        font-size: $vzb-font-size-small;
       }
     }
   }

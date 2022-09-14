@@ -43,7 +43,7 @@ import {
     constructor(config) {
       config.template = `
         <defs>
-          <pattern class="vzb-noexport" id="vzb-mc-pattern-lines-loading" x="0" y="0" patternUnits="userSpaceOnUse" width="50" height="50" viewBox="0 0 10 10"> 
+          <pattern class="vzb-noexport" id="vzb-mc-ds-pattern-lines-loading" x="0" y="0" patternUnits="userSpaceOnUse" width="50" height="50" viewBox="0 0 10 10"> 
             <path d='M-1,1 l2,-2M0,10 l10,-10M9,11 l2,-2' stroke='black' stroke-width='3' opacity='0.08'/>
           </pattern> 
         </defs>
@@ -189,8 +189,9 @@ import {
           _this._removeImage();
           _this._addImage(d);
         })
-        .on("mouseout", function() {
-          _this._removeImage();
+        .on("mouseout", function(event) {
+          if (!utils.isTouchDevice() || !d3.select(event.relatedTarget).classed("vzb-mc-ds-image"))
+            _this._removeImage();
         })
         .html(icon)
         .style("fill", d => outsideTimeRange(d) ? "#999" : getColor(d))
@@ -208,8 +209,8 @@ import {
     _removeImage() {
       this.DOM.pattern.selectAll("animateTransform").remove();
       this.DOM.container.selectAll("image").remove();
-      this.DOM.container.selectAll(".vzb-mc-image-mobile-group").remove();
-      this.DOM.container.selectAll(".vzb-mc-image-placeholder").remove();
+      this.DOM.container.selectAll(".vzb-mc-ds-text-group").remove();
+      this.DOM.container.selectAll(".vzb-mc-ds-image-placeholder").remove();
     }
 
     _addImage(d){
@@ -225,11 +226,11 @@ import {
 
       const placeholder = this.DOM.container
         .append("g")
-        .attr("class", "vzb-mc-image-placeholder")
+        .attr("class", "vzb-mc-ds-image-placeholder")
         .attr("transform", "translate("+ imageX +"," + imageY + ")")            
       placeholder.append("rect")
         .style("stroke", "black")
-        .style("fill", `url(#vzb-mc-pattern-lines-loading)`)
+        .style("fill", `url(#vzb-mc-ds-pattern-lines-loading)`)
         .attr("width", imageSize)
         .attr("height", imageSize);
       placeholder.append("text")
@@ -256,7 +257,7 @@ import {
 
         const img = this.DOM.container
           .append("image")
-          .attr("class", "vzb-mc-dollarstreet-image")
+          .attr("class", "vzb-mc-ds-image")
           .attr("xlink:href", d[imageChoices[0]])
           .attr("transform", "translate("+ imageX +"," + imageY + ")")
           .attr("width", imageSize)
@@ -274,75 +275,66 @@ import {
 
       tryDownloadImage(imageChoices);
       
-      _this._addMobileElements(_this.DOM.container, d, {imageX, imageY, imageSize});
+      _this._addTextElements(_this.DOM.container, d, {imageX, imageY, imageSize});
     }
 
-    _addMobileElements(container, d, size = {}) {
+    _addTextElements(container, d, size = {}) {
       const _this = this;
 
       const group = container.append("g")
-        .attr("class", "vzb-mc-image-mobile-group")
-        .attr("pointer-events", "none");
-      group.append("text")
-        .text(d.name)
-        .attr("dx", "0.1em")
-        .attr("x", size.imageX)
-        .attr("dy", "1em")
-        .attr("y", size.imageY)
-        .attr("style", "fill:white;stroke:white;stroke-opacity:0.7;stroke-width:0.15em;text-transform:capitalize");
-      group.append("text")
-        .text(d.name)
-        .attr("dx", "0.1em")
-        .attr("x", size.imageX)
-        .attr("dy", "1em")
-        .attr("y", size.imageY)
-        .attr("style", "text-transform:capitalize");
-
-      group.append("text")
-        .text(this.localise(d.x) + " $/day")
-        .attr("dx", "0.1em")
-        .attr("x", size.imageX)
-        .attr("dy", "2.1em")
-        .attr("y", size.imageY)
-        .attr("style", "fill:white;stroke:white;stroke-opacity:0.7;stroke-width:0.15em");
-      group.append("text")
-        .text(this.localise(d.x) + " $/day")
-        .attr("dx", "0.1em")
-        .attr("x", size.imageX)
-        .attr("dy", "2.1em")
-        .attr("y", size.imageY);
+        .attr("transform", `translate(${size.imageX}, ${size.imageY})`)
+        .attr("class", "vzb-mc-ds-text-group")
+        .style("font-size", size.imageSize > 180 ? "1.8em" : size.imageSize > 80 ? "1.24em" : "0.8em");
       
       group.append("text")
-        .text("Click to visit this home")
-        .attr("text-anchor", "middle")
-        .attr("x", size.imageX + size.imageSize*0.5)
-        .attr("dy", "-0.2em")
-        .attr("y", size.imageY + size.imageSize)
-        .attr("style", "fill:white;stroke:white;stroke-opacity:0.7;stroke-width:0.15em");
+        .text(d.name)
+        .attr("class", "vzb-mc-ds-name vzb-mc-ds-shadow")
+        .attr("dx", "0.5em").attr("dy", "1.5em");
       group.append("text")
-        .text("Click to visit this home")
-        .attr("text-anchor", "middle")
-        .attr("x", size.imageX + size.imageSize*0.5)
-        .attr("dy", "-0.2em")
-        .attr("y", size.imageY + size.imageSize);
+        .text(d.name)
+        .attr("class", "vzb-mc-ds-name vzb-mc-ds-text")
+        .attr("dx", "0.5em").attr("dy", "1.5em");
 
       group.append("text")
-        .text("×")
-        .attr("dx", "-1em")
-        .attr("x", size.imageX + size.imageSize)
-        .attr("dy", "1em")
-        .attr("y", size.imageY)
-        .attr("style", "fill:white;stroke:white;stroke-opacity:0.7;stroke-width:0.15em");
+        .text(this.localise(d.x) + " " + this.localise("unit/mountainchart_hardcoded_income_per_day"))
+        .attr("class", "vzb-mc-ds-income vzb-mc-ds-shadow")
+        .attr("dx", "0.5em").attr("dy", "2.7em");
       group.append("text")
-        .text("×")
-        .attr("dx", "-1em")
-        .attr("x", size.imageX + size.imageSize)
-        .attr("dy", "1em")
-        .attr("y", size.imageY)
-        .attr("pointer-events", "bounding-box")
-        .on("click",  function(event, d) {
-          _this._removeImage();
-        });
+        .text(this.localise(d.x) + " " + this.localise("unit/mountainchart_hardcoded_income_per_day"))
+        .attr("class", "vzb-mc-ds-income vzb-mc-ds-text")
+        .attr("dx", "0.5em").attr("dy", "2.7em");
+      
+      group.append("text")
+        .text(this.localise("mount/ds/visitThisHome"))
+        .attr("class", "vzb-mc-ds-hint vzb-mc-ds-shadow")
+        .attr("x", size.imageSize / 2).attr("y", size.imageSize)
+        .attr("dy", "-0.8em");
+      group.append("text")
+        .text(this.localise("mount/ds/visitThisHome"))
+        .attr("class", "vzb-mc-ds-hint vzb-mc-ds-text")
+        .attr("x", size.imageSize / 2).attr("y", size.imageSize)
+        .attr("dy", "-0.8em");
+
+      if(!utils.isTouchDevice()) { 
+        group.transition().duration(2000).style("opacity", 0);
+      }
+
+      if(utils.isTouchDevice()) {
+        group.append("text")
+          .text("×")
+          .attr("class", "vzb-mc-ds-closecross vzb-mc-ds-shadow")
+          .attr("dx", "-1.5em").attr("dy", "1.5em")
+          .attr("x", size.imageSize);
+          
+        group.append("text")
+          .text("×")
+          .attr("class", "vzb-mc-ds-closecross vzb-mc-ds-text")
+          .attr("dx", "-1.5em").attr("dy", "1.5em")
+          .attr("x", size.imageSize)
+          .on("click",  function(event, d) {
+            _this._removeImage();
+          });
+      }
     }
   }
 
