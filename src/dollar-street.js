@@ -63,6 +63,7 @@ import {
 
       this.drilldowns = null;
       this.drilldownsReady = false;
+      this.wholeWorld = false;
 
       this.colorMap = {};
       this.colorMapReady = false;
@@ -107,17 +108,41 @@ import {
       const dim = this.principalDimension;
       const entity = this.parent.atomicSliceData.map(m => m[dim]);
       
+      //prevent recalcualaion if list of entities didn't change
       if(this.drilldownsReady == entity.join("")) return;
+
       this.drilldownsReady = false;
-      this.model.data.source.drilldown({dim, entity})
+      const drilldownPromise = this.model.data.source.drilldown({dim, entity})
         .then( catalog => {
-          const drilldownEntitySet = Object.keys(catalog)[0]; //"country"
-          this.drilldowns = catalog[drilldownEntitySet];
-          this.drilldownsReady = entity.join("");
+          if (catalog) {
+            const drilldownEntitySet = Object.keys(catalog)[0]; //"country"
+            this.drilldowns = catalog[drilldownEntitySet];
+          }
         });
+
+        this.wholeWorld = this.getHardcodedWholeWorldShortcuts();
+        const isFullEntitySetPromise = this.wholeWorld ? Promise.resolve()
+        : this.model.data.isFullEntitySet(dim, entity)
+          .then(fullset => {
+            this.wholeWorld = fullset;
+          });
+        
+        Promise.all([drilldownPromise, isFullEntitySetPromise]).then(() => {
+          this.drilldownsReady = entity.join("");
+        })
     }
 
-   
+    getHardcodedWholeWorldShortcuts(){
+      const dim = this.principalDimension;
+      const filter = this.model.data.filter.config.dimensions[dim] || false;
+      const notFacet = this.model.encoding.facet_row.data.constant === "none";
+  
+      return false
+        //showing all countries in one chart
+        || filter["un_state"] && notFacet
+        //showing world as one shape
+        || filter["is--global"] && notFacet;
+    }
 
     getColorMapping(){
       const dim = this.principalDimension;
@@ -140,7 +165,7 @@ import {
       this.familiesReady = false;
       const topic = this.parent.ui.dsTopic || "homes";
       const pageSize = Math.round(+this.parent.ui.dsHowManyHomes);
-      const countries = this.drilldowns.map(m => country3to2(m)).filter(f => !!f);
+      const countries = this.wholeWorld ? "" : this.drilldowns.map(m => country3to2(m)).filter(f => !!f);
     
       const params = {lng: "en", cols: 6, p: 0, pageSize, topic, featuredOnly: false, countries};
       const u = new URLSearchParams(params).toString().replaceAll("%2C", ",");
