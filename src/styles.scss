@@ -22,6 +22,9 @@
       .vzb-mc-axis-x-title {
         visibility: hidden;
       }
+      .vzb-mc-ultrarich .vzb-billy-text {
+        visibility: hidden;
+      }
     }
   }
 
@@ -80,6 +83,23 @@
         stroke: $vzb-color-grey;
         stroke-dasharray: 5 5;
         pointer-events: none;
+      }
+
+      .vzb-mc-ultrarich {
+        .vzb-billy-text {
+          fill: $vzb-color-primary;
+          text-anchor: end;
+        }
+        .vzb-billy-upperbox,
+        .vzb-billy-lowerbox,
+        .vzb-billy-arc {
+          fill: transparent;
+          pointer-events: none;
+          stroke: $vzb-color-primary;
+        }
+        .vzb-billy-arc{
+          marker-end: url(#triangle);
+        }
       }
 
       .vzb-mc-mountains-labels text,
@@ -234,6 +254,11 @@
       .vzb-mc-probe-value-head {
         font-size: $vzb-font-size-tiny;
       }
+      .vzb-mc-ultrarich {
+        text {
+          font-size: $vzb-font-size-regular;
+        }
+      }
     }
   }
 
@@ -261,6 +286,11 @@
       .vzb-mc-probe-value-head {
         font-size: $vzb-font-size-tiny;
       }
+      .vzb-mc-ultrarich {
+        text {
+          font-size: $vzb-font-size-small;
+        }
+      }
     }
   }
   &.vzb-small {
@@ -287,6 +317,11 @@
       .vzb-mc-probe-value-head {
         font-size: $vzb-font-size-tiny;
       }
+      .vzb-mc-ultrarich {
+        text {
+          font-size: $vzb-font-size-tiny;
+        }
+      }
     }
   }
   &.vzb-presentation {
@@ -306,14 +341,24 @@
           font-size: $vzb-font-size-regular;
         }
       }
+      .vzb-mc-ultrarich {
+        text {
+          font-size: $vzb-font-size-medium;
+        }
+      }
     }
 
     &.vzb-medium {
-      .vzb-mc-probe {
+      .vzb-mc-probe, .vzb-mc-ultrarich {
         text {
           font-size: $vzb-font-size-medium;
         }
         .vzb-mc-probe-value-head {
+          font-size: $vzb-font-size-small;
+        }
+      }
+      .vzb-mc-ultrarich {
+        text {
           font-size: $vzb-font-size-small;
         }
       }
