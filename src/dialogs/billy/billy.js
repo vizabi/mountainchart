@@ -35,8 +35,8 @@ class BillyDialog extends Dialog {
         type: SingleHandleSlider,
         placeholder: ".vzb-billy-howmany",
         options: {
-          domain: [1, 5, 10, 50, 100, 500, 1000],
-          snapValue: true,
+          domain: [1, 5, 10, 50, 100, 500, 1000, 2000, 4000],
+          //snapValue: true,
           value: "howManyBilly",
           submodel: "root.ui.chart"
         }
