@@ -167,7 +167,7 @@ import {
       const pageSize = Math.round(+this.parent.ui.dsHowManyHomes);
       const countries = this.wholeWorld ? "" : this.drilldowns.map(m => country3to2(m)).filter(f => !!f);
     
-      const params = {lng: "en", cols: 6, p: 0, pageSize, topic, featuredOnly: false, countries};
+      const params = {lng: "en", cols: 6, p: 0, pageSize, topic, media: "photo", featuredOnly: false, countries};
       const u = new URLSearchParams(params).toString().replaceAll("%2C", ",");
       fetch(ENDPOINT + 'search/families?' + u, {
         headers: {Authorization: AUTH_TOKEN}
