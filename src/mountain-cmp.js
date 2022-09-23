@@ -305,8 +305,7 @@ class _VizabiMountainChart extends BaseComponent {
     this.DOM.closeCross
       .classed("vzb-hidden", 
         !this.isManyFacets 
-        || this.MDL.facet_row.data.concept === this.MDL.color.data.concept 
-        || (this.atomicSliceData.length > 1 && this.name.replace("is--","") === this.MDL.color.data.concept)
+        || this.MDL.facet_row.data.concept === this.MDL.color.data.concept
       )
       .on("mouseover", () => {
         this.element.classed("vzb-chart-removepreview", true);
