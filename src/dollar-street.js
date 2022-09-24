@@ -35,8 +35,8 @@ import {
     vct: "vc", ven: "ve", vgb: "vg", vir: "vi", vnm: "vn", vut: "vu", wlf: "wf", wsm: "ws", yem: "ye", zaf: "za", zmb: "zm", zwe: "zw"
   };
 
-  const country3to2 = d3.scaleOrdinal().domain(Object.keys(COUNTRY_MAPPING)).range(Object.values(COUNTRY_MAPPING));
-  const country2to3 = d3.scaleOrdinal().domain(Object.values(COUNTRY_MAPPING)).range(Object.keys(COUNTRY_MAPPING));
+  const country3to2 = d3.scaleOrdinal().domain(Object.keys(COUNTRY_MAPPING)).range(Object.values(COUNTRY_MAPPING)).unknown([null]) ;
+  const country2to3 = d3.scaleOrdinal().domain(Object.values(COUNTRY_MAPPING)).range(Object.keys(COUNTRY_MAPPING)).unknown([null]) ;
 
   class MCDollarStreet extends BaseComponent {
   
