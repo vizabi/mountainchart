@@ -80,7 +80,6 @@ class MCProbe extends BaseComponent {
     this.parent.ui.inpercent;
     this.MDL.frame.value; //watch
 
-    const stackMode = this.MDL.stack.data.constant;
     const height = this.parent.height - this.parent.profileConstants.margin.top - this.parent.profileConstants.margin.bottom;
 
     const extremeMode = this.parent.ui.probeXType == "extreme";
@@ -127,12 +126,7 @@ class MCProbe extends BaseComponent {
       });
     };
 
-    if (stackMode === "all")
-      this.parent.stackedSliceData.forEach(d => _computeAreas(d, data));
-    else if (stackMode === "none")
-      this.parent.atomicSliceData.forEach(d => _computeAreas(d, data));
-    else
-      this.parent.groupedSliceData.forEach(d => _computeAreas(d, data));
+    this.parent.atomicSliceData.forEach(d => _computeAreas(d, data));
 
     const formatterPercent = (value) => value < 0.1 ? 0 : d3.format(".2r")(value);
 

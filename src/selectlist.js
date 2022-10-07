@@ -47,12 +47,14 @@ class _MCSelectList extends BaseComponent {
     this.services.layout.size; //watch
     this.parent.ui.inpercent;
 
+    const dedupe = new Set();
+
     const listData = this.isManyFacetsAndLonely() || this.isChartTooSmall()
       ? []
       : this.parent.atomicSliceData
         .concat(this.parent.groupedSliceData)
         .concat(this.parent.stackedSliceData)
-        .filter(d => this.MDL.selectedF.has(d))
+        .filter(d => this.MDL.selectedF.has(d) && !dedupe.has(d.KEY()) && dedupe.add(d.KEY()))
         .sort(this._sortLabels);
 
     this.labels = this.element.selectAll("g.vzb-mc-label")
@@ -164,7 +166,7 @@ class _MCSelectList extends BaseComponent {
 
     const titleHeight = this.parent.DOM.yTitle.select("text").node().getBBox().height || 0;
 
-    const maxFontHeight = (this.parent.height - titleHeight * 3) / (this.labels.data().length + 2);
+    const maxFontHeight = Math.max(0, (this.parent.height - titleHeight * 3)) / (this.labels.data().length + 2);
     if (fontHeight > maxFontHeight) fontHeight = maxFontHeight;
 
     let currentAggrLevel = "null";
@@ -189,7 +191,9 @@ class _MCSelectList extends BaseComponent {
           name = _this.parent._getLabelText(d);
         }
 
-        const string = name + ": " + _this.localise(d.norm) + (i === 0 ? " " + _this.localise("mount/people") : "");
+        const string = d.norm 
+          ? name + ": " + _this.localise(d.norm) + (i === 0 ? " " + _this.localise("mount/people") : "")
+          : name;
 
         const text = view.selectAll(".vzb-mc-label-text")
           .attr("x", (isRTL ? -1 : 1) * fontHeight)
