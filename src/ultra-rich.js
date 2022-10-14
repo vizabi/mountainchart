@@ -16,6 +16,8 @@ class MCUltraRich extends BaseComponent {
   setup(options) {
     this.DOM = {
       container: this.element,
+      bridgeShapeBlur: this.element.append("path").style("fill", "#ccc"),
+      bridgeShape: this.element.append("path").style("fill", `url(#vzb-pattern-billy-bridgeshape-${this.parent.name})`).attr("mask", `url(#progFadeMask-${this.parent.name})`),
       circlebox: this.element.append("g"),
       zoombox: this.element.append("g"),
       text: this.element.append("g").attr("class", "vzb-billy-text"),
@@ -25,6 +27,57 @@ class MCUltraRich extends BaseComponent {
     this.DOM.upperbox = this.DOM.zoombox.append("rect").attr("class", "vzb-billy-upperbox");
     this.DOM.lowerbox = this.DOM.zoombox.append("rect").attr("class", "vzb-billy-lowerbox");
     this.DOM.arc = this.DOM.zoombox.append("path").attr("class", "vzb-billy-arc");
+
+    this.DOM.defs.html(`
+      <linearGradient id="progFade-${this.parent.name}" x1="0%" x2="100%" y1="0%" y2="0%">
+        <stop offset="0%" stop-color="black"/>
+        <stop offset="30%" stop-color="white"/>      
+      </linearGradient>
+      
+      <mask id="progFadeMask-${this.parent.name}" >
+        <rect fill="url(#progFade-${this.parent.name})"  />
+      </mask>
+      
+
+      <pattern id="vzb-pattern-billy-bridgeshape-${this.parent.name}" style="stroke: white; fill: #ccc; stroke-width:10px;" x="0" y="0" patternUnits="userSpaceOnUse" width="25" height="25" viewBox="0 0 500 500"> 
+          <circle cx="65" cy="39" r="80" />
+          <circle cx="180" cy="-41" r="80" />
+          <circle cx="259" cy="54" r="80" />
+          <circle cx="364" cy="19" r="80" />
+          <circle cx="472" cy="69" r="80" />
+          <circle cx="434" cy="189" r="80" />
+          <circle cx="427" cy="378" r="80" />
+          <circle cx="485" cy="464" r="80" />
+          <circle cx="485" cy="268" r="80" />
+          <circle cx="65" cy="539" r="80" />
+          <circle cx="180" cy="459" r="80" />
+          <circle cx="259" cy="554" r="80" />
+          <circle cx="364" cy="518" r="80" />
+          <circle cx="-66" cy="189" r="80" />
+          <circle cx="-45" cy="378" r="80" />
+          <circle cx="-14" cy="464" r="80" />
+          <circle cx="-14" cy="268" r="80" />
+          <circle cx="148" cy="110" r="80" />
+          <circle cx="349" cy="139" r="80" />
+          <circle cx="243" cy="205" r="80" />
+          <circle cx="300" cy="419" r="80" />
+          <circle cx="345" cy="291" r="80" />
+          <circle cx="130" cy="315" r="80" />
+          <circle cx="247" cy="335" r="80" />
+          <circle cx="85" cy="129" r="80" />
+          <circle cx="122" cy="219" r="80" />
+          <circle cx="88" cy="386" r="80" />
+          <circle cx="82" cy="150" r="80" />
+          <circle cx="-14" cy="464" r="80" />
+          <circle cx="-14" cy="-36" r="80" />
+          <circle cx="472" cy="569" r="80" />
+          <circle cx="-25" cy="69" r="80" />
+          <circle cx="-26" cy="569" r="80" />
+          <circle cx="30" cy="300" r="80" />
+          <circle cx="530" cy="300" r="80" />
+        </pattern>
+    `)
+
 
     this.DOM.defs.append("marker")
       .attr("id", "triangle")
@@ -271,6 +324,7 @@ class MCUltraRich extends BaseComponent {
 
     const circleParams = this.redrawCircles(data);
     const zoomboxParams = this.redrawZoombox(circleParams.showZoombox);
+    this.redrawBridgeShape(circleParams || {}, zoomboxParams || {});
     this.redrawText(this.isOutsideOfTimeRange());
     
   }
@@ -286,6 +340,51 @@ class MCUltraRich extends BaseComponent {
         <tspan x="0" dy="1.2em">available between</tspan>
         <tspan x="0" dy="1.2em">${this.localise(this.MDL.billyFrame.scale.domain[0])} and ${this.localise(this.MDL.billyFrame.scale.domain[1])}</tspan>
         `)
+  }
+
+  redrawBridgeShape({showZoombox, DOT_STEP, DOT_R, PACK_HARDER}, {X,Y,W,H,y,xmax,xmin, gap}) {
+    this.DOM.bridgeShape.classed("vzb-hidden", !showZoombox);
+    this.DOM.bridgeShapeBlur.classed("vzb-hidden", !showZoombox);
+
+    if (!showZoombox) return;
+
+    // define path generator
+    const xScale = this.parent.xScale;
+    const yScale = this.parent.yScale;
+    const area = d3.area()
+      .x(d => xScale(d.x))
+      .y0(d => y - gap)
+      .y1(d => {
+        const y1 = d.y * DOT_STEP * 2 + DOT_R * 2;
+        return y - gap - (y1 < H ? y1 : H);
+      });
+
+    const bridgeShape = this.mesh
+      .map((m,i) => ({x: m[1], y: this.bins[i]}))
+      //.filter(f => 1000 < f.x && f.x < 100e6);
+
+    const startIndex = this.bins.indexOf(d3.max(this.bins));
+      
+    for(let i=startIndex; i>0; i--)  bridgeShape[i-1].y = bridgeShape[i].y * 1.2
+
+    this.DOM.defs.select("mask").select("rect")
+      .attr("x", X).attr("y", Y).attr("width", W).attr("height", H);
+    this.DOM.bridgeShapeBlur
+      .attr("d", area(bridgeShape.filter(f => xmin < f.x && f.x < xmax)))
+      .style("opacity", this.parent.ui.opacitySelectDim)
+    this.DOM.bridgeShape
+      .attr("d", area(bridgeShape.filter(f => xmin < f.x && f.x < xmax)))
+      .style("opacity", this.parent.ui.opacitySelectDim)
+
+    if (this.parent.atomicSliceData.length === 1){
+      const color = this.parent.MDL.color.scale.d3Scale( this.parent.atomicSliceData[0].color );
+
+      this.DOM.bridgeShapeBlur.style("fill", color);
+      this.DOM.defs.select("pattern").style("fill", color);
+    
+    }
+    
+
   }
 
   redrawZoombox(show) {
