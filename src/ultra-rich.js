@@ -269,9 +269,8 @@ class MCUltraRich extends BaseComponent {
 
     const data = this._getBillyData();
 
-    const showZoombox = this.redrawCircles(data);
-
-    this.redrawZoombox(showZoombox);
+    const circleParams = this.redrawCircles(data);
+    const zoomboxParams = this.redrawZoombox(circleParams.showZoombox);
     this.redrawText(this.isOutsideOfTimeRange());
     
   }
@@ -297,14 +296,16 @@ class MCUltraRich extends BaseComponent {
 
     if (!show) return;
 
-    const xmin = this.mesh[this.bins.findIndex(f => f > 0)][0];
+    const xmin = 1000; //this.mesh[this.bins.findIndex(f => f > 0)][0];
     const xmax = this.mesh.concat().reverse()[this.bins.concat().reverse().findIndex(f => f > 0) - 1][1];
     const W = this.parent.xScale(xmax) - this.parent.xScale(xmin);
-    const H = this.parent.yScale.range()[0] * this.parent.ui.billyYScale + 10;
     const h = 10;
+    const gap = 20;
+    const boxHratio = 0.7;
+    const H = this.parent.yScale.range()[0] * boxHratio;
     const X = this.parent.xScale(xmin);
-    const Y = this.parent.yScale.range()[0] - 30 - H;
-    const y = this.parent.yScale.range()[0] - 10;
+    const Y = this.parent.yScale.range()[0] - gap - h - H;
+    const y = this.parent.yScale.range()[0] - h;
     
     const upperboxT = this.parent.duration && !appearing
       ? this.DOM.upperbox.transition().duration(this.parent.duration).ease(d3.easeLinear) 
@@ -321,6 +322,8 @@ class MCUltraRich extends BaseComponent {
     upperboxT.attr("x", X).attr("y", Y).attr("width", W).attr("height", H);
     lowerboxT.attr("x", X).attr("y", y).attr("width", W).attr("height", h);
     arcT.attr("d", `M ${X} ${y + h / 2} A ${h} ${2 * h}, 0, 0 1, ${X} ${y - 5 * h}`);
+
+    return ({xmin, xmax, W,H,h,X,Y,y,gap});
 
     // const index = d3.max(this.parent.atomicSliceData.map(slice => 50 - slice.shape.map(m => this.parent.yScale.range()[0] - this.parent.yScale(m.y)).reverse().findIndex(f => f>=1) ));
     //const namehash = (string) => (+("" + d3.sum(string.split("").map(m=>m.charCodeAt(0)) )).split("").reverse().join("")) % 10 / 10;
@@ -343,11 +346,12 @@ class MCUltraRich extends BaseComponent {
   redrawCircles(data) {
     const _this = this;
     
-    let DOT_STEP = _this.parent.yScale(0) * this.parent.ui.billyYScale / (d3.max(this.bins)||100) / 2;
-    if (DOT_STEP > 4) DOT_STEP = 4;
     const DOT_R = 4;
     const FACE_R = 10;
     const FACEHOVER_R = 50;
+    let DOT_STEP = _this.parent.yScale(0) * this.parent.ui.billyYScale / (d3.max(this.bins)||100) / 2;
+    if (DOT_STEP > DOT_R) DOT_STEP = DOT_R;
+    const PACK_HARDER = DOT_STEP < 2;
    
     const getColor = (d) => this.parent.MDL.color.scale.d3Scale(this.colorMap[this.relevantBilly.get(d.person)]);
     const hasFace = (d) => this.isShowFaces && this.DOM.defs.select(`#vzb-billy-image-${d.person}`).node();
@@ -370,7 +374,7 @@ class MCUltraRich extends BaseComponent {
       })
       .merge(circles)
       .style("stroke-opacity", d => hasFace(d) ? 1 : 0.5 )
-      .style("stroke", d => hasFace(d) ? getColor(d) : (DOT_STEP < 2 ? "white" : "black") )
+      .style("stroke", d => hasFace(d) ? getColor(d) : (PACK_HARDER ? "white" : "black") )
       .attr("r", d => hasFace(d) ? FACE_R : DOT_R)
       .style("fill", d => hasFace(d) ? `url(#vzb-billy-image-${d.person})` : getColor(d) )
       .each(function(){
@@ -385,7 +389,7 @@ class MCUltraRich extends BaseComponent {
           .attr("cx", d => _this.parent.xScale(d.x));
       });
 
-      return showZoombox;
+      return {showZoombox, DOT_STEP, DOT_R, PACK_HARDER};
   }
 
 
