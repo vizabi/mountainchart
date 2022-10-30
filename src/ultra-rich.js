@@ -293,6 +293,7 @@ class MCUltraRich extends BaseComponent {
 
       for (let i=0; i<this.mesh.length; i++){
         if (this.mesh[i][0] < d.x && d.x <= this.mesh[i][2]) {
+          d.binNumber = i;
           d.binnedX = this.mesh[i][1];
           d.yInBin = this.bins[i];
           this.bins[i]++;
@@ -415,12 +416,12 @@ class MCUltraRich extends BaseComponent {
     const height = this.parent.yScale(0);
     const top = this.parent.yScale(0) * this.parent.ui.billyYScale;
     const range0 = height - h - gap;
-    const yBridgeShapeScale = d3.scaleLinear().domain([0, d3.max(this.bins)]).range([range0, range0 - d3.max(this.bins) * DOT_STEP * 2 - DOT_R * 2]);
+    this.yBridgeShapeScale = d3.scaleLinear().domain([0, d3.max(this.bins)]).range([range0, range0 - d3.max(this.bins) * DOT_STEP * 2 - DOT_R * 2]);
     const area = d3.area()
       .curve(d3.curveBasis)
       .x(d => xScale(d.x))
-      .y0(d => yBridgeShapeScale(d.y0 ))
-      .y1(d => yBridgeShapeScale((d.y + d.y0) ));
+      .y0(d => this.yBridgeShapeScale(d.y0 ))
+      .y1(d => this.yBridgeShapeScale((d.y + d.y0) ));
     //define d3 stack layout
     const stackLayout = d3.stack()
       //.order(d3.stackOrderReverse)
@@ -428,7 +429,7 @@ class MCUltraRich extends BaseComponent {
 
 
       
-    const bridgeShapes = [];
+    this.bridgeShapes = [];
     let stackBins = this.mesh.map(m => 0);
     Object.keys(this.binsByColor).forEach((color, i )=> {
       const bins = this.binsByColor[color];
@@ -436,7 +437,7 @@ class MCUltraRich extends BaseComponent {
       const startIndex = bins.indexOf(d3.max(bins));
       for(let i=startIndex; i>0; i--)  shape[i-1].y = shape[i].y * 1.1;
       stackBins = stackBins.map((m,i) => m + shape[i].y);
-      bridgeShapes.push({color,shape});
+      this.bridgeShapes.push({color,shape});
     })
       //.filter(f => 1000 < f.x && f.x < 100e6);
 
@@ -446,7 +447,7 @@ class MCUltraRich extends BaseComponent {
       .attr("x", X).attr("y", Y).attr("width", W).attr("height", H);
 
     this.DOM.bridgeShapeBlur.selectAll("path")
-      .data(bridgeShapes, d => d.color)
+      .data(this.bridgeShapes, d => d.color)
       .join("path")
       .attr("d", d => area(d.shape.filter(f => xmin < f.x && f.x < xmax)))
       .style("fill", d => getColor(d) || "#ccc")
@@ -454,7 +455,7 @@ class MCUltraRich extends BaseComponent {
       .style("opacity", this.parent.ui.opacityRegular) //opacitySelectDim
 
     this.DOM.bridgeShape.selectAll("path")
-      .data(bridgeShapes, d => d.color)
+      .data(this.bridgeShapes, d => d.color)
       .join("path")
       .attr("d", d => area(d.shape.filter(f => xmin < f.x && f.x < xmax)))
       .style("fill", `url(#vzb-pattern-billy-bridgeshape-${this.parent.name})`)
@@ -471,6 +472,17 @@ class MCUltraRich extends BaseComponent {
     const getColor = (d) => this.parent.MDL.color.scale.d3Scale(this.colorMap[this.relevantBilly.get(d.person)]);
     const hasFace = (d) => this.isShowFaces && this.DOM.defs.select(`#vzb-billy-image-${d.person}`).node();
     const getTooltip = (d) => (d.name || d.person).split(";")[0] + " " + _this.localise(d.x) + " $/day";
+
+    const bridgeShapeByColor = {};
+    if(showZoombox){
+      this.bridgeShapes.forEach(d => {bridgeShapeByColor[d.color] = d.shape})
+    }
+
+    const areashift = (d) => {
+      if (!showZoombox) return 0;
+      const bin = bridgeShapeByColor[d.color];
+      return (bin[d.binNumber].y0 * DOT_STEP * 2)
+    };
 
     const circles = this.DOM.circlebox.selectAll("circle")
       .data(data, d => d.person)
@@ -498,7 +510,7 @@ class MCUltraRich extends BaseComponent {
           : view.interrupt();
 
         transition
-          .attr("cy", d => (showZoombox? -30 : 0) + _this.parent.yScale(0) - 1 - (_this.isShowFaces ? FACE_R : DOT_R) - d.yInBin * 2 * (_this.isShowFaces ? FACE_R : DOT_STEP))
+          .attr("cy", d => (showZoombox? -30 : 0) + _this.parent.yScale(0) - 1 - (_this.isShowFaces ? FACE_R : DOT_R) - areashift(d) - d.yInBinByColor * 2 * (_this.isShowFaces ? FACE_R : DOT_STEP))
           .attr("cx", d => _this.parent.xScale(d.x));
       });
 
