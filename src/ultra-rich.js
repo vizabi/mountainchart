@@ -297,6 +297,7 @@ class MCUltraRich extends BaseComponent {
           d.yInBin = this.bins[i];
           this.bins[i]++;
           if (!this.binsByColor[d.color]) this.binsByColor[d.color] = this.mesh.map(m => 0);
+          d.yInBinByColor = this.binsByColor[d.color][i];
           this.binsByColor[d.color][i]++;
         }
       } 
@@ -339,27 +340,70 @@ class MCUltraRich extends BaseComponent {
 
     const data = this._getBillyData();
 
-    const circleParams = this.redrawCircles(data);
-    const zoomboxParams = this.redrawZoombox(circleParams.showZoombox);
-    this.redrawBridgeShape(circleParams || {}, zoomboxParams || {});
+    const params = this.computeLayout(data)
+    const zoomboxParams = this.redrawZoombox(params);
+    Object.assign(params, zoomboxParams);
+    this.redrawBridgeShape(params);
+    this.redrawCircles(data, params);
     this.redrawText(this.isOutsideOfTimeRange());
     
   }
 
-  redrawText(show){
-    this.DOM.text
-      .classed("vzb-hidden", !show)
-      .attr("transform", `translate(${this.parent.xScale.range()[1] - 100}, ${this.parent.yScale.range()[0]}) `)
-      .select("text")
-      .attr("y", "-3.5em")
-      .html(`
-        <tspan x="0" dy=".6em">Billionaire data is</tspan>
-        <tspan x="0" dy="1.2em">available between</tspan>
-        <tspan x="0" dy="1.2em">${this.localise(this.MDL.billyFrame.scale.domain[0])} and ${this.localise(this.MDL.billyFrame.scale.domain[1])}</tspan>
-        `)
+
+
+  computeLayout(data) {
+    const DOT_R = 4;
+
+    let DOT_STEP = this.parent.yScale(0) * this.parent.ui.billyYScale / (d3.max(this.bins)||100) / 2;
+    if (DOT_STEP > DOT_R) DOT_STEP = DOT_R;
+    const PACK_HARDER = DOT_STEP < 2;
+   
+    const showZoombox = (DOT_STEP < 4 || d3.max(this.bins) > 7) && data.length > 0;
+
+    return {showZoombox, DOT_STEP, DOT_R, PACK_HARDER};
   }
 
-  redrawBridgeShape({showZoombox, DOT_STEP, DOT_R, PACK_HARDER}, {X,Y,W,H,h,y,xmax,xmin, gap}) {
+
+
+  redrawZoombox({showZoombox}) {
+
+    const appearing = this.DOM.upperbox.classed("vzb-hidden") && showZoombox;
+
+    this.DOM.zoombox.classed("vzb-hidden", !showZoombox);
+
+    if (!showZoombox) return;
+
+    const xmin = 1000; //this.mesh[this.bins.findIndex(f => f > 0)][0];
+    const xmax = this.mesh.concat().reverse()[this.bins.concat().reverse().findIndex(f => f > 0) - 1][1];
+    const W = this.parent.xScale(xmax) - this.parent.xScale(xmin);
+    const h = 10;
+    const gap = 20;
+    const boxHratio = 0.7;
+    const H = this.parent.yScale.range()[0] * boxHratio;
+    const X = this.parent.xScale(xmin);
+    const Y = this.parent.yScale.range()[0] - gap - h - H;
+    const y = this.parent.yScale.range()[0] - h;
+    
+    const upperboxT = this.parent.duration && !appearing
+      ? this.DOM.upperbox.transition().duration(this.parent.duration).ease(d3.easeLinear) 
+      : this.DOM.upperbox.interrupt();
+
+    const lowerboxT = this.parent.duration && !appearing
+      ? this.DOM.lowerbox.transition().duration(this.parent.duration).ease(d3.easeLinear) 
+      : this.DOM.lowerbox.interrupt();
+
+    const arcT = this.parent.duration && !appearing
+      ? this.DOM.arc.transition().duration(this.parent.duration).ease(d3.easeLinear) 
+      : this.DOM.arc.interrupt();      
+
+    upperboxT.attr("x", X).attr("y", Y).attr("width", W).attr("height", H);
+    lowerboxT.attr("x", X).attr("y", y).attr("width", W).attr("height", h);
+    arcT.attr("d", `M ${X} ${y + h / 2} A ${h} ${2 * h}, 0, 0 1, ${X} ${y - 5 * h}`);
+
+    return ({xmin, xmax, W,H,h,X,Y,h,y,gap});      
+  }
+
+  redrawBridgeShape({showZoombox, DOT_STEP, DOT_R, PACK_HARDER, X,Y,W,H,h,y,xmax,xmin, gap}) {
     this.DOM.bridgeShape.classed("vzb-hidden", !showZoombox);
     this.DOM.bridgeShapeBlur.classed("vzb-hidden", !showZoombox);
 
@@ -396,8 +440,6 @@ class MCUltraRich extends BaseComponent {
     })
       //.filter(f => 1000 < f.x && f.x < 100e6);
 
-      console.log(bridgeShapes)
-
      const getColor = (d) => this.parent.MDL.color.scale.d3Scale(d.color);
 
     this.DOM.defs.selectAll("mask rect")
@@ -417,83 +459,18 @@ class MCUltraRich extends BaseComponent {
       .attr("d", d => area(d.shape.filter(f => xmin < f.x && f.x < xmax)))
       .style("fill", `url(#vzb-pattern-billy-bridgeshape-${this.parent.name})`)
       .attr("mask", `url(#progFadeMask-${this.parent.name})`)
-      .style("opacity", 1)
-
-  
-    
-
-  }
-
-  redrawZoombox(show) {
-
-    const appearing = this.DOM.upperbox.classed("vzb-hidden") && show;
-
-    this.DOM.zoombox.classed("vzb-hidden", !show);
-
-    if (!show) return;
-
-    const xmin = 1000; //this.mesh[this.bins.findIndex(f => f > 0)][0];
-    const xmax = this.mesh.concat().reverse()[this.bins.concat().reverse().findIndex(f => f > 0) - 1][1];
-    const W = this.parent.xScale(xmax) - this.parent.xScale(xmin);
-    const h = 10;
-    const gap = 20;
-    const boxHratio = 0.7;
-    const H = this.parent.yScale.range()[0] * boxHratio;
-    const X = this.parent.xScale(xmin);
-    const Y = this.parent.yScale.range()[0] - gap - h - H;
-    const y = this.parent.yScale.range()[0] - h;
-    
-    const upperboxT = this.parent.duration && !appearing
-      ? this.DOM.upperbox.transition().duration(this.parent.duration).ease(d3.easeLinear) 
-      : this.DOM.upperbox.interrupt();
-
-    const lowerboxT = this.parent.duration && !appearing
-      ? this.DOM.lowerbox.transition().duration(this.parent.duration).ease(d3.easeLinear) 
-      : this.DOM.lowerbox.interrupt();
-
-    const arcT = this.parent.duration && !appearing
-      ? this.DOM.arc.transition().duration(this.parent.duration).ease(d3.easeLinear) 
-      : this.DOM.arc.interrupt();      
-
-    upperboxT.attr("x", X).attr("y", Y).attr("width", W).attr("height", H);
-    lowerboxT.attr("x", X).attr("y", y).attr("width", W).attr("height", h);
-    arcT.attr("d", `M ${X} ${y + h / 2} A ${h} ${2 * h}, 0, 0 1, ${X} ${y - 5 * h}`);
-
-    return ({xmin, xmax, W,H,h,X,Y,h,y,gap});
-
-    // const index = d3.max(this.parent.atomicSliceData.map(slice => 50 - slice.shape.map(m => this.parent.yScale.range()[0] - this.parent.yScale(m.y)).reverse().findIndex(f => f>=1) ));
-    //const namehash = (string) => (+("" + d3.sum(string.split("").map(m=>m.charCodeAt(0)) )).split("").reverse().join("")) % 10 / 10;
-    // this.DOM.zoombox.selectAll("line")
-    //   .data(this.parent.atomicSliceData).join("line")
-    
-    //   .style("fill", "transparent")
-    //   .style("stroke", d => this.parent.MDL.color.scale.d3Scale(d.color))
-    //   .style("stroke-width", "2px")
-    //   .style("stroke-linecap","round")
-    //   .style("stroke-dasharray", d => 1 + " " + (1 + 20 * namehash(d[Symbol.for("key")]) ))
-    //   .attr("x1", this.parent.xScale(this.mesh[index][0]))
-    //   .attr("y1", this.parent.yScale.range()[0] - 1.5)
-    //   .attr("x2", this.parent.xScale(xmax))
-    //   .attr("y2", this.parent.yScale.range()[0] - 1.5)
-      
+      .style("opacity", 1)  
   }
 
 
-  redrawCircles(data) {
+  redrawCircles(data, {showZoombox, DOT_STEP, DOT_R}) {
     const _this = this;
-    
-    const DOT_R = 4;
     const FACE_R = 10;
     const FACEHOVER_R = 50;
-    let DOT_STEP = _this.parent.yScale(0) * this.parent.ui.billyYScale / (d3.max(this.bins)||100) / 2;
-    if (DOT_STEP > DOT_R) DOT_STEP = DOT_R;
-    const PACK_HARDER = DOT_STEP < 2;
-   
+
     const getColor = (d) => this.parent.MDL.color.scale.d3Scale(this.colorMap[this.relevantBilly.get(d.person)]);
     const hasFace = (d) => this.isShowFaces && this.DOM.defs.select(`#vzb-billy-image-${d.person}`).node();
     const getTooltip = (d) => (d.name || d.person).split(";")[0] + " " + _this.localise(d.x) + " $/day";
-
-    const showZoombox = (DOT_STEP < 4 || d3.max(this.bins) > 7) && data.length > 0;
 
     const circles = this.DOM.circlebox.selectAll("circle")
       .data(data, d => d.person)
@@ -525,7 +502,20 @@ class MCUltraRich extends BaseComponent {
           .attr("cx", d => _this.parent.xScale(d.x));
       });
 
-      return {showZoombox, DOT_STEP, DOT_R, PACK_HARDER};
+      return;
+  }
+
+  redrawText(show){
+    this.DOM.text
+      .classed("vzb-hidden", !show)
+      .attr("transform", `translate(${this.parent.xScale.range()[1] - 100}, ${this.parent.yScale.range()[0]}) `)
+      .select("text")
+      .attr("y", "-3.5em")
+      .html(`
+        <tspan x="0" dy=".6em">Billionaire data is</tspan>
+        <tspan x="0" dy="1.2em">available between</tspan>
+        <tspan x="0" dy="1.2em">${this.localise(this.MDL.billyFrame.scale.domain[0])} and ${this.localise(this.MDL.billyFrame.scale.domain[1])}</tspan>
+        `)
   }
 
 
