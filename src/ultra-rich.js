@@ -355,11 +355,11 @@ class MCUltraRich extends BaseComponent {
   computeLayout(data) {
     const DOT_R = 4;
 
-    let DOT_STEP = this.parent.yScale(0) * this.parent.ui.billyYScale / (d3.max(this.bins)||100) / 2;
-    if (DOT_STEP > DOT_R) DOT_STEP = DOT_R;
-    const PACK_HARDER = DOT_STEP < 2;
+    let DOT_STEP = this.parent.yScale(0) * this.parent.ui.billyYScale / (d3.max(this.bins)||100);
+    if (DOT_STEP > DOT_R * 2) DOT_STEP = DOT_R * 2;
+    const PACK_HARDER = DOT_STEP < 4;
    
-    const showZoombox = (DOT_STEP < 4 || d3.max(this.bins) > 7) && data.length > 0;
+    const showZoombox = (DOT_STEP < 8 || d3.max(this.bins) > 7) && data.length > 0;
 
     return {showZoombox, DOT_STEP, DOT_R, PACK_HARDER};
   }
@@ -416,7 +416,7 @@ class MCUltraRich extends BaseComponent {
     const height = this.parent.yScale(0);
     const top = this.parent.yScale(0) * this.parent.ui.billyYScale;
     const range0 = height - h - gap;
-    this.yBridgeShapeScale = d3.scaleLinear().domain([0, d3.max(this.bins)]).range([range0, range0 - d3.max(this.bins) * DOT_STEP * 2 - DOT_R * 2]);
+    this.yBridgeShapeScale = d3.scaleLinear().domain([0, d3.max(this.bins)]).range([range0, range0 - d3.max(this.bins) * DOT_STEP - DOT_R * 2]);
     const area = d3.area()
       .curve(d3.curveBasis)
       .x(d => xScale(d.x))
@@ -481,11 +481,11 @@ class MCUltraRich extends BaseComponent {
     const shiftAllCircles = (showZoombox? -30 : 0) + _this.parent.yScale(0) - 1 - (_this.isShowFaces ? FACE_R : DOT_R);
 
     const getY = (d) => {
-      if (!showZoombox) return shiftAllCircles - d.yInBinByColor * (_this.isShowFaces ? FACE_R * 2 : DOT_STEP * 2)
+      if (!showZoombox) return shiftAllCircles - d.yInBinByColor * (_this.isShowFaces ? FACE_R * 2 : DOT_STEP)
       const bin = bridgeShapeByColor[d.color];
       return shiftAllCircles
-        - (bin[d.binNumber].y0 * DOT_STEP * 2)
-        - bin[d.binNumber].y * DOT_STEP * 2 * d.yInBinByColor / this.binsByColor[d.color][d.binNumber];
+        - bin[d.binNumber].y0 * DOT_STEP
+        - bin[d.binNumber].y * DOT_STEP * d.yInBinByColor / this.binsByColor[d.color][d.binNumber];
     }
 
 
