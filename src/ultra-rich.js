@@ -35,8 +35,8 @@ class MCUltraRich extends BaseComponent {
       </linearGradient>
 
       <linearGradient id="progFade1-${this.parent.name}" x1="0%" x2="100%" y1="0%" y2="0%">
-        <stop offset="0%" stop-color="#999"/>
-        <stop offset="30%" stop-color="white"/>      
+        <stop offset="0%" stop-color="#444"/>
+        <stop offset="50%" stop-color="white"/>      
       </linearGradient>
       
       <mask class="progFadeMask" id="progFadeMask-${this.parent.name}" >
@@ -478,11 +478,16 @@ class MCUltraRich extends BaseComponent {
       this.bridgeShapes.forEach(d => {bridgeShapeByColor[d.color] = d.shape})
     }
 
-    const areashift = (d) => {
-      if (!showZoombox) return 0;
+    const shiftAllCircles = (showZoombox? -30 : 0) + _this.parent.yScale(0) - 1 - (_this.isShowFaces ? FACE_R : DOT_R);
+
+    const getY = (d) => {
+      if (!showZoombox) return shiftAllCircles - d.yInBinByColor * (_this.isShowFaces ? FACE_R * 2 : DOT_STEP * 2)
       const bin = bridgeShapeByColor[d.color];
-      return (bin[d.binNumber].y0 * DOT_STEP * 2)
-    };
+      return shiftAllCircles
+        - (bin[d.binNumber].y0 * DOT_STEP * 2)
+        - bin[d.binNumber].y * DOT_STEP * 2 * d.yInBinByColor / this.binsByColor[d.color][d.binNumber];
+    }
+
 
     const circles = this.DOM.circlebox.selectAll("circle")
       .data(data, d => d.person)
@@ -510,7 +515,7 @@ class MCUltraRich extends BaseComponent {
           : view.interrupt();
 
         transition
-          .attr("cy", d => (showZoombox? -30 : 0) + _this.parent.yScale(0) - 1 - (_this.isShowFaces ? FACE_R : DOT_R) - areashift(d) - d.yInBinByColor * 2 * (_this.isShowFaces ? FACE_R : DOT_STEP))
+          .attr("cy", d => getY(d))
           .attr("cx", d => _this.parent.xScale(d.x));
       });
 
