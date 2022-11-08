@@ -20,6 +20,8 @@ class MCUltraRich extends BaseComponent {
       bridgeShape: this.element.append("g"),
       circlebox: this.element.append("g"),
       zoombox: this.element.append("g"),
+      hlFace: this.element.append("circle"),
+      hlLine: this.element.append("line"),
       text: this.element.append("g").attr("class", "vzb-billy-text"),
       defs: this.element.append("defs")
     };
@@ -247,35 +249,40 @@ class MCUltraRich extends BaseComponent {
     this.imagesReady = false;
     const promises = [];
     for (let billy of this._getBillyData()){
-      const person = billy.person;
-
-      //this prevents checking and loading the images again for those who have been checked already
-      if(this.imagesAvaiable[person] || this.imagesAvaiable[person] === false) continue;
-
-      const reader = this.MDL.billyMarker.data.source.reader;      
-      const promise = reader.checkIfAssetExists(person + ".png")
-        .then(response => {
-          this.imagesAvaiable[person] = response.status === 200 && response.url;
-
-          if(this.imagesAvaiable[person])
-            this.DOM.defs.append("pattern")
-              .attr("id", "vzb-billy-image-" + person)
-              .attr("x", "0%")
-              .attr("y", "0%")
-              .attr("height", "100%")
-              .attr("width", "100%")
-              .attr("viewBox", "0 0 100 100")
-              .html(`<image x="0%" y="0%" width="100" height="100" xlink:href="${response.url}"></image>`);
-        })
-        .catch(() => {
-          throw ("Billy: error when fetching a portrait for: " + person);
-        });
-
+      const promise = this.fetchOneImage(billy.person);
+      if (!promise) continue;
       promises.push(promise);
     }
     Promise.all(promises).then(() => {
       this.imagesReady = true;
     });
+  }
+
+  fetchOneImage(person){
+    //this prevents checking and loading the images again for those who have been checked already
+    if(this.imagesAvaiable[person] || this.imagesAvaiable[person] === false) return false;
+
+    const reader = this.MDL.billyMarker.data.source.reader;      
+    return reader.checkIfAssetExists(person + ".png")
+      .then(response => {
+        this.imagesAvaiable[person] = response.status === 200 && response.url;
+
+        if(this.imagesAvaiable[person]){
+          this.DOM.defs.append("pattern")
+            .attr("id", "vzb-billy-image-" + person)
+            .attr("x", "0%")
+            .attr("y", "0%")
+            .attr("height", "100%")
+            .attr("width", "100%")
+            .attr("viewBox", "0 0 100 100")
+            .html(`<image x="0%" y="0%" width="100" height="100" xlink:href="${response.url}"></image>`);
+
+          return true;
+        }
+      })
+      .catch(() => {
+        throw ("Billy: error when fetching a portrait for: " + person);
+      });
   }
 
   isOutsideOfTimeRange(){
@@ -496,11 +503,21 @@ class MCUltraRich extends BaseComponent {
     circles.enter().append("circle")
       .on("mouseenter", function(event, d){
         _this.parent._setTooltip(event, getTooltip(d));
-        if (hasFace(d)) d3.select(this).attr("r", FACEHOVER_R);
+
+        const face = _this.DOM.defs.select(`#vzb-billy-image-${d.person}`).node();
+        if (face) 
+          _this.highlightFace(event, d);
+        else {
+          const promise = _this.fetchOneImage(d.person);
+          if(promise) promise.then((success) => {
+            if(success) _this.highlightFace(event, d)
+          });
+
+        }
       })
       .on("mouseout", function(event, d) {
         _this.parent._setTooltip();
-        if (hasFace(d)) d3.select(this).attr("r", FACE_R);
+        _this.highlightFace();
       })
       .merge(circles)
       .style("stroke-width", d => hasFace(d) ? 2 : 0.25 )
@@ -520,6 +537,39 @@ class MCUltraRich extends BaseComponent {
       });
 
       return;
+  }
+
+  highlightFace(event, d){
+
+    this.DOM.hlLine.classed("vzb-hidden", !d);
+    this.DOM.hlFace.classed("vzb-hidden", !d);
+    if(!d) return;
+
+    const target = d3.select(event.target);
+    const cy = +target.attr("cy");
+    const cx = +target.attr("cx");
+    const r = +target.attr("r")
+    const stroke = target.style("stroke")
+
+    const position = cy > 150 ? "top" : "right";
+
+    this.DOM.hlLine
+      .attr("x1", cx)
+      .attr("y1", cy)
+      .attr("x2", position === "top" ? cx : this.parent.xScale.range()[1] - 50)
+      .attr("y2", position === "top" ? cy - 100 : 50)
+      .style("stroke", stroke)
+
+    const length = this.DOM.hlLine.node().getTotalLength();
+    this.DOM.hlLine.style("stroke-dasharray", `0 ${r} ${length - 50 - r} ${50}`)
+
+    this.DOM.hlFace
+      .attr("r", 50)
+      .attr("cx", position === "top" ? cx : this.parent.xScale.range()[1] - 50)
+      .attr("cy", position === "top" ? cy - 100 : 50)
+      .style("stroke", stroke)
+      .style("fill", `url(#vzb-billy-image-${d.person})` )
+      
   }
 
   redrawText(show){
