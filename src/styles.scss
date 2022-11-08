@@ -25,6 +25,9 @@
       .vzb-mc-ultrarich .vzb-billy-text {
         visibility: hidden;
       }
+      .vzb-mc-ultrarich .vzb-billy-sign {
+        visibility: hidden;
+      }
     }
   }
 
@@ -86,6 +89,15 @@
       }
 
       .vzb-mc-ultrarich {
+        .vzb-billy-sign {
+          cursor: pointer;
+          .fill { fill: #3342ae; } //c2c7e8
+          .top{opacity: 0;}
+          &:hover {
+            .fill { fill: #3342ae; }
+            .top{opacity: 1;}
+          }
+        }
         .vzb-billy-text {
           fill: $vzb-color-primary;
           text-anchor: end;

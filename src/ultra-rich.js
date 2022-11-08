@@ -4,6 +4,7 @@ import {
   LegacyUtils as utils,
   Utils
 } from "VizabiSharedComponents";
+import sign from "./ultra-rich-sign.js";
 
 const {ICON_QUESTION} = Icons;
 import { decorate, computed, observable } from "mobx";
@@ -19,6 +20,7 @@ class MCUltraRich extends BaseComponent {
   setup(options) {
     this.DOM = {
       container: this.element,
+      sign: this.element.append("g").attr("class", "vzb-billy-sign"),
       bridgeShapeBlur: this.element.append("g"),
       bridgeShape: this.element.append("g"),
       circlebox: this.element.append("g"),
@@ -35,6 +37,7 @@ class MCUltraRich extends BaseComponent {
     this.DOM.upperbox = this.DOM.zoombox.append("rect").attr("class", "vzb-billy-upperbox");
     this.DOM.lowerbox = this.DOM.zoombox.append("rect").attr("class", "vzb-billy-lowerbox");
     this.DOM.arc = this.DOM.zoombox.append("path").attr("class", "vzb-billy-arc");
+    this.DOM.sign.append("g").attr("transform", `translate(-19, -297)`).html(sign);
 
     this.DOM.defs.html(`
       <linearGradient id="progFade-${this.parent.name}" x1="0%" x2="100%" y1="0%" y2="0%">
@@ -147,6 +150,7 @@ class MCUltraRich extends BaseComponent {
 
   draw() {
     this.localise = this.services.locale.auto(this.MDL.frame.interval);
+    this.addReaction(this.updateSign);
     if(!this.parent.ui.showBilly || !this.MDL.billyX.data.concept) return;
     this.addReaction(this.copyframevalue);
     this.addReaction(this.getDrillDowns);
@@ -173,6 +177,16 @@ class MCUltraRich extends BaseComponent {
 
   copyframevalue() {
     this.MDL.billyFrame.config.value = this.localise(this.MDL.frame.value);
+  }
+
+  updateSign(){
+    this.services.layout.size; //watch
+    this.parent.ui.inpercent;
+    this.parent.ui.showBilly;
+    this.DOM.sign.attr("transform", `translate(${this.parent.xScale(300)}, ${this.parent.yScale(0)}) scale(1.3)`)
+      .on("click", () => { 
+        this.root.ui.chart.showBilly = !this.root.ui.chart.showBilly 
+      });
   }
 
   getHardcodedWholeWorldShortcuts(){

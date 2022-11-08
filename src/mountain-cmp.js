@@ -59,6 +59,7 @@ class _VizabiMountainChart extends BaseComponent {
       <svg class="vzb-mountainchart-svg vzb-export">
         <g class="vzb-mc-graph">
           <rect class="vzb-mc-eventarea"></rect>
+          <g class="vzb-mc-ultrarich"></g>
 
           <g class="vzb-mc-mountains-mergestacked"></g>
           <g class="vzb-mc-mountains-mergegrouped"></g>
@@ -93,7 +94,6 @@ class _VizabiMountainChart extends BaseComponent {
           
           <g class="vzb-mc-axis-labels"></g>
           <g class="vzb-mc-probe"></g>
-          <g class="vzb-mc-ultrarich"></g>
           <g class="vzb-mc-dollarstreet"></g>
           
           <g class="vzb-mc-tooltip vzb-hidden">
