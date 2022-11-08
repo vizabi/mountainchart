@@ -1,8 +1,11 @@
 import {
   BaseComponent,
+  Icons,
+  LegacyUtils as utils,
   Utils
 } from "VizabiSharedComponents";
 
+const {ICON_QUESTION} = Icons;
 import { decorate, computed, observable } from "mobx";
 
 class MCUltraRich extends BaseComponent {
@@ -22,6 +25,9 @@ class MCUltraRich extends BaseComponent {
       zoombox: this.element.append("g"),
       hlFace: this.element.append("circle"),
       hlLine: this.element.append("line"),
+      unknownCircle: this.element.append("circle"),
+      boxTopText: this.element.append("text"),
+      infoEl: this.element.append("g").attr("class", "vzb-mc-axis-info"),
       text: this.element.append("g").attr("class", "vzb-billy-text"),
       defs: this.element.append("defs")
     };
@@ -124,6 +130,7 @@ class MCUltraRich extends BaseComponent {
     this.mesh = d3.range(this.parent.ui.billyMeshXPoints).map(m => [start * Math.pow(step, m), start * Math.pow(step, m + 0.5), start * Math.pow(step, m + 1) ]);
     this.bins = this.mesh.map(m => 0);
 
+    utils.setIcon(this.DOM.infoEl, ICON_QUESTION);
   }
 
 
@@ -408,10 +415,18 @@ class MCUltraRich extends BaseComponent {
     lowerboxT.attr("x", X).attr("y", y).attr("width", W).attr("height", h);
     arcT.attr("d", `M ${X} ${y + h / 2} A ${h} ${2 * h}, 0, 0 1, ${X} ${y - 5 * h}`);
 
+    const infoElHeight = this.parent.profileConstants.infoElHeight;
+    this.DOM.infoEl
+      .attr("transform", `translate(${ X + W - infoElHeight * 1.5 }, ${ Y + infoElHeight * 0.5 })`)
+      .select("svg")
+      .attr("width", infoElHeight + "px")
+      .attr("height", infoElHeight + "px")
+
     return ({xmin, xmax, W,H,h,X,Y,h,y,gap});      
   }
 
   redrawBridgeShape({showZoombox, DOT_STEP, DOT_R, PACK_HARDER, X,Y,W,H,h,y,xmax,xmin, gap}) {
+    const _this = this;
     this.DOM.bridgeShape.classed("vzb-hidden", !showZoombox);
     this.DOM.bridgeShapeBlur.classed("vzb-hidden", !showZoombox);
 
@@ -458,12 +473,19 @@ class MCUltraRich extends BaseComponent {
       .join("path")
       .attr("d", d => area(d.shape.filter(f => xmin < f.x && f.x < xmax)))
       .style("fill", d => getColor(d) || "#ccc")
+      .on("mousemove", function(event, d){
+        _this.updateUnknownHint(event, d, {X,Y,W,H});
+      })
+      .on("mouseout", function(){
+        _this.updateUnknownHint();
+      })
       .attr("mask", `url(#clipMask-${this.parent.name})`)
       .style("opacity", this.parent.ui.opacityRegular) //opacitySelectDim
 
     this.DOM.bridgeShape.selectAll("path")
       .data(this.bridgeShapes, d => d.color)
       .join("path")
+      .style("pointer-events", "none")
       .attr("d", d => area(d.shape.filter(f => xmin < f.x && f.x < xmax)))
       .style("fill", `url(#vzb-pattern-billy-bridgeshape-${this.parent.name})`)
       .attr("mask", `url(#progFadeMask-${this.parent.name})`)
@@ -571,6 +593,44 @@ class MCUltraRich extends BaseComponent {
       .style("fill", `url(#vzb-billy-image-${d.person})` )
       
   }
+
+  updateUnknownHint(event, d, {X,Y,W,H}={}){
+    const roundN = (x,n) => Math.ceil(x/n)*n;
+
+     if(!event) {
+       this.parent._setTooltip();
+       this.DOM.unknownCircle.classed("vzb-hidden", true);
+       this.DOM.boxTopText.classed("vzb-hidden", true)
+       return;
+     }
+    this.parent._setTooltip(event, "Unknown rich person");
+    const mouse = d3.pointer(event);
+    this.DOM.unknownCircle
+      .classed("vzb-hidden", false)
+      .style("stroke-width", 0.5 )
+      .style("stroke", "black")
+      .style("pointer-events", "none")
+      .style("fill", d3.select(event.target).style("fill"))
+      .attr("cx", roundN(mouse[0] - 4, 3))
+      .attr("cy", roundN(mouse[1] - 4, 3))
+      .attr("r", 4)
+
+      
+
+      const infoElHeight = this.parent.profileConstants.infoElHeight;
+    this.DOM.boxTopText
+      .classed("vzb-hidden", false)
+      .text("Why unknown persons? →")
+      .style("text-anchor", "end")
+      .attr("x", X + W - infoElHeight * 2)
+      .attr("y", Y + infoElHeight)
+      .attr("dy", "0.3em");
+      
+  }
+
+
+
+
 
   redrawText(show){
     this.DOM.text
