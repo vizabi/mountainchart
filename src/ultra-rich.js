@@ -29,11 +29,11 @@ class MCUltraRich extends BaseComponent {
       hlLine: this.element.append("line"),
       unknownCircle: this.element.append("circle"),
       boxTopText: this.element.append("text"),
-      infoEl: this.element.append("g").attr("class", "vzb-mc-axis-info"),
       text: this.element.append("g").attr("class", "vzb-billy-text"),
       defs: this.element.append("defs")
     };
     this.DOM.text.append("text");
+    this.DOM.infoEl = this.DOM.zoombox.append("g").attr("class", "vzb-mc-axis-info"),
     this.DOM.upperbox = this.DOM.zoombox.append("rect").attr("class", "vzb-billy-upperbox");
     this.DOM.lowerbox = this.DOM.zoombox.append("rect").attr("class", "vzb-billy-lowerbox");
     this.DOM.arc = this.DOM.zoombox.append("path").attr("class", "vzb-billy-arc");
@@ -170,9 +170,11 @@ class MCUltraRich extends BaseComponent {
     this.removeReaction(this.getColorMapping);
     this.removeReaction(this.getBillyImages);
     this.removeReaction(this.redraw);
-    this.DOM.container.selectAll("circle").remove();
+    this.DOM.circlebox.selectAll("circle").remove();
     this.DOM.zoombox.classed("vzb-hidden", true);
     this.DOM.text.classed("vzb-hidden", true);
+    this.DOM.bridgeShape.classed("vzb-hidden", true);
+    this.DOM.bridgeShapeBlur.classed("vzb-hidden", true);
   }
 
   copyframevalue() {
@@ -431,6 +433,7 @@ class MCUltraRich extends BaseComponent {
 
     const infoElHeight = this.parent.profileConstants.infoElHeight;
     this.DOM.infoEl
+      .classed("vzb-hidden", false)
       .attr("transform", `translate(${ X + W - infoElHeight * 1.5 }, ${ Y + infoElHeight * 0.5 })`)
       .select("svg")
       .attr("width", infoElHeight + "px")
