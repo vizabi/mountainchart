@@ -21,6 +21,12 @@ class MCUltraRich extends BaseComponent {
     this.DOM = {
       container: this.element,
       sign: this.element.append("g").attr("class", "vzb-billy-sign"),
+      arrow: this.element.append("g").attr("class", "vzb-billy-arrow").html(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+      <g>
+      <path d="M256 8c137 0 248 111 248 248S393 504 256 504 8 393 8 256 119 8 256 8zm-28.9 143.6l75.5 72.4H120c-13.3 0-24 10.7-24 24v16c0 13.3 10.7 24 24 24h182.6l-75.5 72.4c-9.7 9.3-9.9 24.8-.4 34.3l11 10.9c9.4 9.4 24.6 9.4 33.9 0L404.3 273c9.4-9.4 9.4-24.6 0-33.9L271.6 106.3c-9.4-9.4-24.6-9.4-33.9 0l-11 10.9c-9.5 9.6-9.3 25.1.4 34.4z"/>
+      </g>
+      </svg>`),
       bridgeShapeBlur: this.element.append("g"),
       bridgeShape: this.element.append("g"),
       circlebox: this.element.append("g"),
@@ -189,6 +195,21 @@ class MCUltraRich extends BaseComponent {
       .on("click", () => { 
         this.root.ui.chart.showBilly = !this.root.ui.chart.showBilly 
       });
+
+    this.DOM.arrow.attr("transform", `translate(${this.parent.xScale.range()[1]}, ${this.parent.yScale(0)})`)
+      .on("click", () => { 
+        this.root.ui.chart.showBilly = !this.root.ui.chart.showBilly 
+      });
+
+    this.DOM.arrow
+      .select("svg")
+      .attr("width", this.parent.profileConstants.infoElHeight)
+      .attr("height", this.parent.profileConstants.infoElHeight)
+    this.DOM.arrow
+      .select("g").attr("transform", `rotate(${this.parent.ui.showBilly? 180: 0}) translate(${this.parent.ui.showBilly? "-500 -500": "0 0"})`);
+
+
+    
   }
 
   getHardcodedWholeWorldShortcuts(){

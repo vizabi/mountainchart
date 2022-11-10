@@ -89,8 +89,17 @@
       }
 
       .vzb-mc-ultrarich {
+        .vzb-billy-arrow {
+          cursor: pointer;
+          pointer-events: bounding-box;
+          fill: #c2c7e8;
+          &:hover {
+            fill: #3342ae;
+          }
+        }
         .vzb-billy-sign {
           cursor: pointer;
+          pointer-events: bounding-box;
           .fill { fill: #3342ae; } //c2c7e8
           .top{opacity: 0;}
           &:hover {
