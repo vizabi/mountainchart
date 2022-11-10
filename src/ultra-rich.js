@@ -28,12 +28,12 @@ class MCUltraRich extends BaseComponent {
       hlFace: this.element.append("circle"),
       hlLine: this.element.append("line"),
       unknownCircle: this.element.append("circle"),
-      boxTopText: this.element.append("text"),
       text: this.element.append("g").attr("class", "vzb-billy-text"),
       defs: this.element.append("defs")
     };
     this.DOM.text.append("text");
     this.DOM.infoEl = this.DOM.zoombox.append("g").attr("class", "vzb-mc-axis-info"),
+    this.DOM.boxTopText = this.DOM.zoombox.append("text"),
     this.DOM.upperbox = this.DOM.zoombox.append("rect").attr("class", "vzb-billy-upperbox");
     this.DOM.lowerbox = this.DOM.zoombox.append("rect").attr("class", "vzb-billy-lowerbox");
     this.DOM.arc = this.DOM.zoombox.append("path").attr("class", "vzb-billy-arc");
@@ -377,6 +377,7 @@ class MCUltraRich extends BaseComponent {
     this.redrawBridgeShape(params);
     this.redrawCircles(data, params);
     this.redrawText(this.isOutsideOfTimeRange());
+    this.updateBoxTopText(d3.format(".2r")(data.length) + " richest people", params);
     
   }
 
@@ -491,7 +492,7 @@ class MCUltraRich extends BaseComponent {
       .attr("d", d => area(d.shape.filter(f => xmin < f.x && f.x < xmax)))
       .style("fill", d => getColor(d) || "#ccc")
       .on("mousemove", function(event, d){
-        _this.updateUnknownHint(event, d, {X,Y,W,H});
+        _this.updateUnknownHint(event, d, {showZoombox, X,Y,W});
       })
       .on("mouseout", function(){
         _this.updateUnknownHint();
@@ -536,7 +537,7 @@ class MCUltraRich extends BaseComponent {
 
 
     const circles = this.DOM.circlebox.selectAll("circle")
-      .data(data, d => d.person)
+      .data(d3.shuffle(data), d => d.person)
 
     circles.exit().remove();
     circles.enter().append("circle")
@@ -611,7 +612,7 @@ class MCUltraRich extends BaseComponent {
       
   }
 
-  updateUnknownHint(event, d, {X,Y,W,H}={}){
+  updateUnknownHint(event, d, params){
     const roundN = (x,n) => Math.ceil(x/n)*n;
 
      if(!event) {
@@ -631,21 +632,24 @@ class MCUltraRich extends BaseComponent {
       .attr("cx", roundN(mouse[0] - 4, 3))
       .attr("cy", roundN(mouse[1] - 4, 3))
       .attr("r", 4)
-
       
+    this.updateBoxTopText("Why unknown persons? →", params)
+  }
 
-      const infoElHeight = this.parent.profileConstants.infoElHeight;
+
+  updateBoxTopText(text, {showZoombox, X,Y,W}={}){
+    const infoElHeight = this.parent.profileConstants.infoElHeight;
+    this.DOM.boxTopText.classed("vzb-hidden", !showZoombox)
+
+    if(!showZoombox) return;
+
     this.DOM.boxTopText
-      .classed("vzb-hidden", false)
-      .text("Why unknown persons? →")
+      .text(text)
       .style("text-anchor", "end")
       .attr("x", X + W - infoElHeight * 2)
       .attr("y", Y + infoElHeight)
       .attr("dy", "0.3em");
-      
   }
-
-
 
 
 
