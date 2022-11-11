@@ -89,6 +89,9 @@
       }
 
       .vzb-mc-ultrarich {
+        .vzb-billy-info {
+          @extend %vzb-chart-info;
+        }
         .vzb-billy-arrow {
           cursor: pointer;
           pointer-events: bounding-box;

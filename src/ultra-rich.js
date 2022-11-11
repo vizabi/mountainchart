@@ -38,7 +38,7 @@ class MCUltraRich extends BaseComponent {
       defs: this.element.append("defs")
     };
     this.DOM.text.append("text");
-    this.DOM.infoEl = this.DOM.zoombox.append("g").attr("class", "vzb-mc-axis-info"),
+    this.DOM.info = this.DOM.zoombox.append("g").attr("class", "vzb-billy-info"),
     this.DOM.boxTopText = this.DOM.zoombox.append("text"),
     this.DOM.upperbox = this.DOM.zoombox.append("rect").attr("class", "vzb-billy-upperbox");
     this.DOM.lowerbox = this.DOM.zoombox.append("rect").attr("class", "vzb-billy-lowerbox");
@@ -139,7 +139,8 @@ class MCUltraRich extends BaseComponent {
     this.mesh = d3.range(this.parent.ui.billyMeshXPoints).map(m => [start * Math.pow(step, m), start * Math.pow(step, m + 0.5), start * Math.pow(step, m + 1) ]);
     this.bins = this.mesh.map(m => 0);
 
-    utils.setIcon(this.DOM.infoEl, ICON_QUESTION);
+    this._dataNotes = this.root.findChild({name: "datanotes"});
+    utils.setIcon(this.DOM.info, ICON_QUESTION).select("svg").attr("width", "0px").attr("height", "0px");
   }
 
 
@@ -467,7 +468,20 @@ class MCUltraRich extends BaseComponent {
     arcT.attr("d", `M ${X} ${y + h / 2} A ${h} ${2 * h}, 0, 0 1, ${X} ${y - 5 * h}`);
 
     const infoElHeight = this.parent.profileConstants.infoElHeight;
-    this.DOM.infoEl
+    this.DOM.info
+      .on("click", () => {
+        this._dataNotes.pin();
+      })
+      .on("mouseenter", function() {
+        const rect = this.getBBox();
+        const coord = utils.makeAbsoluteContext(this, this.farthestViewportElement)(rect.x - 10, rect.y + rect.height + 10);
+        const toolRect = _this.root.element.node().getBoundingClientRect();
+        const chartRect = _this.element.node().getBoundingClientRect();
+        _this._dataNotes.setEncoding(_this.MDL.billyX).show().setPos(coord.x + chartRect.left - toolRect.left, coord.y);
+      })
+      .on("mouseout", () => {
+        this._dataNotes.hide();
+      })
       .classed("vzb-hidden", false)
       .attr("transform", `translate(${ X + W - infoElHeight * 1.5 }, ${ Y + infoElHeight * 0.5 })`)
       .select("svg")
