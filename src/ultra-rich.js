@@ -416,18 +416,24 @@ class MCUltraRich extends BaseComponent {
   computeLayout(data) {
     const DOT_R = 4;
 
-    let DOT_STEP = this.parent.yScale(0) * this.parent.ui.billyYScale / (d3.max(this.bins)||100);
+    const h = 10;
+    const gap = 20;
+    const topMargin = this.parent.state.positionInFacet.row.first ? 50 : 10;
+    const H = this.parent.yScale.range()[0] - h - gap - topMargin;
+
+    let DOT_STEP = H * this.parent.ui.billyYScale / (d3.max(this.bins)||100);
     if (DOT_STEP > DOT_R * 2) DOT_STEP = DOT_R * 2;
     const PACK_HARDER = DOT_STEP < 4;
    
     const showZoombox = (DOT_STEP < 8 || d3.max(this.bins) > 7) && data.length > 0;
 
-    return {showZoombox, DOT_STEP, DOT_R, PACK_HARDER};
+    return {showZoombox, DOT_STEP, DOT_R, PACK_HARDER, h, gap, H};
   }
 
 
 
-  redrawZoombox({showZoombox}) {
+  redrawZoombox({showZoombox, h, gap, H}) {
+    const _this = this;
 
     const appearing = this.DOM.upperbox.classed("vzb-hidden") && showZoombox;
 
@@ -435,13 +441,11 @@ class MCUltraRich extends BaseComponent {
 
     if (!showZoombox) return;
 
-    const xmin = 1000; //this.mesh[this.bins.findIndex(f => f > 0)][0];
+    const xmin = 4000; //this.mesh[this.bins.findIndex(f => f > 0)][0];
     const xmax = this.mesh.concat().reverse()[this.bins.concat().reverse().findIndex(f => f > 0) - 1][1];
     const W = this.parent.xScale(xmax) - this.parent.xScale(xmin);
-    const h = 10;
-    const gap = 20;
-    const boxHratio = 0.7;
-    const H = this.parent.yScale.range()[0] * boxHratio;
+
+    
     const X = this.parent.xScale(xmin);
     const Y = this.parent.yScale.range()[0] - gap - h - H;
     const y = this.parent.yScale.range()[0] - h;
@@ -470,7 +474,8 @@ class MCUltraRich extends BaseComponent {
       .attr("width", infoElHeight + "px")
       .attr("height", infoElHeight + "px")
 
-    return ({xmin, xmax, W,H,h,X,Y,h,y,gap});      
+
+    return ({xmin, xmax, W,X,Y,y});      
   }
 
   redrawBridgeShape({showZoombox, DOT_STEP, DOT_R, PACK_HARDER, X,Y,W,H,h,y,xmax,xmin, gap}) {
@@ -482,9 +487,7 @@ class MCUltraRich extends BaseComponent {
 
     // define path generator
     const xScale = this.parent.xScale;
-    const yScale = this.parent.yScale;
     const height = this.parent.yScale(0);
-    const top = this.parent.yScale(0) * this.parent.ui.billyYScale;
     const range0 = height - h - gap;
     this.yBridgeShapeScale = d3.scaleLinear().domain([0, d3.max(this.bins)]).range([range0, range0 - d3.max(this.bins) * DOT_STEP - DOT_R * 2]);
     const area = d3.area()
