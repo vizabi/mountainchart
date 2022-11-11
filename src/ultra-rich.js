@@ -260,7 +260,7 @@ class MCUltraRich extends BaseComponent {
     const billySliceConcept = this.MDL.billySlices.data.concept;
     this.relevantBilly = new Map();
     for(let [, billy] of allBilly) {
-      const intersection = d3.intersection(this.drilldowns, billy[billySliceConcept].split(";"));
+      const intersection = d3.intersection(this.drilldowns, billy[billySliceConcept]?.split(";"));
       if(intersection.size){
         const [firstEntity] = intersection;
         this.relevantBilly.set(billy.person, firstEntity);
