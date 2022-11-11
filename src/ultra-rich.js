@@ -21,7 +21,7 @@ class MCUltraRich extends BaseComponent {
     this.DOM = {
       container: this.element,
       sign: this.element.append("g").attr("class", "vzb-billy-sign"),
-      arrow: this.element.append("g").attr("class", "vzb-billy-arrow").html(`
+      arrow: this.element.append("g").attr("class", "vzb-billy-arrow vzb-hidden").html(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
       <g>
       <path d="M256 8c137 0 248 111 248 248S393 504 256 504 8 393 8 256 119 8 256 8zm-28.9 143.6l75.5 72.4H120c-13.3 0-24 10.7-24 24v16c0 13.3 10.7 24 24 24h182.6l-75.5 72.4c-9.7 9.3-9.9 24.8-.4 34.3l11 10.9c9.4 9.4 24.6 9.4 33.9 0L404.3 273c9.4-9.4 9.4-24.6 0-33.9L271.6 106.3c-9.4-9.4-24.6-9.4-33.9 0l-11 10.9c-9.5 9.6-9.3 25.1.4 34.4z"/>
@@ -191,10 +191,19 @@ class MCUltraRich extends BaseComponent {
     this.services.layout.size; //watch
     this.parent.ui.inpercent;
     this.parent.ui.showBilly;
-    this.DOM.sign.attr("transform", `translate(${this.parent.xScale(300)}, ${this.parent.yScale(0)}) scale(1.3)`)
+    let scale, shift;
+    if(viz.services.layout.profile == "LARGE") {scale = 1.3; shift = 500; } ;
+    if(viz.services.layout.profile == "MEDIUM") {scale = 1.3; shift = 500; };
+    if(viz.services.layout.profile == "SMALL") {scale = 1.0; shift = 450; };
+    this.DOM.sign.attr("transform", `translate(${this.parent.xScale(shift)}, ${this.parent.yScale(0)}) scale(${scale})`)
       .on("click", () => { 
         this.root.ui.chart.showBilly = !this.root.ui.chart.showBilly 
       });
+
+    this.DOM.sign
+      .select("#arrow").attr("transform", `rotate(${this.parent.ui.showBilly? 180: 0}) translate(${this.parent.ui.showBilly? "-34 -525": "0 -10"})`);
+    this.DOM.sign
+      .select("#text div").html(this.parent.ui.showBilly ? "hide" : "show<br/>the<br/>rich");
 
     this.DOM.arrow.attr("transform", `translate(${this.parent.xScale.range()[1]}, ${this.parent.yScale(0)})`)
       .on("click", () => { 

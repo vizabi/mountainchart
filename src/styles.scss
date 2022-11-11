@@ -99,12 +99,23 @@
         }
         .vzb-billy-sign {
           cursor: pointer;
-          pointer-events: bounding-box;
-          .fill { fill: #3342ae; } //c2c7e8
-          .top{opacity: 0;}
+          pointer-events: visible;
+          .fill { fill: #c2c7e8; } 
+          #text {
+            visibility: hidden;
+            div {
+              color: #3342ae;
+              white-space: pre-wrap;
+              font-size: $vzb-font-size-small;
+              text-transform: uppercase;
+              position: absolute;
+              bottom: 5px;
+              text-align: center;
+            }
+          }
           &:hover {
             .fill { fill: #3342ae; }
-            .top{opacity: 1;}
+            #text {visibility: visible;}
           }
         }
         .vzb-billy-text {
