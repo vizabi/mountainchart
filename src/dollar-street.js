@@ -200,6 +200,7 @@ import {
 
       const icon = `<path d="m25 9.0937l-17.719 16.281h5.563v15.531h24.312v-15.531h5.563l-17.719-16.281z"/>`;
       const iconHeight = 20.5;
+      const iconWidth = 25;
       const parentHeight = _this.parent.yScale(0);
   
       const getColor = (d) => this.parent.MDL.color.scale.d3Scale(this.colorMap[d.geo]);
@@ -226,7 +227,7 @@ import {
         .style("cursor", "pointer")
         .style("stroke", "black")
         .style("stroke-width", "2px")
-        .attr("transform", d => "translate("+ _this.parent.xScale(d.x) +"," + (parentHeight - iconHeight) + ") scale(0.5)");
+        .attr("transform", d => `translate(${_this.parent.xScale(d.x) - iconWidth/2} ${parentHeight - iconHeight}) scale(0.5)`);
     }
 
     _goToDollarStreet(d) {
