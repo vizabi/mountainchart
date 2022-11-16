@@ -31,15 +31,15 @@ class MCUltraRich extends BaseComponent {
       bridgeShape: this.element.append("g"),
       circlebox: this.element.append("g"),
       zoombox: this.element.append("g"),
-      hlFace: this.element.append("circle"),
-      hlLine: this.element.append("line"),
+      hlFace: this.element.append("circle").attr("class", "vzb-billy-hl"),
+      hlLine: this.element.append("line").attr("class", "vzb-billy-hl"),
       unknownCircle: this.element.append("circle"),
       text: this.element.append("g").attr("class", "vzb-billy-text"),
       defs: this.element.append("defs")
     };
     this.DOM.text.append("text");
     this.DOM.info = this.DOM.zoombox.append("g").attr("class", "vzb-billy-info"),
-    this.DOM.boxTopText = this.DOM.zoombox.append("text"),
+    this.DOM.boxTopText = this.DOM.zoombox.append("text").attr("class", "vzb-billy-toptext"),
     this.DOM.upperbox = this.DOM.zoombox.append("rect").attr("class", "vzb-billy-upperbox");
     this.DOM.lowerbox = this.DOM.zoombox.append("rect").attr("class", "vzb-billy-lowerbox");
     this.DOM.arc = this.DOM.zoombox.append("path").attr("class", "vzb-billy-arc");
@@ -691,7 +691,7 @@ class MCUltraRich extends BaseComponent {
       .attr("cy", roundN(mouse[1] - 4, 5))
       .attr("r", 4)
       
-    this.updateBoxTopText("Why unknown persons? →", params)
+    this.updateBoxTopText("Why many unknown? →", params)
   }
 
 
@@ -703,8 +703,8 @@ class MCUltraRich extends BaseComponent {
 
     this.DOM.boxTopText
       .text(text || d3.format(".2r")(d3.sum(this.bins)) + " richest people")
-      .style("text-anchor", "end")
-      .attr("x", X + W - infoElHeight * 2)
+      .style("text-anchor", text ? "end" : "start")
+      .attr("x", text ?  X + W - infoElHeight * 2 : X + infoElHeight )
       .attr("y", Y + infoElHeight)
       .attr("dy", "0.3em");
   }

@@ -89,6 +89,16 @@
       }
 
       .vzb-mc-ultrarich {
+        .vzb-billy-hl {
+          pointer-events: none;
+        }
+        .vzb-billy-toptext {
+          @extend %vzb-chart-axis-title;
+          stroke: white;
+          paint-order: stroke;
+          stroke-width: 2px;
+          pointer-events: none;
+        }
         .vzb-billy-info {
           @extend %vzb-chart-info;
         }
@@ -294,7 +304,7 @@
     .vzb-mountainchart {
 
       .vzb-mc-axis-x-title,
-      .vzb-mc-title, .vzb-mc-subtitle, .vzb-mc-closecross {
+      .vzb-mc-title, .vzb-mc-subtitle, .vzb-mc-closecross, .vzb-mc-ultrarich .vzb-billy-toptext {
         @extend %vzb-chart-axis-title-large;
       }
 
@@ -324,7 +334,7 @@
     .vzb-mountainchart {
 
       .vzb-mc-axis-x-title,
-      .vzb-mc-title, .vzb-mc-subtitle, .vzb-mc-closecross {
+      .vzb-mc-title, .vzb-mc-subtitle, .vzb-mc-closecross, .vzb-mc-ultrarich .vzb-billy-toptext  {
         @extend %vzb-chart-axis-title-medium;
       }
 
@@ -353,7 +363,7 @@
     .vzb-mountainchart {
 
       .vzb-mc-axis-x-title,
-      .vzb-mc-title, .vzb-mc-subtitle, .vzb-mc-closecross {
+      .vzb-mc-title, .vzb-mc-subtitle, .vzb-mc-closecross, .vzb-mc-ultrarich .vzb-billy-toptext {
         @extend %vzb-chart-axis-title-small;
       }
 
