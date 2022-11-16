@@ -408,7 +408,7 @@ class MCUltraRich extends BaseComponent {
     this.redrawBridgeShape(params);
     this.redrawCircles(data, params);
     this.redrawText(this.isOutsideOfTimeRange());
-    this.updateBoxTopText(d3.format(".2r")(data.length) + " richest people", params);
+    this.updateBoxTopText(null, params);
     
   }
 
@@ -539,10 +539,10 @@ class MCUltraRich extends BaseComponent {
       .attr("d", d => area(d.shape.filter(f => xmin < f.x && f.x < xmax)))
       .style("fill", d => getColor(d) || "#ccc")
       .on("mousemove", function(event, d){
-        _this.updateUnknownHint(event, d, {showZoombox, X,Y,W});
+        _this.updateUnknownHint(event, d, {showZoombox, X,Y,W,H});
       })
       .on("mouseout", function(){
-        _this.updateUnknownHint();
+        _this.updateUnknownHint(null, null, {showZoombox, X,Y,W,H});
       })
       .attr("mask", `url(#clipMask-${this.parent.name})`)
       .style("opacity", this.parent.ui.opacityRegular) //opacitySelectDim
@@ -662,23 +662,33 @@ class MCUltraRich extends BaseComponent {
 
   updateUnknownHint(event, d, params){
     const roundN = (x,n) => Math.ceil(x/n)*n;
-
-     if(!event) {
-       this.parent._setTooltip();
-       this.DOM.unknownCircle.classed("vzb-hidden", true);
-       this.DOM.boxTopText.classed("vzb-hidden", true)
-       return;
-     }
-    this.parent._setTooltip(event, "Unknown rich person");
+    
+    if(!event) {
+      this.parent._setTooltip();
+      this.DOM.unknownCircle.classed("vzb-hidden", true);
+      this.updateBoxTopText(null, params);
+      return;
+    }
+    
     const mouse = d3.pointer(event);
+    
+    const minIndex = this.bins.findIndex(f => f>0);
+    const minPx = this.parent.xScale(this.mesh[minIndex][0]);
+    
+    if(mouse[1] < params.Y || mouse[0] > minPx) {
+      this.updateUnknownHint(null, null, params); 
+      return;
+    }
+
+    this.parent._setTooltip(event, "Unknown rich person");
     this.DOM.unknownCircle
       .classed("vzb-hidden", false)
       .style("stroke-width", 0.5 )
       .style("stroke", "black")
       .style("pointer-events", "none")
       .style("fill", d3.select(event.target).style("fill"))
-      .attr("cx", roundN(mouse[0] - 4, 3))
-      .attr("cy", roundN(mouse[1] - 4, 3))
+      .attr("cx", roundN(mouse[0] - 4, 5))
+      .attr("cy", roundN(mouse[1] - 4, 5))
       .attr("r", 4)
       
     this.updateBoxTopText("Why unknown persons? →", params)
@@ -692,7 +702,7 @@ class MCUltraRich extends BaseComponent {
     if(!showZoombox) return;
 
     this.DOM.boxTopText
-      .text(text)
+      .text(text || d3.format(".2r")(d3.sum(this.bins)) + " richest people")
       .style("text-anchor", "end")
       .attr("x", X + W - infoElHeight * 2)
       .attr("y", Y + infoElHeight)
