@@ -204,7 +204,7 @@ class MCUltraRich extends BaseComponent {
     this.DOM.sign
       .select("#arrow").attr("transform", `rotate(${this.parent.ui.showBilly? 180: 0}) translate(${this.parent.ui.showBilly? "-34 -525": "0 -10"})`);
     this.DOM.sign
-      .select("#text div").html(this.parent.ui.showBilly ? "hide" : "show<br/>the<br/>rich");
+      .select("#text div").html(this.parent.ui.showBilly ? "go back" : "go to<br/>the<br/>rich");
 
     this.DOM.arrow.attr("transform", `translate(${this.parent.xScale.range()[1]}, ${this.parent.yScale(0)})`)
       .on("click", () => { 
@@ -443,7 +443,7 @@ class MCUltraRich extends BaseComponent {
     if (!showZoombox) return;
 
     const xmin = 4000; //this.mesh[this.bins.findIndex(f => f > 0)][0];
-    const xmax = this.mesh.concat().reverse()[this.bins.concat().reverse().findIndex(f => f > 0) - 1][1];
+    const xmax = 20e6; //this.mesh.concat().reverse()[this.bins.concat().reverse().findIndex(f => f > 0) - 1][1];
     const W = this.parent.xScale(xmax) - this.parent.xScale(xmin);
 
     
@@ -582,9 +582,10 @@ class MCUltraRich extends BaseComponent {
         - bin[d.binNumber].y * DOT_STEP * d.yInBinByColor / this.binsByColor[d.color][d.binNumber];
     }
 
+    const needShuffle = !this.DOM.circlebox.selectAll("circle").size() && data.length;
 
     const circles = this.DOM.circlebox.selectAll("circle")
-      .data(d3.shuffle(data), d => d.person)
+      .data(needShuffle ? d3.shuffle(data) : data, d => d.person)
 
     circles.exit().remove();
     circles.enter().append("circle")
