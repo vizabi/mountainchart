@@ -152,6 +152,8 @@ class MCUltraRich extends BaseComponent {
       billyX: this.root.model.markers[this.billyMarkerName].encoding.x,
       billyFrame: this.root.model.markers[this.billyMarkerName].encoding.frame,
       billySlices: this.root.model.markers[this.billyMarkerName].encoding[this.billyEncName],
+      billySelectedF: this.root.model.markers[this.billyMarkerName].encoding.selected.data.filter,
+      billyHighlightedF: this.root.model.markers[this.billyMarkerName].encoding.highlighted.data.filter
     };
   }
 
@@ -165,6 +167,7 @@ class MCUltraRich extends BaseComponent {
     this.addReaction(this.getColorMapping);
     this.addReaction(this.getBillyImages);
     this.addReaction(this.redraw);
+    this.addReaction(this.updateOpacity);
 
     this.addReaction(this.disableReactions);
   }
@@ -177,6 +180,7 @@ class MCUltraRich extends BaseComponent {
     this.removeReaction(this.getColorMapping);
     this.removeReaction(this.getBillyImages);
     this.removeReaction(this.redraw);
+    this.removeReaction(this.updateOpacity);
     this.DOM.circlebox.selectAll("circle").remove();
     this.DOM.zoombox.classed("vzb-hidden", true);
     this.DOM.text.classed("vzb-hidden", true);
@@ -588,7 +592,7 @@ class MCUltraRich extends BaseComponent {
       .data(needShuffle ? d3.shuffle(data) : data, d => d.person)
 
     circles.exit().remove();
-    circles.enter().append("circle")
+    this.DOM.circles = circles.enter().append("circle")
       .on("mouseenter", function(event, d){
         _this.parent._setTooltip(event, getTooltip(d));
 
@@ -602,10 +606,12 @@ class MCUltraRich extends BaseComponent {
           });
 
         }
+        _this.MDL.billyHighlightedF.set(d);
       })
       .on("mouseout", function(event, d) {
         _this.parent._setTooltip();
         _this.highlightFace();
+        _this.MDL.billyHighlightedF.delete(d);
       })
       .merge(circles)
       .style("stroke-width", d => hasFace(d) ? 2 : 0.25 )
@@ -724,7 +730,51 @@ class MCUltraRich extends BaseComponent {
         `)
   }
 
+  updateOpacity() {
+    if(this.MDL.billyMarker.state !== Utils.STATUS.READY || !this.drilldownsReady || !this.relevantBillyReady || !this.colorMapReady) return;
 
+    this.MDL.billySelectedF.markers; //watch
+    this.MDL.billyHighlightedF.markers; //watch
+
+    const OPACITY_HIGHLT = this.ui.opacityHighlight ?? 1.0;
+    const OPACITY_HIGHLT_DIM = this.ui.opacityHighlightDim ?? 0.3;
+    const OPACITY_SELECT = this.ui.opacitySelect ?? 1.0;
+    const OPACITY_REGULAR = this.ui.opacityRegular ?? 1.0;
+    const OPACITY_SELECT_DIM = this.ui.opacitySelectDim ?? 0.3;
+
+    this.someHighlighted = this.MDL.billyHighlightedF.any();
+
+    this.DOM.circles.style("opacity", d => {
+
+      if (this.someHighlighted) {
+        //highlight or non-highlight
+        if (this.MDL.billyHighlightedF.has(d)) return OPACITY_HIGHLT;
+      }
+
+      if (this.someSelected) {
+        //selected or non-selected
+        return this.MDL.billySelectedF.has(d) ? OPACITY_SELECT : OPACITY_SELECT_DIM;
+      }
+
+      if (this.someHighlighted) return OPACITY_HIGHLT_DIM;
+
+      return OPACITY_REGULAR;
+    });
+
+    const nonSelectedOpacityZero = this.ui.opacitySelectDim < 0.01;
+
+    // when pointer events need update...
+    if (nonSelectedOpacityZero !== this.nonSelectedOpacityZero) {
+      this.DOM.circles.style("pointer-events", d => {
+        if (!this.someSelected || !nonSelectedOpacityZero || this.MDL.billySelectedF.has(d)) 
+          return "visible";
+        else
+          return "none";
+      });
+    }
+
+    this.nonSelectedOpacityZero = nonSelectedOpacityZero;
+  }
 }
 
 const decorated = decorate(MCUltraRich, {
