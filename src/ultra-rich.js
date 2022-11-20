@@ -166,6 +166,7 @@ class MCUltraRich extends BaseComponent {
     this.addReaction(this.getRelevantBillies);
     this.addReaction(this.getColorMapping);
     this.addReaction(this.getBillyImages);
+    this.addReaction(this.updateSelected);
     this.addReaction(this.redraw);
     this.addReaction(this.updateOpacity);
 
@@ -179,6 +180,7 @@ class MCUltraRich extends BaseComponent {
     this.removeReaction(this.getRelevantBillies);
     this.removeReaction(this.getColorMapping);
     this.removeReaction(this.getBillyImages);
+    this.removeReaction(this.updateSelected);
     this.removeReaction(this.redraw);
     this.removeReaction(this.updateOpacity);
     this.DOM.circlebox.selectAll("circle").remove();
@@ -593,6 +595,7 @@ class MCUltraRich extends BaseComponent {
 
     circles.exit().remove();
     this.DOM.circles = circles.enter().append("circle")
+      .style("opacity", d => this._getOpacity(d))
       .on("mouseenter", function(event, d){
         _this.parent._setTooltip(event, getTooltip(d));
 
@@ -612,6 +615,13 @@ class MCUltraRich extends BaseComponent {
         _this.parent._setTooltip();
         _this.highlightFace();
         _this.MDL.billyHighlightedF.delete(d);
+      })
+      .on("click", function(event, d) {
+        _this.MDL.billySelectedF.toggle(d);
+      })
+      .onTap(function(event, d) {
+        _this.MDL.billySelectedF.toggle(d);
+        event.stopPropagation();
       })
       .merge(circles)
       .style("stroke-width", d => hasFace(d) ? 2 : 0.25 )
@@ -730,6 +740,25 @@ class MCUltraRich extends BaseComponent {
         `)
   }
 
+  updateSelected() {
+    this.MDL.billySelectedF.markers; //watch
+    this.someSelected = this.MDL.billySelectedF.any();
+
+    this.nonSelectedOpacityZero = false;
+  }
+
+  _getOpacity(d) {
+    const OPACITY_SELECT = this.ui.opacitySelect ?? 1.0;
+    const OPACITY_REGULAR = this.ui.opacityRegular ?? 1.0;
+    const OPACITY_SELECT_DIM = this.ui.opacitySelectDim ?? 0.3;
+
+    if (this.someSelected) {
+      //selected or non-selected
+      return this.MDL.billySelectedF.has(d) ? OPACITY_SELECT : OPACITY_SELECT_DIM;
+    }
+    return OPACITY_REGULAR;
+  }
+
   updateOpacity() {
     if(this.MDL.billyMarker.state !== Utils.STATUS.READY || !this.drilldownsReady || !this.relevantBillyReady || !this.colorMapReady) return;
 
@@ -743,6 +772,7 @@ class MCUltraRich extends BaseComponent {
     const OPACITY_SELECT_DIM = this.ui.opacitySelectDim ?? 0.3;
 
     this.someHighlighted = this.MDL.billyHighlightedF.any();
+    this.someSelected = this.MDL.billySelectedF.any();
 
     this.DOM.circles.style("opacity", d => {
 
