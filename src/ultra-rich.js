@@ -139,8 +139,31 @@ class MCUltraRich extends BaseComponent {
     this.mesh = d3.range(this.parent.ui.billyMeshXPoints).map(m => [start * Math.pow(step, m), start * Math.pow(step, m + 0.5), start * Math.pow(step, m + 1) ]);
     this.bins = this.mesh.map(m => 0);
 
+    this._initInfoElements();
+  }
+
+  _initInfoElements() {
+    const _this = this;
+
     this._dataNotes = this.root.findChild({name: "datanotes"});
-    utils.setIcon(this.DOM.info, ICON_QUESTION).select("svg").attr("width", "0px").attr("height", "0px");
+    utils.setIcon(this.DOM.info, ICON_QUESTION)
+      .on("click", () => {
+        this._dataNotes.pin();
+      })
+      .on("mouseover", function() {
+        const rect = this.getBBox();
+        const coord = utils.makeAbsoluteContext(this, this.farthestViewportElement)(rect.x - 10, rect.y + rect.height + 10);
+        const toolRect = _this.root.element.node().getBoundingClientRect();
+        const chartRect = _this.parent.element.node().getBoundingClientRect();
+        _this._dataNotes
+          .setEncoding(_this.MDL.billyX)
+          .show()
+          .setPos(coord.x + chartRect.left - toolRect.left, coord.y + chartRect.top - toolRect.top) ;
+      })
+      .on("mouseout", () => {
+        this._dataNotes.hide();
+      })      
+      .select("svg").attr("width", "0px").attr("height", "0px");
   }
 
 
@@ -475,19 +498,6 @@ class MCUltraRich extends BaseComponent {
 
     const infoElHeight = this.parent.profileConstants.infoElHeight;
     this.DOM.info
-      .on("click", () => {
-        this._dataNotes.pin();
-      })
-      .on("mouseenter", function() {
-        const rect = this.getBBox();
-        const coord = utils.makeAbsoluteContext(this, this.farthestViewportElement)(rect.x - 10, rect.y + rect.height + 10);
-        const toolRect = _this.root.element.node().getBoundingClientRect();
-        const chartRect = _this.element.node().getBoundingClientRect();
-        _this._dataNotes.setEncoding(_this.MDL.billyX).show().setPos(coord.x + chartRect.left - toolRect.left, coord.y);
-      })
-      .on("mouseout", () => {
-        this._dataNotes.hide();
-      })
       .classed("vzb-hidden", false)
       .attr("transform", `translate(${ X + W - infoElHeight * 1.5 }, ${ Y + infoElHeight * 0.5 })`)
       .select("svg")
