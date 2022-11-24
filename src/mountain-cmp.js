@@ -1128,7 +1128,7 @@ _VizabiMountainChart.DEFAULT_UI = {
   manualSortingEnabled: true,
   yMaxMethod: 0,
   showProbeX: true,
-  probeX: 1.85,
+  probeX: 2.15,
   probeXCustom: 4,
   probeXType: "extreme",
   probeXDetails: {
