@@ -27,6 +27,7 @@ class MCUltraRich extends BaseComponent {
       <path d="M256 8c137 0 248 111 248 248S393 504 256 504 8 393 8 256 119 8 256 8zm-28.9 143.6l75.5 72.4H120c-13.3 0-24 10.7-24 24v16c0 13.3 10.7 24 24 24h182.6l-75.5 72.4c-9.7 9.3-9.9 24.8-.4 34.3l11 10.9c9.4 9.4 24.6 9.4 33.9 0L404.3 273c9.4-9.4 9.4-24.6 0-33.9L271.6 106.3c-9.4-9.4-24.6-9.4-33.9 0l-11 10.9c-9.5 9.6-9.3 25.1.4 34.4z"/>
       </g>
       </svg>`),
+      deselectClickRect: this.element.append("g").append("rect").attr("class", "vzb-billy-deselect-click-rect"),
       bridgeShapeBlur: this.element.append("g"),
       bridgeShape: this.element.append("g"),
       circlebox: this.element.append("g"),
@@ -37,6 +38,12 @@ class MCUltraRich extends BaseComponent {
       text: this.element.append("g").attr("class", "vzb-billy-text"),
       defs: this.element.append("defs")
     };
+    this.DOM.deselectClickRect
+      .on("click", () => {
+        if (this.someSelected) {
+          this.MDL.billySelectedF.clear();
+        }
+      });
     this.DOM.text.append("text");
     this.DOM.info = this.DOM.zoombox.append("g").attr("class", "vzb-billy-info"),
     this.DOM.boxTopText = this.DOM.zoombox.append("text").attr("class", "vzb-billy-toptext"),
@@ -197,6 +204,7 @@ class MCUltraRich extends BaseComponent {
   }
 
   disableReactions(){
+    this.DOM.deselectClickRect.classed("vzb-hidden", !this.parent.ui.showBilly);
     if(this.parent.ui.showBilly) return;
     this.removeReaction(this.copyframevalue);
     this.removeReaction(this.getDrillDowns);
@@ -433,6 +441,7 @@ class MCUltraRich extends BaseComponent {
 
     const params = this.computeLayout(data)
     const zoomboxParams = this.redrawZoombox(params);
+    this.redrawDeselectClickRect(params, zoomboxParams);
     Object.assign(params, zoomboxParams);
     this.redrawBridgeShape(params);
     this.redrawCircles(data, params);
@@ -506,6 +515,13 @@ class MCUltraRich extends BaseComponent {
 
 
     return ({xmin, xmax, W,X,Y,y});      
+  }
+
+  redrawDeselectClickRect({showZoombox, H}, params = {}) {
+    const X = showZoombox ? params.X : this.parent.xScale(1000);
+    const W = showZoombox ? params.W : (this.parent.xScale(this.parent.xScale.domain()[1]) - X);
+    const Y = showZoombox ? params.Y :  this.parent.yScale.range()[0] - H;
+    this.DOM.deselectClickRect.attr("x", X).attr("y", Y).attr("width", W).attr("height", H);
   }
 
   redrawBridgeShape({showZoombox, DOT_STEP, DOT_R, PACK_HARDER, X,Y,W,H,h,y,xmax,xmin, gap}) {
