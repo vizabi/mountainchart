@@ -241,7 +241,11 @@ class MCUltraRich extends BaseComponent {
     this.DOM.sign
       .select("#arrow").attr("transform", `rotate(${this.parent.ui.showBilly? 180: 0}) translate(${this.parent.ui.showBilly? "-34 -525": "0 -10"})`);
     this.DOM.sign
-      .select("#text div").html(this.parent.ui.showBilly ? "go back" : "go to<br/>the<br/>rich");
+      .select("#text")
+      .attr("transform", this.parent.ui.showBilly ? "translate(-125 200)" : "translate(-170 200)")
+      .select("div")
+      .style("text-align", this.parent.ui.showBilly ? "left" : "right")
+      .html(this.parent.ui.showBilly ? "hide<br/>billionaires" : "show<br/>billionaires");
 
     this.DOM.arrow.attr("transform", `translate(${this.parent.xScale.range()[1]}, ${this.parent.yScale(0)})`)
       .on("click", () => { 
@@ -595,9 +599,11 @@ class MCUltraRich extends BaseComponent {
     const FACE_R = 10;
     const FACEHOVER_R = 50;
 
+    const billyIncomeFormatter = this.services.locale.longNumberF;
+
     const getColor = (d) => this.parent.MDL.color.scale.d3Scale(this.colorMap[this.relevantBilly.get(d.person)]);
     const hasFace = (d) => this.isShowFaces && this.DOM.defs.select(`#vzb-billy-image-${d.person}`).node();
-    const getTooltip = (d) => (d.name || d.person).split(";")[0] + " " + _this.localise(d.x) + " $/day";
+    const getTooltip = (d) => (d.name || d.person).split(";")[0] + ": " + billyIncomeFormatter(d.x) + " $/day";
 
     const bridgeShapeByColor = {};
     if(showZoombox){
