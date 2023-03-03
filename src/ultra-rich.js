@@ -230,9 +230,9 @@ class MCUltraRich extends BaseComponent {
     this.parent.ui.inpercent;
     this.parent.ui.showBilly;
     let scale, shift;
-    if(viz.services.layout.profile == "LARGE") {scale = 1.3; shift = 500; } ;
-    if(viz.services.layout.profile == "MEDIUM") {scale = 1.3; shift = 500; };
-    if(viz.services.layout.profile == "SMALL") {scale = 1.0; shift = 450; };
+    if(this.services.layout.profile == "LARGE") {scale = 1.3; shift = 500; } ;
+    if(this.services.layout.profile == "MEDIUM") {scale = 1.3; shift = 500; };
+    if(this.services.layout.profile == "SMALL") {scale = 1.0; shift = 450; };
     this.DOM.sign.attr("transform", `translate(${this.parent.xScale(shift)}, ${this.parent.yScale(0)}) scale(${scale})`)
       .on("click", () => { 
         this.root.ui.chart.showBilly = !this.root.ui.chart.showBilly 
