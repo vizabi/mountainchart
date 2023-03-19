@@ -53,29 +53,29 @@ class MCUltraRich extends BaseComponent {
     this.DOM.sign.append("g").attr("transform", `translate(-19, -297)`).html(sign);
 
     this.DOM.defs.html(`
-      <linearGradient id="progFade-${this.parent.name}" x1="0%" x2="100%" y1="0%" y2="0%">
+      <linearGradient id="progFade-${this.parent.id}" x1="0%" x2="100%" y1="0%" y2="0%">
         <stop offset="0%" stop-color="black"/>
         <stop offset="30%" stop-color="white"/>      
       </linearGradient>
 
-      <linearGradient id="progFade1-${this.parent.name}" x1="0%" x2="100%" y1="0%" y2="0%">
+      <linearGradient id="progFade1-${this.parent.id}" x1="0%" x2="100%" y1="0%" y2="0%">
         <stop offset="0%" stop-color="#444"/>
         <stop offset="50%" stop-color="white"/>      
       </linearGradient>
       
-      <mask class="progFadeMask" id="progFadeMask-${this.parent.name}" >
-        <rect fill="url(#progFade-${this.parent.name})"  />
+      <mask class="progFadeMask" id="progFadeMask-${this.parent.id}" >
+        <rect fill="url(#progFade-${this.parent.id})"  />
       </mask>
 
-      <mask class="clipMask" id="clipMask-${this.parent.name}" >
-        <rect fill="url(#progFade1-${this.parent.name})"  />
+      <mask class="clipMask" id="clipMask-${this.parent.id}" >
+        <rect fill="url(#progFade1-${this.parent.id})"  />
       </mask>
       
-      <pattern id="vzb-pattern-billy-bridgeshape-${this.parent.name}" style="stroke: white; fill: transparent; stroke-width:10px;" x="0" y="0" patternUnits="userSpaceOnUse" width="25" height="25" viewBox="0 0 500 500"> 
+      <pattern id="vzb-pattern-billy-bridgeshape-${this.parent.id}" style="stroke: white; fill: transparent; stroke-width:10px;" x="0" y="0" patternUnits="userSpaceOnUse" width="25" height="25" viewBox="0 0 500 500"> 
 <path d="m308.54 177.46a80 80 0 0 0-80 80 80 80 0 0 0 54.279 75.572 80 80 0 0 1-5.0957-7.959 80 80 0 0 1-0.63867-1.1699 80 80 0 0 1-3.6797-7.7324 80 80 0 0 1-0.83593-2.2422 80 80 0 0 1-2.4277-7.377 80 80 0 0 1-0.76758-3.5195 80 80 0 0 1-1.2832-6.5801 80 80 0 0 1-0.74023-10.371 80 80 0 0 1 3.2402-22.539 80 80 0 0 1 9.459-20.713 80 80 0 0 1 6.8398-9.1367 80 80 0 0 1 8.0723-8.0723 80 80 0 0 1 9.1367-6.8398 80 80 0 0 1 10.02-5.4707 80 80 0 0 1 10.693-3.9883 80 80 0 0 1 22.539-3.2402 80 80 0 0 1 8.6055 0.47851 80 80 0 0 1 0.40626 0.0508 80 80 0 0 1 8.2441 1.3789 80 80 0 0 1 0.32812 0.0742 80 80 0 0 1 8.2812 2.3359 80 80 0 0 0-64.676-32.939m191.46 316.62c-8.9547-3.3531-18.438-5.0737-28-5.0801-10.833 0.0651-29.786 6.2106-39.718 11.265m-350.28-430.26a80 80 0 0 0-27.434 5.0664 80 80 0 0 1 0 0.0059 80 80 0 0 1-15.6 41.514 80 80 0 0 1-0.57617 0.79492 80 80 0 0 1-5.0957 5.9863 80 80 0 0 1-1.416 1.4707 80 80 0 0 1-5.4844 5.127 80 80 0 0 1-1.6582 1.2988 80 80 0 0 1-19.064 11.264 80 80 0 0 1-3.2383 1.4062 80 80 0 0 0-0.43359 6.0664 80 80 0 0 0 80 80 80 80 0 0 0 80-80 80 80 0 0 0-80-80m6 236a80 80 0 0 0-80 80 80 80 0 0 0 80 80 80 80 0 0 0 80-80 80 80 0 0 0-0.2832-6.457 80 80 0 0 1-23.588-50.529 80 80 0 0 0-56.129-23.014m73.994-156.26a80 80 0 0 1 0.00586 0.26172 80 80 0 0 1-80 80 80 80 0 0 1-39.994-10.92 80 80 0 0 0 79.994 79.92 80 80 0 0 0 80-80 80 80 0 0 0-40.006-69.262m205.66-41.738a80 80 0 0 0-79.443 72.225 80 80 0 0 1 20.326-2.7598 80 80 0 0 1 64.676 32.939 80 80 0 0 1 45.297 39.18 80 80 0 0 0 29.145-61.584 80 80 0 0 0-80-80m-143.98 134.65a80 80 0 0 0-27.184 4.9746 80 80 0 0 1-47.305 46.402 80 80 0 0 0-5.5117 28.623 80 80 0 0 0 80 80 80 80 0 0 0 75.115-53.234 80 80 0 0 1-16.197-16.678 80 80 0 0 1-54.055-75.273 80 80 0 0 1 1.5-14.539 80 80 0 0 0-6.3633-0.27539m-161.26 29.613a80 80 0 0 0-12.418 42.736 80 80 0 0 0 0.052734 0.80273 80 80 0 0 1 37.947-9.8027 80 80 0 0 1 56.062 22.957 80 80 0 0 1-0.38867-6.3066 80 80 0 0 1 5.5117-28.623 80 80 0 0 0 0.30078-0.13476 80 80 0 0 1-27.486 5.1074 80 80 0 0 1-59.582-26.736m236.36 77.143a80 80 0 0 1-75.104 53.244 80 80 0 0 1-1.752-0.125 80 80 0 0 0-1.9219 16.475 80 80 0 0 0 80 80 80 80 0 0 0 80-80 80 80 0 0 0-21.002-53.787 80 80 0 0 1-11.65 0.87305 80 80 0 0 1-48.57-16.68m-55.777-224.41a80 80 0 0 0-66.482 35.656 80 80 0 0 1 25.482 58.344 80 80 0 0 1-5.4004 28.592 80 80 0 0 1 27.074-4.9414 80 80 0 0 1 6.3633 0.27539 80 80 0 0 0-0.0449 0.30469 80 80 0 0 1 58.219-63.006 80 80 0 0 1 10.512-32.393 80 80 0 0 0-55.723-22.832m106-66a80 80 0 0 0-79.344 70.816 80 80 0 0 1 29.066 18.016 80 80 0 0 1 68.932-39.832 80 80 0 0 1 61.287 28.605 80 80 0 0 0-79.941-77.605m-201-29a80 80 0 0 0-69.191 40.209 80 80 0 0 1 3.1914-0.20898 80 80 0 0 1 79.994 79.738 80 80 0 0 1 14.52 10.922 80 80 0 0 1 49.357-33.598 80 80 0 0 0 2.1289-17.062 80 80 0 0 0-80-80m-148 355.26a80 80 0 0 1 8.0664 2.0215 80 80 0 0 1-0.066406-1.2793 80 80 0 0 1 16.098-48.035 80 80 0 0 0-0.0098-0.0137l3.5e-5 3e-5a80 80 0 0 1-24.088 8.666m0-157.36a80 80 0 0 1 13.67 3.918 80 80 0 0 0 0.11523-1.4141 80 80 0 0 1-4.1607-7.7092m276.63 315.95a80 80 0 0 1 0.70117-2.1816 80 80 0 0 1-43.27-22.15 80 80 0 0 0-43.535 24.332m-88.682 0a80 80 0 0 1-10.871-32.582 80 80 0 0 0-4.3164-1.8516 80 80 0 0 1-8.2812 0.43359 80 80 0 0 1-22.086-3.209 80 80 0 0 1 0.085938 1.209 80 80 0 0 1-8.7402 36m-42.805 0a80 80 0 0 0-14.455-6.6387m500-303.93c-4.9438-0.94808-9.9661-1.4274-15-1.4316-13.307 0.0391-26.394 3.3969-38.076 9.7695-2.6282 20.176-12.845 38.593-28.572 51.502 5.904 11.374 8.9893 24 8.9961 36.814-0.0577 10.345-2.1212 20.58-6.0762 30.139 10.733 14.174 25.881 24.369 43.053 28.975m35.676 40.232c-4.9438-0.94808-9.9661-1.4274-15-1.4316-38.854 3e-3 -72.087 27.923-78.793 66.193 18.046 11.202 28.228 24.755 34.506 46.168m58.966-149.02c-43.984 4.9051-67.705-17.093-78.372-31.213-10.638 26.272-34.384 44.954-62.422 49.109 13.488 14.666 21.017 33.837 21.115 53.762-0.0361 7.0455-1.0028 14.055-2.875 20.848 0.0825-0.2392 0.1639-0.47878 0.24414-0.71875 10.372 1.8262 20.282 5.6826 29.16 11.348 6.5622-38.264 39.649-66.293 78.471-66.477 5.0339 4e-3 10.056 0.48356 15 1.4316m-68.141-385.43a80 80 0 0 0-39.859 69 80 80 0 0 0 0.1875 2.9883 80 80 0 0 1 34.086 47.352 80 80 0 0 0-2.8477-9.5859 80 80 0 0 1 10.574-0.75391 80 80 0 0 1 65.936 34.74 80 80 0 0 0 0.06445-0.01757m-299.85-143.72a80 80 0 0 0-19.184 37.133 80 80 0 0 1 47.033 72.867 80 80 0 0 1-2.0859 16.826 80 80 0 0 0 0.41406 0.1543 80 80 0 0 1 16.672-1.9805 80 80 0 0 1 28.967 5.8242 80 80 0 0 0-2.3106-1.0078 80 80 0 0 1 38.02-58.771 80 80 0 0 0-2.8047 1.6035 80 80 0 0 1-20.871-53.648 80 80 0 0 1 2.4707-19m-271.42 0a80 80 0 0 1 39.945 69 80 80 0 0 1-0.39258 6.0547 80 80 0 0 1 24.26-4.9395 80 80 0 0 1 65.26-39.867 80 80 0 0 1-32.658-30.248m-54.328 0a80 80 0 0 1-16.955 22.664 80 80 0 0 0-24.881-22.664" />
       </pattern>
 
-      <pattern id="vzb-pattern-billy-bridgeshape-1${this.parent.name}" style="stroke: white; fill: transparent; stroke-width:10px;" x="0" y="0" patternUnits="userSpaceOnUse" width="25" height="25" viewBox="0 0 500 500"> 
+      <pattern id="vzb-pattern-billy-bridgeshape-1${this.parent.id}" style="stroke: white; fill: transparent; stroke-width:10px;" x="0" y="0" patternUnits="userSpaceOnUse" width="25" height="25" viewBox="0 0 500 500"> 
           <circle cx="65" cy="39" r="80" />
           <circle cx="180" cy="-41" r="80" />
           <circle cx="259" cy="54" r="80" />
@@ -364,7 +364,7 @@ class MCUltraRich extends BaseComponent {
 
         if(this.imagesAvaiable[person]){
           this.DOM.defs.append("pattern")
-            .attr("id", "vzb-billy-image-" + person)
+            .attr("id", `vzb-billy-image-${person}-${this.id}`)
             .attr("x", "0%")
             .attr("y", "0%")
             .attr("height", "100%")
@@ -580,7 +580,7 @@ class MCUltraRich extends BaseComponent {
       .on("mouseout", function(){
         _this.updateUnknownHint(null, null, {showZoombox, X,Y,W,H});
       })
-      .attr("mask", `url(#clipMask-${this.parent.name})`)
+      .attr("mask", `url(#clipMask-${this.parent.id})`)
       .style("opacity", this.parent.ui.opacityRegular) //opacitySelectDim
 
     this.DOM.bridgeShape.selectAll("path")
@@ -588,8 +588,8 @@ class MCUltraRich extends BaseComponent {
       .join("path")
       .style("pointer-events", "none")
       .attr("d", d => area(d.shape.filter(f => xmin < f.x && f.x < xmax)))
-      .style("fill", `url(#vzb-pattern-billy-bridgeshape-${this.parent.name})`)
-      .attr("mask", `url(#progFadeMask-${this.parent.name})`)
+      .style("fill", `url(#vzb-pattern-billy-bridgeshape-${this.parent.id})`)
+      .attr("mask", `url(#progFadeMask-${this.parent.id})`)
       .style("opacity", 1)  
   }
 
@@ -602,7 +602,7 @@ class MCUltraRich extends BaseComponent {
     const billyIncomeFormatter = this.services.locale.longNumberF;
 
     const getColor = (d) => this.parent.MDL.color.scale.d3Scale(this.colorMap[this.relevantBilly.get(d.person)]);
-    const hasFace = (d) => this.isShowFaces && this.DOM.defs.select(`#vzb-billy-image-${d.person}`).node();
+    const hasFace = (d) => this.isShowFaces && this.DOM.defs.select(`#vzb-billy-image-${d.person}-${this.id}`).node();
     const getTooltip = (d) => (d.name || d.person).split(";")[0] + ": " + billyIncomeFormatter(d.x) + " $/day";
 
     const bridgeShapeByColor = {};
@@ -631,7 +631,7 @@ class MCUltraRich extends BaseComponent {
       .on("mouseenter", function(event, d){
         _this.parent._setTooltip(event, getTooltip(d));
 
-        const face = _this.DOM.defs.select(`#vzb-billy-image-${d.person}`).node();
+        const face = _this.DOM.defs.select(`#vzb-billy-image-${d.person}-${_this.id}`).node();
         if (face) 
           _this.highlightFace(event, d);
         else {
@@ -659,7 +659,7 @@ class MCUltraRich extends BaseComponent {
       .style("stroke-width", d => hasFace(d) ? 2 : 0.25 )
       .style("stroke", d => hasFace(d) ? getColor(d) : "black")
       .attr("r", d => hasFace(d) ? FACE_R : DOT_R)
-      .style("fill", d => hasFace(d) ? `url(#vzb-billy-image-${d.person})` : getColor(d) )
+      .style("fill", d => hasFace(d) ? `url(#vzb-billy-image-${d.person}-${this.id})` : getColor(d) )
       .each(function(){
         const view = d3.select(this);
 
@@ -704,7 +704,7 @@ class MCUltraRich extends BaseComponent {
       .attr("cx", position === "top" ? cx : this.parent.xScale.range()[1] - 50)
       .attr("cy", position === "top" ? cy - 100 : 50)
       .style("stroke", stroke)
-      .style("fill", `url(#vzb-billy-image-${d.person})` )
+      .style("fill", `url(#vzb-billy-image-${d.person}-${this.id})` )
       
   }
 

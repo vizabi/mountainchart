@@ -43,7 +43,7 @@ import {
     constructor(config) {
       config.template = `
         <defs>
-          <pattern class="vzb-noexport" id="vzb-mc-ds-pattern-lines-loading" x="0" y="0" patternUnits="userSpaceOnUse" width="50" height="50" viewBox="0 0 10 10"> 
+          <pattern class="vzb-noexport" id="vzb-mc-ds-pattern-lines-loading-${config.id}" x="0" y="0" patternUnits="userSpaceOnUse" width="50" height="50" viewBox="0 0 10 10"> 
             <path d='M-1,1 l2,-2M0,10 l10,-10M9,11 l2,-2' stroke='black' stroke-width='3' opacity='0.08'/>
           </pattern> 
         </defs>
@@ -258,7 +258,7 @@ import {
         .attr("transform", "translate("+ imageX +"," + imageY + ")")            
       placeholder.append("rect")
         .style("stroke", "black")
-        .style("fill", `url(#vzb-mc-ds-pattern-lines-loading)`)
+        .style("fill", `url(#vzb-mc-ds-pattern-lines-loading-${this.id})`)
         .attr("width", imageSize)
         .attr("height", imageSize);
       placeholder.append("text")
