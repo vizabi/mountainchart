@@ -182,7 +182,8 @@ import {
             geo: country2to3(m.place.country.id), 
             image360: m.images.cropped360,
             image180: m.images.cropped180,
-            image80: m.images.cropped180
+            image80: m.images.cropped80,
+            imageOriginal: m.images.original
           })).sort((a,b) => a.x - b.x);
 
           this.familiesReady = true;
@@ -277,7 +278,11 @@ import {
         .attr("dur", "60s")
         .attr("repeatCount", "indefinite")
 
-      const imageChoices = imageSize > 180 ? ["image360", "image180", "image80"] : imageSize > 80 ? ["image180", "image80"] : ["image80"];
+      const imageChoices = imageSize > 180 
+        ? ["image360", "image180", "image80", "imageOriginal"] 
+        : imageSize > 80 
+          ? ["image180", "image80", "image360", "imageOriginal"] 
+          : ["image80", "image180", "image360", "imageOriginal"];
         
       const tryDownloadImage = (imageChoices) => {
         this.DOM.container.selectAll("image").remove();
