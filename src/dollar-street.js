@@ -52,7 +52,7 @@ class MCDollarStreet extends BaseComponent {
     super(config);
   }
   
-  setup(options) {
+  setup() {
     this.DOM = {
       container: this.element,
       pattern: this.element.select("defs").select("pattern")
@@ -295,10 +295,10 @@ class MCDollarStreet extends BaseComponent {
         .attr("transform", "translate("+ imageX +"," + imageY + ")")
         .attr("width", imageSize)
         .attr("height", imageSize)
-        .on("click", function(event) {     
+        .on("click", function() {     
           _this._goToDollarStreet(d);
         })
-        .on("mouseout", function(event, d) {
+        .on("mouseout", function() {
           _this._removeImage();
         });
 
@@ -364,7 +364,7 @@ class MCDollarStreet extends BaseComponent {
         .attr("class", "vzb-mc-ds-closecross vzb-mc-ds-text")
         .attr("dx", "-1.5em").attr("dy", "1.5em")
         .attr("x", size.imageSize)
-        .on("click",  function(event, d) {
+        .on("click",  function() {
           _this._removeImage();
         });
     }

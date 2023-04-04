@@ -145,7 +145,7 @@ class MCUltraRich extends BaseComponent {
     const nbrackets = this.parent.ui.xPoints;
     const step = Math.pow(end/start, 1/nbrackets);
     this.mesh = d3.range(this.parent.ui.billyMeshXPoints).map(m => [start * Math.pow(step, m), start * Math.pow(step, m + 0.5), start * Math.pow(step, m + 1) ]);
-    this.bins = this.mesh.map(m => 0);
+    this.bins = this.mesh.map(() => 0);
 
     this._initInfoElements();
   }
@@ -400,7 +400,7 @@ class MCUltraRich extends BaseComponent {
           d.binnedX = this.mesh[i][1];
           d.yInBin = this.bins[i];
           this.bins[i]++;
-          if (!this.binsByColor[d.color]) this.binsByColor[d.color] = this.mesh.map(m => 0);
+          if (!this.binsByColor[d.color]) this.binsByColor[d.color] = this.mesh.map(() => 0);
           d.yInBinByColor = this.binsByColor[d.color][i];
           this.binsByColor[d.color][i]++;
         }
@@ -408,7 +408,7 @@ class MCUltraRich extends BaseComponent {
       return d;
     };
 
-    this.bins = this.mesh.map(m => 0);
+    this.bins = this.mesh.map(() => 0);
     this.binsByColor = {};
     if (this.isOutsideOfTimeRange())
       return [];
@@ -477,8 +477,6 @@ class MCUltraRich extends BaseComponent {
 
 
   redrawZoombox({showZoombox, h, gap, H}) {
-    const _this = this;
-
     const appearing = this.DOM.upperbox.classed("vzb-hidden") && showZoombox;
 
     this.DOM.zoombox.classed("vzb-hidden", !showZoombox);
@@ -529,7 +527,7 @@ class MCUltraRich extends BaseComponent {
     this.DOM.deselectClickRect.attr("x", X).attr("y", Y).attr("width", W).attr("height", H);
   }
 
-  redrawBridgeShape({showZoombox, DOT_STEP, DOT_R, PACK_HARDER, X,Y,W,H,h,y,xmax,xmin, gap}) {
+  redrawBridgeShape({showZoombox, DOT_STEP, DOT_R, X,Y,W,H,h, xmax,xmin, gap}) {
     const _this = this;
     this.DOM.bridgeShape.classed("vzb-hidden", !showZoombox);
     this.DOM.bridgeShapeBlur.classed("vzb-hidden", !showZoombox);
@@ -546,16 +544,10 @@ class MCUltraRich extends BaseComponent {
       .x(d => xScale(d.x))
       .y0(d => this.yBridgeShapeScale(d.y0 ))
       .y1(d => this.yBridgeShapeScale((d.y + d.y0) ));
-    //define d3 stack layout
-    const stackLayout = d3.stack()
-      //.order(d3.stackOrderReverse)
-      .value((i, slice) => slice.shape[i].y);
-
-
       
     this.bridgeShapes = [];
-    let stackBins = this.mesh.map(m => 0);
-    Object.keys(this.binsByColor).forEach((color, i )=> {
+    let stackBins = this.mesh.map(() => 0);
+    Object.keys(this.binsByColor).forEach((color)=> {
       const bins = this.binsByColor[color];
       const shape = this.mesh.map((m,i) => ({x: m[1], y0: stackBins[i], y: bins[i]}));
       const startIndex = bins.indexOf(d3.max(bins));
@@ -598,7 +590,6 @@ class MCUltraRich extends BaseComponent {
   redrawCircles(data, {showZoombox, DOT_STEP, DOT_R}) {
     const _this = this;
     const FACE_R = 10;
-    const FACEHOVER_R = 50;
 
     const billyIncomeFormatter = this.services.locale.longNumberF;
 
