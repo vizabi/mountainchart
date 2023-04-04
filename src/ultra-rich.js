@@ -113,7 +113,7 @@ class MCUltraRich extends BaseComponent {
           <circle cx="30" cy="300" r="80" />
           <circle cx="530" cy="300" r="80" />
         </pattern>
-    `)
+    `);
 
 
     this.DOM.defs.append("marker")
@@ -231,12 +231,12 @@ class MCUltraRich extends BaseComponent {
     this.parent.ui.inpercent;
     this.parent.ui.showBilly;
     let scale, shift;
-    if(this.services.layout.profile == "LARGE") {scale = 1.3; shift = 500; } ;
-    if(this.services.layout.profile == "MEDIUM") {scale = 1.3; shift = 500; };
-    if(this.services.layout.profile == "SMALL") {scale = 1.0; shift = 450; };
+    if(this.services.layout.profile == "LARGE") {scale = 1.3; shift = 500; } 
+    if(this.services.layout.profile == "MEDIUM") {scale = 1.3; shift = 500; }
+    if(this.services.layout.profile == "SMALL") {scale = 1.0; shift = 450; }
     this.DOM.sign.attr("transform", `translate(${this.parent.xScale(shift)}, ${this.parent.yScale(0)}) scale(${scale})`)
       .on("click", () => { 
-        this.root.ui.chart.showBilly = !this.root.ui.chart.showBilly 
+        this.root.ui.chart.showBilly = !this.root.ui.chart.showBilly; 
       });
 
     this.DOM.sign
@@ -250,13 +250,13 @@ class MCUltraRich extends BaseComponent {
 
     this.DOM.arrow.attr("transform", `translate(${this.parent.xScale.range()[1]}, ${this.parent.yScale(0)})`)
       .on("click", () => { 
-        this.root.ui.chart.showBilly = !this.root.ui.chart.showBilly 
+        this.root.ui.chart.showBilly = !this.root.ui.chart.showBilly; 
       });
 
     this.DOM.arrow
       .select("svg")
       .attr("width", this.parent.profileConstants.infoElHeight)
-      .attr("height", this.parent.profileConstants.infoElHeight)
+      .attr("height", this.parent.profileConstants.infoElHeight);
     this.DOM.arrow
       .select("g").attr("transform", `rotate(${this.parent.ui.showBilly? 180: 0}) translate(${this.parent.ui.showBilly? "-500 -500": "0 0"})`);
 
@@ -294,14 +294,14 @@ class MCUltraRich extends BaseComponent {
 
     this.wholeWorld = this.getHardcodedWholeWorldShortcuts();
     const isFullEntitySetPromise = this.wholeWorld ? Promise.resolve()
-    : this.model.data.isFullEntitySet(dim, entity)
-      .then(fullset => {
-        this.wholeWorld = fullset;
-      });
+      : this.model.data.isFullEntitySet(dim, entity)
+        .then(fullset => {
+          this.wholeWorld = fullset;
+        });
 
     Promise.all([drilldownPromise, isFullEntitySetPromise]).then(() => {
       this.drilldownsReady = entity.join("");
-    })
+    });
   }
 
   getRelevantBillies() {
@@ -389,7 +389,7 @@ class MCUltraRich extends BaseComponent {
     const getSortValue = (d) => {
       const color = this.colorMap[this.relevantBilly.get(d.person)];
       return this.parent.sortValuesForGroups[color] || this.parent.stickySortValues[color] || 0;
-    }
+    };
 
     const processOneBilly = (d) => {
       d.color = this.colorMap[this.relevantBilly.get(d.person)];
@@ -406,7 +406,7 @@ class MCUltraRich extends BaseComponent {
         }
       } 
       return d;
-    }
+    };
 
     this.bins = this.mesh.map(m => 0);
     this.binsByColor = {};
@@ -415,13 +415,13 @@ class MCUltraRich extends BaseComponent {
     else
       return d3.shuffle(
         //shuffle for more pleasant distribution within stacked bars
-         this.MDL.billyMarker.dataArray
+        this.MDL.billyMarker.dataArray
           .filter(f => this.wholeWorld || this.relevantBilly.has(f.person))
           .slice(0, this.parent.ui.howManyBilly)
-        )
+      )
         //sort billy to follow the colors of stacked mountains
         .sort((a,b) => getSortValue(a) - getSortValue(b))
-        .map(processOneBilly)
+        .map(processOneBilly);
   }
 
 
@@ -444,7 +444,7 @@ class MCUltraRich extends BaseComponent {
 
     const data = this._getBillyData();
 
-    const params = this.computeLayout(data)
+    const params = this.computeLayout(data);
     const zoomboxParams = this.redrawZoombox(params);
     this.redrawDeselectClickRect(params, zoomboxParams);
     Object.assign(params, zoomboxParams);
@@ -516,7 +516,7 @@ class MCUltraRich extends BaseComponent {
       .attr("transform", `translate(${ X + W - infoElHeight * 1.5 }, ${ Y + infoElHeight * 0.5 })`)
       .select("svg")
       .attr("width", infoElHeight + "px")
-      .attr("height", infoElHeight + "px")
+      .attr("height", infoElHeight + "px");
 
 
     return ({xmin, xmax, W,X,Y,y});      
@@ -562,10 +562,10 @@ class MCUltraRich extends BaseComponent {
       for(let i=startIndex; i>0; i--)  shape[i-1].y = shape[i].y * 1.1;
       stackBins = stackBins.map((m,i) => m + shape[i].y);
       this.bridgeShapes.push({color,shape});
-    })
-      //.filter(f => 1000 < f.x && f.x < 100e6);
+    });
+    //.filter(f => 1000 < f.x && f.x < 100e6);
 
-     const getColor = (d) => this.parent.MDL.color.scale.d3Scale(d.color);
+    const getColor = (d) => this.parent.MDL.color.scale.d3Scale(d.color);
 
     this.DOM.defs.selectAll("mask rect")
       .attr("x", X).attr("y", Y).attr("width", W).attr("height", H);
@@ -582,7 +582,7 @@ class MCUltraRich extends BaseComponent {
         _this.updateUnknownHint(null, null, {showZoombox, X,Y,W,H});
       })
       .attr("mask", `url(#clipMask-${this.parent.id})`)
-      .style("opacity", this.parent.ui.opacityRegular) //opacitySelectDim
+      .style("opacity", this.parent.ui.opacityRegular); //opacitySelectDim
 
     this.DOM.bridgeShape.selectAll("path")
       .data(this.bridgeShapes, d => d.color)
@@ -591,7 +591,7 @@ class MCUltraRich extends BaseComponent {
       .attr("d", d => area(d.shape.filter(f => xmin < f.x && f.x < xmax)))
       .style("fill", `url(#vzb-pattern-billy-bridgeshape-${this.parent.id})`)
       .attr("mask", `url(#progFadeMask-${this.parent.id})`)
-      .style("opacity", 1)  
+      .style("opacity", 1);  
   }
 
 
@@ -608,23 +608,23 @@ class MCUltraRich extends BaseComponent {
 
     const bridgeShapeByColor = {};
     if(showZoombox){
-      this.bridgeShapes.forEach(d => {bridgeShapeByColor[d.color] = d.shape})
+      this.bridgeShapes.forEach(d => {bridgeShapeByColor[d.color] = d.shape;});
     }
 
     const shiftAllCircles = (showZoombox? -30 : 0) + _this.parent.yScale(0) - 1 - (_this.isShowFaces ? FACE_R : DOT_R);
 
     const getY = (d) => {
-      if (!showZoombox) return shiftAllCircles - d.yInBinByColor * (_this.isShowFaces ? FACE_R * 2 : DOT_STEP)
+      if (!showZoombox) return shiftAllCircles - d.yInBinByColor * (_this.isShowFaces ? FACE_R * 2 : DOT_STEP);
       const bin = bridgeShapeByColor[d.color];
       return shiftAllCircles
         - bin[d.binNumber].y0 * DOT_STEP
         - bin[d.binNumber].y * DOT_STEP * d.yInBinByColor / this.binsByColor[d.color][d.binNumber];
-    }
+    };
 
     const needShuffle = !this.DOM.circlebox.selectAll("circle").size() && data.length;
 
     const circles = this.DOM.circlebox.selectAll("circle")
-      .data(needShuffle ? d3.shuffle(data) : data, d => d.person)
+      .data(needShuffle ? d3.shuffle(data) : data, d => d.person);
 
     circles.exit().remove();
     this.DOM.circles = circles.enter().append("circle")
@@ -638,7 +638,7 @@ class MCUltraRich extends BaseComponent {
         else {
           const promise = _this.fetchOneImage(d.person);
           if(promise) promise.then((success) => {
-            if(success) _this.highlightFace(event, d)
+            if(success) _this.highlightFace(event, d);
           });
 
         }
@@ -673,7 +673,7 @@ class MCUltraRich extends BaseComponent {
           .attr("cx", d => _this.parent.xScale(d.x));
       });
 
-      return;
+    return;
   }
 
   highlightFace(event, d){
@@ -685,8 +685,8 @@ class MCUltraRich extends BaseComponent {
     const target = d3.select(event.target);
     const cy = +target.attr("cy");
     const cx = +target.attr("cx");
-    const r = +target.attr("r")
-    const stroke = target.style("stroke")
+    const r = +target.attr("r");
+    const stroke = target.style("stroke");
 
     const position = cy > 150 ? "top" : "right";
 
@@ -695,17 +695,17 @@ class MCUltraRich extends BaseComponent {
       .attr("y1", cy)
       .attr("x2", position === "top" ? cx : this.parent.xScale.range()[1] - 50)
       .attr("y2", position === "top" ? cy - 100 : 50)
-      .style("stroke", stroke)
+      .style("stroke", stroke);
 
     const length = this.DOM.hlLine.node().getTotalLength();
-    this.DOM.hlLine.style("stroke-dasharray", `0 ${r} ${length - 50 - r} ${50}`)
+    this.DOM.hlLine.style("stroke-dasharray", `0 ${r} ${length - 50 - r} ${50}`);
 
     this.DOM.hlFace
       .attr("r", 50)
       .attr("cx", position === "top" ? cx : this.parent.xScale.range()[1] - 50)
       .attr("cy", position === "top" ? cy - 100 : 50)
       .style("stroke", stroke)
-      .style("fill", `url(#vzb-billy-image-${d.person}-${this.id})` )
+      .style("fill", `url(#vzb-billy-image-${d.person}-${this.id})` );
       
   }
 
@@ -738,15 +738,15 @@ class MCUltraRich extends BaseComponent {
       .style("fill", d3.select(event.target).style("fill"))
       .attr("cx", roundN(mouse[0] - 4, 5))
       .attr("cy", roundN(mouse[1] - 4, 5))
-      .attr("r", 4)
+      .attr("r", 4);
       
-    this.updateBoxTopText("Why many unknown? →", params)
+    this.updateBoxTopText("Why many unknown? →", params);
   }
 
 
   updateBoxTopText(text, {showZoombox, X,Y,W}={}){
     const infoElHeight = this.parent.profileConstants.infoElHeight;
-    this.DOM.boxTopText.classed("vzb-hidden", !showZoombox)
+    this.DOM.boxTopText.classed("vzb-hidden", !showZoombox);
 
     if(!showZoombox) return;
 
@@ -770,7 +770,7 @@ class MCUltraRich extends BaseComponent {
         <tspan x="0" dy=".6em">Billionaire data is</tspan>
         <tspan x="0" dy="1.2em">available between</tspan>
         <tspan x="0" dy="1.2em">${this.localise(this.MDL.billyFrame.scale.domain[0])} and ${this.localise(this.MDL.billyFrame.scale.domain[1])}</tspan>
-        `)
+        `);
   }
 
   updateSelected() {
