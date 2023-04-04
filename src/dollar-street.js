@@ -1,8 +1,8 @@
 import {
     BaseComponent,
-    Utils,
     LegacyUtils as utils,
-  } from "VizabiSharedComponents";
+  } from "@vizabi/shared-components";
+  import * as d3 from "d3";
   
   import { decorate, computed, observable } from "mobx";
   

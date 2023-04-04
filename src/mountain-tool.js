@@ -18,7 +18,7 @@ import {
   AddGeo,
   versionInfo,
   LegacyUtils as utils,
-} from "VizabiSharedComponents";
+} from "@vizabi/shared-components";
 import {VizabiMountainChart} from "./mountain-cmp.js";
 import {Stack} from "./dialogs/stack/stack.js"; Stack;
 import {PovertyLine} from "./dialogs/povertyline/povertyline.js"; PovertyLine;
@@ -128,6 +128,8 @@ export default class MountainChart extends BaseComponent {
       <div class="vzb-datanotes"></div>
     `;
 
+    config.locale.Vizabi = config.Vizabi;
+    config.layout.Vizabi = config.Vizabi;
     config.services = {
       Vizabi: new CapitalVizabiService({Vizabi: config.Vizabi}),
       locale: new LocaleService(config.locale),

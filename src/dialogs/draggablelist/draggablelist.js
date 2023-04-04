@@ -1,3 +1,4 @@
+import * as d3 from "d3";
 import * as utils from "base/utils";
 import Component from "base/component";
 

@@ -1,8 +1,9 @@
 
 
 //import draggablelist from "components/draggablelist/draggablelist";
-import {Dialog} from "VizabiSharedComponents";
+import {Dialog} from "@vizabi/shared-components";
 import {runInAction, decorate, computed} from "mobx";
+import * as d3 from "d3";
 
 /*
  * stack dialog

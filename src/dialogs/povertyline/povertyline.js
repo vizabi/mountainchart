@@ -1,5 +1,6 @@
-import {Dialog, SimpleCheckbox} from "VizabiSharedComponents";
+import {Dialog, SimpleCheckbox} from "@vizabi/shared-components";
 import {decorate, computed} from "mobx";
+import * as d3 from "d3";
 
 /*
  * poverty dialog

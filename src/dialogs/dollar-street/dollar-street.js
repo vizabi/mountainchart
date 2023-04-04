@@ -1,5 +1,6 @@
-import {Dialog, SimpleCheckbox, SingleHandleSlider} from "VizabiSharedComponents";
+import {Dialog, SimpleCheckbox, SingleHandleSlider} from "@vizabi/shared-components";
 import {decorate, computed, runInAction} from "mobx";
+import * as d3 from "d3";
 
 /*
  * Dollar Street dialog

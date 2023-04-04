@@ -3,11 +3,11 @@ import {
   Dialog,
   Utils,
   LegacyUtils as utils,
-} from "VizabiSharedComponents";
+} from "@vizabi/shared-components";
 import {runInAction, decorate, computed, toJS} from "mobx";
 import {ICONS} from "./icons.js";
 import {PRESETS_DEFAULT} from "./configs-example.js";
-
+import * as d3 from "d3";
 
 
 function followPath(base, path, createMissingObj = false){

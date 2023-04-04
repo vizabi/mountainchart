@@ -3,7 +3,8 @@ import {
   Icons,
   LegacyUtils as utils,
   Utils
-} from "VizabiSharedComponents";
+} from "@vizabi/shared-components";
+import * as d3 from "d3";
 import sign from "./ultra-rich-sign.js";
 
 const {ICON_QUESTION} = Icons;

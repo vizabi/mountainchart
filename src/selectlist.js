@@ -2,7 +2,8 @@ import {
   Icons,
   LegacyUtils as utils,
   BaseComponent
-} from "VizabiSharedComponents";
+} from "@vizabi/shared-components";
+import * as d3 from "d3";
 const {ICON_CLOSE} = Icons;
 
 import {decorate, computed} from "mobx";

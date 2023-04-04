@@ -4,7 +4,8 @@ import {
   LegacyUtils as utils,
   axisSmart,
   //Exporter as svgexport,
-} from "VizabiSharedComponents";
+} from "@vizabi/shared-components";
+import * as d3 from "d3";
 
 import MountainChartMath from "./math";
 import MCDecorations from "./decorations.js";
