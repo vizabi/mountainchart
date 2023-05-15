@@ -28,11 +28,7 @@ const Axes = Vizabi.Component.get("_dialog").extend("axesmc", {
       component: Vizabi.Component.get("minmaxinputs"),
       placeholder: ".vzb-xlimits-container",
       model: ["state.marker", "state.time", "locale"],
-      markerID: "axis_x",
-      ui: {
-        selectDomainMinMax: false,
-        selectZoomedMinMax: true
-      }
+      markerID: "axis_x"
     }];
 
 
