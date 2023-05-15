@@ -378,6 +378,7 @@ class _VizabiMountainChart extends BaseComponent {
   get yScale() {
     this.services.layout.size; //watch
     this.ui.inpercent;
+    this.maxValue;
 
     const {margin} = this.profileConstants;
     const height = this.height - margin.top - margin.bottom;
@@ -629,12 +630,24 @@ class _VizabiMountainChart extends BaseComponent {
 
   updateMaxValues() {
     if (this.isInFacet) {
+      this.parent.maxValues.set(this.name, this.ui.inpercent ? 1 : this.maxValue);
+    }
+  }
+
+  get maxValue() {
+    if (this.isInFacet) {
       const data = this._getDataArrayForFacet();
       const sum = d3.sum(data.map(m => m[this.MDL.maxheight.name]));
       const limit = this.MDL.maxheight.config.limit;
-      this.maxValue = (!sum || sum > limit) ? limit : sum;
-      this.parent.maxValues.set(this.name, this.ui.inpercent ? 1 : this.maxValue);
+      return (!this._isFrameLastValuesIsEqual() && (!sum || sum > limit)) ? limit : sum;
     }
+    return null;
+  }
+
+  _isFrameLastValuesIsEqual() {
+    const frameLastValue = this.MDL.frame.domainValues[this.MDL.frame.domainValues.length - 1];
+    const frameDataLastValue = this.MDL.frame.data.domain[this.MDL.frame.data.domain.length - 1];
+    return !(frameDataLastValue - frameLastValue);
   }
 
   processFrameData() {
@@ -1163,5 +1176,6 @@ export const VizabiMountainChart = decorate(_VizabiMountainChart, {
   "height": computed,
   "width": computed,
   "mesh": computed,
-  "incomeBrackets": observable
+  "incomeBrackets": observable,
+  "maxValue": computed
 });
