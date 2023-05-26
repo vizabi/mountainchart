@@ -165,7 +165,6 @@ class _VizabiMountainChart extends BaseComponent {
 
     this.xAxis = axisSmart("bottom");
 
-    this.yDomain = [0,0];
     this.rangeRatio = 1;
     this.rangeShift = 0;
     this.stickySortValues = {};
@@ -215,6 +214,7 @@ class _VizabiMountainChart extends BaseComponent {
 
     this.localise = this.services.locale.auto(this.MDL.frame.interval);
     this._dataNotes = this.root.findChild({name: "datanotes"});
+    this.yMaxGlobal = 0;
 
     if (this.updateLayoutProfile()) return; //return if exists with error
     this.addReaction(this.updateCurveMethod);
@@ -225,6 +225,7 @@ class _VizabiMountainChart extends BaseComponent {
     this.addReaction(this.updateSize);
     //this.addReaction(this.updateMesh);
     this.addReaction(this.zoom);
+    this.addReaction(this.resetYMaxGlobal);
     //this.addReaction(this.updateMasks);
     this.addReaction(this.drawData);
     this.addReaction(this.updateSelected);
@@ -378,7 +379,6 @@ class _VizabiMountainChart extends BaseComponent {
   get yScale() {
     this.services.layout.size; //watch
     this.ui.inpercent;
-    this.maxValue;
 
     const {margin} = this.profileConstants;
     const height = this.height - margin.top - margin.bottom;
@@ -650,6 +650,12 @@ class _VizabiMountainChart extends BaseComponent {
     return !(frameDataLastValue - frameLastValue);
   }
 
+  resetYMaxGlobal() {
+    this.MDL.frame.domainValues;
+
+    this.yMaxGlobal = 0;
+  }
+
   processFrameData() {
     this.atomicSliceData;
     this.groupedSliceData;
@@ -754,12 +760,12 @@ class _VizabiMountainChart extends BaseComponent {
     }
 
     //push yMaxGlobal up so shapes can fit
+    let yMaxGlobal = this.yMaxGlobal;
     this.atomicSliceData.forEach(d => {
-      if (this.yMaxGlobal < d.yMax) this.yMaxGlobal = d.yMax;
-      if (this.yMaxGlobal < this.ui.yMaxMethod) this.yMaxGlobal = this.ui.yMaxMethod;
+      if (yMaxGlobal < d.yMax) yMaxGlobal = d.yMax;
+      if (yMaxGlobal < this.ui.yMaxMethod) this.yMaxGlobal = this.ui.yMaxMethod;
     });
-
-    this._adjustMaxY();
+    this.yMaxGlobal = yMaxGlobal;
 
     //sort slices again: this time to order DOM-elements correctly
     if (stackMode === "none") {
@@ -1034,8 +1040,8 @@ class _VizabiMountainChart extends BaseComponent {
     return result;
   }
 
-  _adjustMaxY() {
-    this.yDomain = [0, this.isManyFacets ? this.ui.inpercent ? this.maxValue : this.parent.getScaleDomainForSubcomponent(null) : Math.round(this.yMaxGlobal)];
+  get yDomain() {
+    return [0, this.isManyFacets ? this.ui.inpercent ? this.maxValue : this.parent.getScaleDomainForSubcomponent(null) : Math.round(this.yMaxGlobal)];
   }
 
   _isMergingGroups() {
@@ -1177,5 +1183,7 @@ export const VizabiMountainChart = decorate(_VizabiMountainChart, {
   "width": computed,
   "mesh": computed,
   "incomeBrackets": observable,
-  "maxValue": computed
+  "maxValue": computed,
+  "yDomain": computed,
+  "yMaxGlobal": observable
 });
