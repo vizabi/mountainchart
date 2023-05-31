@@ -56,6 +56,10 @@
       .vzb-mc-probe text {
         dominant-baseline: hanging;
         fill: $vzb-color-primary;
+        stroke: $vzb-color-primary-lightest;
+        paint-order: stroke;
+        stroke-width: 3px;
+        stroke-opacity: 0.8;
         pointer-events: none;
         &.vzb-mc-probe-extremepoverty {
           font-variant: small-caps;
@@ -76,10 +80,6 @@
       .vzb-mc-probe .vzb-mc-probe-value-ur,
       .vzb-mc-probe .vzb-mc-probe-value-dr {
         text-anchor: start;
-      }
-
-      .vzb-mc-probe .vzb-shadow {
-        @extend %vzb-chart-label-shadow;
       }
 
       .vzb-mc-probe line {

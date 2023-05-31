@@ -13,16 +13,11 @@ class MCProbe extends BaseComponent {
       <text class="vzb-mc-probe-extremepoverty"></text>
       <line></line>
       <g class="vzb-mc-probe-details">
-        <text class="vzb-mc-probe-value vzb-shadow vzb-mc-probe-value-ul"></text>
-        <text class="vzb-mc-probe-value vzb-shadow vzb-mc-probe-value-ur"></text>
-        <text class="vzb-mc-probe-value vzb-shadow vzb-mc-probe-value-dl"></text>
-        <text class="vzb-mc-probe-value vzb-shadow vzb-mc-probe-value-dr"></text>
         <text class="vzb-mc-probe-value vzb-mc-probe-value-ul"></text>
         <text class="vzb-mc-probe-value vzb-mc-probe-value-ur"></text>
         <text class="vzb-mc-probe-value vzb-mc-probe-value-dl"></text>
         <text class="vzb-mc-probe-value vzb-mc-probe-value-dr"></text>
       </g>
-      <text class="vzb-mc-probe-value vzb-shadow vzb-mc-probe-value-head"></text>
       <text class="vzb-mc-probe-value vzb-mc-probe-value-head"></text>
     `;
 
@@ -152,22 +147,24 @@ class MCProbe extends BaseComponent {
     const suffix = !this.parent.isManyFacets || this.parent.state.positionInFacet.row.first ? " " + this.localise("mount/people") : "";
     this.DOM.probeValues
       .text((d, i) => {
-        if (i === 0 || i === 4) return formatterPercent(data.leftArea / data.totalArea * 100) + "%";
-        if (i === 1 || i === 5) return formatterPercent(100 - data.leftArea / data.totalArea * 100) + "%";
-        if (i === 2 || i === 6) {
+        if (!data.totalArea) return "";
+
+        if (i === 0) return formatterPercent(data.leftArea / data.totalArea * 100) + "%";
+        if (i === 1) return formatterPercent(100 - data.leftArea / data.totalArea * 100) + "%";
+        if (i === 2) {
           const count = this.localise(data.sumValue * data.leftArea / data.totalArea);
           return count != 0 ? count : this.localise("mount/few");
         }
-        if (i === 3 || i === 7) {
+        if (i === 3) {
           const count = this.localise(data.sumValue * (1 - data.leftArea / data.totalArea));
           return (count != 0 ? count : this.localise("mount/few")) + suffix;
         }
       })
       .classed("vzb-hidden", (d, i) => !options.full &&
-        (((i === 0 || i === 4) && !this.parent.ui.probeXDetails.belowProc) ||
-        ((i === 1 || i === 5) && !this.parent.ui.probeXDetails.aboveProc) ||
-        ((i === 2 || i === 6) && !this.parent.ui.probeXDetails.belowCount) ||
-        ((i === 3 || i === 7) && !this.parent.ui.probeXDetails.aboveCount))
+        (((i === 0) && !this.parent.ui.probeXDetails.belowProc) ||
+        ((i === 1) && !this.parent.ui.probeXDetails.aboveProc) ||
+        ((i === 2) && !this.parent.ui.probeXDetails.belowCount) ||
+        ((i === 3) && !this.parent.ui.probeXDetails.aboveCount))
       )
       .attr("x", (d, i) => ([0, 4, 2, 6].includes(i) ? -6 : +5))
       .attr("dy", (d, i) => [0, 1, 4, 5].includes(i) ? "-2.5em" : "-1.2em");
