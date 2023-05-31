@@ -208,6 +208,12 @@ class Presets extends Dialog {
       delete this.model.config.encoding.stack.data.source;
       this.model.config.encoding.stack.data = target.config.encoding.stack.data;
 
+      delete this.model.config.encoding.order.data.constant;
+      delete this.model.config.encoding.order.data.concept;
+      delete this.model.config.encoding.order.data.space;
+      delete this.model.config.encoding.order.data.source;
+      this.model.config.encoding.order.data = target.config.encoding.order.data;
+
       target.config.encoding.facet_row.data.modelType = "entityMembershipDataConfig";
       delete this.model.config.encoding.facet_row.data.constant;
       delete this.model.config.encoding.facet_row.data.concept;
