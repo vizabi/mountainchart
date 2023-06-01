@@ -1,6 +1,6 @@
 {
   "name": "@vizabi/mountainchart",
-  "version": "7.3.3",
+  "version": "7.3.4",
   "description": "Vizabi mountain chart",
   "scripts": {
     "prepublishOnly": "npm run build",
