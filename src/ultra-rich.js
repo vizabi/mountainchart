@@ -273,7 +273,9 @@ class MCUltraRich extends BaseComponent {
       //showing all countries in one chart
       || filter["un_state"] && notFacet
       //showing world as one shape
-      || filter["is--global"] && notFacet;
+      || filter["is--global"] && notFacet
+      //showing world in facet
+      || (!notFacet && this.parent.atomicSliceData.length == 1 && this.parent.atomicSliceData[0].facet_row[0] == "is--global");
   }
 
   getDrillDowns() {
