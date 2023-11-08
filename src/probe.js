@@ -116,9 +116,26 @@ class MCProbe extends BaseComponent {
 
       mountains.forEach(d => {
         sumValue += d.norm;
-        if (d.shape) d.shape.forEach(vertex => {
+
+        if (!d.shape) return;
+
+        const next = Math.pow(d.shape[1].x / d.shape[0].x, 0.5);
+        const prev = Math.pow(d.shape[1].x / d.shape[0].x, -0.5);
+        const X = this.parent.xScale;
+        const barWidthPX = X(d.shape[1].x) - X(d.shape[0].x);
+
+        d.shape.forEach((vertex) => {
           totalArea += vertex.y;
-          if (this.parent._math.rescale(vertex.x) < level) leftArea += vertex.y;
+          
+          //for this bit you have to imagine the mountain shape as a histogram
+          //each vertex of mountain is the height of the bar, one bar for income bracket          
+          const nextMidpoint = vertex.x * next;
+          const prevMidpoint = vertex.x * prev;
+
+          //bar partially to the left
+          if (prevMidpoint < level && level <= nextMidpoint) leftArea += vertex.y * (X(level) - X(prevMidpoint)) / barWidthPX;
+          //bar fully to the left
+          if (nextMidpoint < level) leftArea += vertex.y;
         });
       });
 
