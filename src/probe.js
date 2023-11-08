@@ -82,47 +82,51 @@ class MCProbe extends BaseComponent {
     const nationalMode = this.parent.ui.probeXType == "national";
     const customMode = this.parent.ui.probeXType == "custom";
 
-    const data = {
-      level: options.level,
-      time: null,
-      sumValue: 0,
-      totalArea: 0,
-      leftArea: 0
-    };
-
-    if (options.full && data.level){
-      //pass on without modifying          
+    let level = null;
+    let time = null;
+    if (options.full && options.level){
+      level = options.level;       
     }
     else if (nationalMode) {
       if (this.parent.atomicSliceData.length == 1 && this._isProbeModelReady()) {
-        Object.assign(data, this._getNationalLevel(this.parent.atomicSliceData[0]));
+        ({level, time} = this._getNationalLevel(this.parent.atomicSliceData[0]));
       } else {
         this.DOM.probe.classed("vzb-hidden", true);
         return;
       }
-    } else if (customMode && !data.level) {
-      data.level = this.parent.ui.probeXCustom;
-    } else if (!data.level) {
-      data.level = this.parent.ui.probeX; //TODO: move inside
+    } else if (customMode && !level) {
+      level = this.parent.ui.probeXCustom;
+    } else if (!level) {
+      level = this.parent.ui.probeX; 
     }
 
-    this.DOM.probe.classed("vzb-hidden", !data.level || !this.parent.ui.showProbeX);
-    if (!data.level) return;
+    this.DOM.probe.classed("vzb-hidden", !level || !this.parent.ui.showProbeX);
+    if (!level) return;
 
-    this.element.attr("transform", `translate(${this.parent.xScale(data.level)}, 0)`);
+    this.element.attr("transform", `translate(${this.parent.xScale(level)}, 0)`);
     
     if(this.parent.xAxis.scale())
-      this.parent.DOM.xAxis.call(this.parent.xAxis.highlightValue(options.full ? data.level : "none"));
+      this.parent.DOM.xAxis.call(this.parent.xAxis.highlightValue(options.full ? level : "none"));
 
-    const _computeAreas = (d, result) => {
-      result.sumValue += d.norm;
-      if (d.shape) d.shape.forEach(vertex => {
-        result.totalArea += vertex.y;
-        if (this.parent._math.rescale(vertex.x) < result.level) result.leftArea += vertex.y;
+
+    const _computeAreas = (mountains) => {       
+      let sumValue = 0;
+      let totalArea = 0;
+      let leftArea = 0;
+
+      mountains.forEach(d => {
+        sumValue += d.norm;
+        if (d.shape) d.shape.forEach(vertex => {
+          totalArea += vertex.y;
+          if (this.parent._math.rescale(vertex.x) < level) leftArea += vertex.y;
+        });
       });
+
+      return {sumValue, totalArea, leftArea};
     };
 
-    this.parent.atomicSliceData.forEach(d => _computeAreas(d, data));
+    
+    const data = _computeAreas(this.parent.atomicSliceData);
 
     const formatterPercent = (value) => value < 0.1 ? 0 : d3.format(".2r")(value);
 
@@ -170,7 +174,7 @@ class MCProbe extends BaseComponent {
       .attr("dy", (d, i) => [0, 1, 4, 5].includes(i) ? "-2.5em" : "-1.2em");
 
     this.DOM.probeValuesHead
-      .text(`${this.localise(data.level)}$ (${this.localise(data.time)})`)
+      .text(`${this.localise(level)}$ (${this.localise(time)})`)
       .classed("vzb-hidden", !nationalMode || options.full)
       .attr("dy", "0.3em")
       .attr("y", 0);
