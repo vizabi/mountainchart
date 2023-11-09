@@ -396,8 +396,10 @@ class MCUltraRich extends BaseComponent {
     const processOneBilly = (d) => {
       d.color = this.colorMap[this.relevantBilly.get(d.person)];
 
+      const isOutOfBounds = (i) => (i === this.mesh.length - 1) && (d.x > d3.max(this.mesh, m => m[2]));
+
       for (let i=0; i<this.mesh.length; i++){
-        if (this.mesh[i][0] < d.x && d.x <= this.mesh[i][2]) {
+        if (this.mesh[i][0] < d.x && d.x <= this.mesh[i][2] || isOutOfBounds(i)) {
           d.binNumber = i;
           d.binnedX = this.mesh[i][1];
           d.yInBin = this.bins[i];
