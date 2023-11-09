@@ -488,7 +488,7 @@ class MCUltraRich extends BaseComponent {
     if (!showZoombox) return;
 
     const xmin = 4000; //this.mesh[this.bins.findIndex(f => f > 0)][0];
-    const xmax = 20e6; //this.mesh.concat().reverse()[this.bins.concat().reverse().findIndex(f => f > 0) - 1][1];
+    const xmax = 20e7; //this.mesh.concat().reverse()[this.bins.concat().reverse().findIndex(f => f > 0) - 1][1];
     const W = this.parent.xScale(xmax) - this.parent.xScale(xmin);
 
     

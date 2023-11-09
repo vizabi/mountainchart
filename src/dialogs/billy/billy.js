@@ -74,7 +74,7 @@ class BillyDialog extends Dialog {
   setModel(){
     const showBilly = this.root.ui.chart.showBilly;  
     runInAction(() => {
-      this.model.encoding.mu.config.scale.domain[1] = showBilly ? 100000000 : 500;
+      this.model.encoding.mu.config.scale.domain[1] = showBilly ? 2000000000 : 500;
 
       //take the bily config out of stash and apply it, so that the data starts loading
       //resetting back to null then for cleaning URL state
