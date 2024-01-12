@@ -35,6 +35,7 @@ class Presets extends Dialog {
         <div class="vzb-dialog-content">
           <div class="vzb-dialog-preset-container">
             <div class="vzb-form"></div>
+            <div class="vzb-hint"><span data-localise="mount/presets/hint"></span></div>
           </div>
         </div>
       </div>

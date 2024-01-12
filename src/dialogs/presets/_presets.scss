@@ -25,6 +25,18 @@
 .vzb-dialogs-dialog {
   &[data-dlg="presets"] {
 
+      .vzb-hint {
+        opacity: 0;
+        color: $vzb-color-primary-light;
+        font-style: italic;
+      }
+
+      &:hover {
+        .vzb-hint {
+          opacity: 1;
+        }
+      }
+
       .vzb-form {
         height: 100px;
       }
