@@ -340,27 +340,14 @@ class MCDollarStreet extends BaseComponent {
 
     group.append("text")
       .text(this.nameMap[d.geo])
-      .attr("class", "vzb-mc-ds-name vzb-mc-ds-shadow")
-      .attr("dx", "0.5em").attr("dy", "1.5em");
-    group.append("text")
-      .text(this.nameMap[d.geo])
       .attr("class", "vzb-mc-ds-name vzb-mc-ds-text")
       .attr("dx", "0.5em").attr("dy", "1.5em");
 
     group.append("text")
       .text(this.localise(d.x) + " " + this.localise("unit/mountainchart_hardcoded_income_per_day"))
-      .attr("class", "vzb-mc-ds-income vzb-mc-ds-shadow")
-      .attr("dx", "0.5em").attr("dy", "2.7em");
-    group.append("text")
-      .text(this.localise(d.x) + " " + this.localise("unit/mountainchart_hardcoded_income_per_day"))
       .attr("class", "vzb-mc-ds-income vzb-mc-ds-text")
       .attr("dx", "0.5em").attr("dy", "2.7em");
       
-    group.append("text")
-      .text(this.localise("mount/ds/visitThisHome"))
-      .attr("class", "vzb-mc-ds-hint vzb-mc-ds-shadow")
-      .attr("x", size.imageSize / 2).attr("y", size.imageSize)
-      .attr("dy", "-0.8em");
     group.append("text")
       .text(this.localise("mount/ds/visitThisHome"))
       .attr("class", "vzb-mc-ds-hint vzb-mc-ds-text")
@@ -371,13 +358,7 @@ class MCDollarStreet extends BaseComponent {
       group.transition().duration(2000).style("opacity", 0);
     }
 
-    if(utils.isTouchDevice()) {
-      group.append("text")
-        .text("×")
-        .attr("class", "vzb-mc-ds-closecross vzb-mc-ds-shadow")
-        .attr("dx", "-1.5em").attr("dy", "1.5em")
-        .attr("x", size.imageSize);
-          
+    if(utils.isTouchDevice()) {          
       group.append("text")
         .text("×")
         .attr("class", "vzb-mc-ds-closecross vzb-mc-ds-text")
