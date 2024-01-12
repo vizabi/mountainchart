@@ -66,7 +66,9 @@ class MCDollarStreet extends BaseComponent {
     this.wholeWorld = false;
 
     this.colorMap = {};
+    this.nameMap = {};
     this.colorMapReady = false;
+    this.nameMapReady = false;
       
   }
   
@@ -75,6 +77,7 @@ class MCDollarStreet extends BaseComponent {
     return {
       frame: this.model.encoding.frame,
       color: this.model.encoding.color,
+      label: this.model.encoding.label,
     };
   }
   
@@ -84,6 +87,7 @@ class MCDollarStreet extends BaseComponent {
     this.addReaction(this.getFamilies);
     this.addReaction(this.getDrillDowns);
     this.addReaction(this.getColorMapping);
+    this.addReaction(this.getNameMapping);
     this.addReaction(this.redraw);
   
     this.addReaction(this.disableReactions);
@@ -94,6 +98,7 @@ class MCDollarStreet extends BaseComponent {
     this.removeReaction(this.getFamilies);
     this.removeReaction(this.getDrillDowns);
     this.removeReaction(this.getColorMapping);
+    this.removeReaction(this.getNameMapping);
     this.removeReaction(this.redraw);
     this.DOM.container.selectAll("g").remove();
   }
@@ -159,6 +164,20 @@ class MCDollarStreet extends BaseComponent {
       
   }
 
+  getNameMapping(){
+    const dim = this.principalDimension;
+
+    this.nameMapReady = true;
+    this.model.data.spaceCatalog.then(catalog => {
+      const entities = catalog[dim].entities;
+      for(let [key, entity] of entities) {
+        this.nameMap[key] = entity[this.MDL.label.data.concept];
+      }
+      this.nameMapReady = true;
+    });
+  }
+
+
   getFamilies() {
     if(!this.drilldownsReady) return;
 
@@ -197,7 +216,7 @@ class MCDollarStreet extends BaseComponent {
       
     this._removeImage();
       
-    if(!this.familiesReady || !this.colorMapReady) return;
+    if(!this.familiesReady || !this.colorMapReady || !this.nameMapReady) return;
 
     const icon = `<path d="m25 9.0937l-17.719 16.281h5.563v15.531h24.312v-15.531h5.563l-17.719-16.281z"/>`;
     const iconHeight = 20.5;
@@ -318,13 +337,13 @@ class MCDollarStreet extends BaseComponent {
       .attr("transform", `translate(${size.imageX}, ${size.imageY})`)
       .attr("class", "vzb-mc-ds-text-group")
       .style("font-size", size.imageSize > 180 ? "1.8em" : size.imageSize > 80 ? "1.24em" : "0.8em");
-      
+
     group.append("text")
-      .text(d.name)
+      .text(this.nameMap[d.geo])
       .attr("class", "vzb-mc-ds-name vzb-mc-ds-shadow")
       .attr("dx", "0.5em").attr("dy", "1.5em");
     group.append("text")
-      .text(d.name)
+      .text(this.nameMap[d.geo])
       .attr("class", "vzb-mc-ds-name vzb-mc-ds-text")
       .attr("dx", "0.5em").attr("dy", "1.5em");
 
@@ -376,6 +395,7 @@ const decorated = decorate(MCDollarStreet, {
   "familiesReady": observable,
   "drilldownsReady": observable,
   "colorMapReady": observable,
+  "nameMapReady": observable,
   "principalDimension": computed,
 });
 export { decorated as MCDollarStreet };
