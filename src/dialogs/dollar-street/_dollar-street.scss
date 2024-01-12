@@ -1,6 +1,8 @@
 .vzb-dialogs {
   .vzb-dialogs-dialog {
     &[data-dlg="dollarstreet"] {
+      flex: none;
+      
       .vzb-dialog-content {
         .vzb-dialog-flex-container {
           display: flex;
