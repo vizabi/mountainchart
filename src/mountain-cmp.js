@@ -21,7 +21,7 @@ const {ICON_QUESTION} = Icons;
 //const COLOR_BLACKISH = "rgb(51, 51, 51)";
 //const COLOR_WHITEISH = "rgb(253, 253, 253)";
 
-const THICKNESS_THRESHOLD = 0.001;
+const THICKNESS_THRESHOLD = 0.0001;
 
 // MOUNTAIN CHART COMPONENT
 class _VizabiMountainChart extends BaseComponent {
