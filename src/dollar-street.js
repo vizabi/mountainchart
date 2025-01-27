@@ -82,7 +82,7 @@ class MCDollarStreet extends BaseComponent {
   }
   
   draw() {
-    this.localise = this.services.locale.auto(this.MDL.frame.interval);
+    this.localise = this.services.locale.auto({interval: this.MDL.frame.interval});
     if(!this.parent.ui.dsShow) return;
     this.addReaction(this.getFamilies);
     this.addReaction(this.getDrillDowns);

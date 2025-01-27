@@ -212,7 +212,7 @@ class _VizabiMountainChart extends BaseComponent {
 
   draw() {
 
-    this.localise = this.services.locale.auto(this.MDL.frame.interval);
+    this.localise = this.services.locale.auto({interval: this.MDL.frame.interval});
     this._dataNotes = this.root.findChild({name: "datanotes"});
     this.yMaxGlobal = 0;
 

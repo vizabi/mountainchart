@@ -27,7 +27,7 @@ class _MCSelectList extends BaseComponent {
   draw() {
 
 
-    this.localise = this.services.locale.auto(this.MDL.frame.interval);
+    this.localise = this.services.locale.auto({interval: this.MDL.frame.interval});
 
     this.addReaction(this.addAndRemoveLabels);
     this.addReaction(this.updateHighlighted);
