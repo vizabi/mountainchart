@@ -99,7 +99,7 @@ class BillyDialog extends Dialog {
     const showBilly = this.root.ui.chart.showBilly;  
     this.DOM.slider.classed("vzb-hidden", !showBilly);
     this.DOM.count.classed("vzb-hidden", !showBilly);
-    this.findChild({type: "SingleHandleSlider"})._updateSize();
+    this.findChild({type: "SingleHandleSlider"}).updateSize();
     this.findChild({type: "SingleHandleSlider"})._updateView();
   }
 

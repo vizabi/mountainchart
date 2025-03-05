@@ -222,7 +222,7 @@ class _VizabiMountainChart extends BaseComponent {
     this.addReaction(this.drawForecastOverlay);
     this.addReaction(this.updateMathSettings);
     this.addReaction(this.updateMaxValues);
-    this.addReaction(this.updateSize);
+    this.addReaction(this.updateSize, {throttle_ms: 50});
     //this.addReaction(this.updateMesh);
     this.addReaction(this.zoom);
     this.addReaction(this.resetYMaxGlobal);

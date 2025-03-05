@@ -100,7 +100,7 @@ class DollarStreetDialog extends Dialog {
     this.DOM.count.classed("vzb-hidden", !show);
     this.DOM.topic.classed("vzb-hidden", !show);
     this.DOM.checkbox.style("flex-basis", !show ? "240px" : "90px");
-    this.findChild({type: "SingleHandleSlider"})._updateSize();
+    this.findChild({type: "SingleHandleSlider"}).updateSize();
     this.findChild({type: "SingleHandleSlider"})._updateView();
   }
 
