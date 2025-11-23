@@ -33,14 +33,14 @@ export default class MountainChart extends BaseComponent {
 
   constructor(config){
 
-    const markerName = config.options?.markerNames?.mountain || "mountain";
-    const fullMarker = config.model.markers[markerName];
+    const fullMarker = config.model.markers?.mountain;
+    const fullMarkerLegend = config.model.markers?.legend;
+    config.Vizabi.utils.applyDefaults(fullMarker?.config || {}, MountainChart.DEFAULT_MODEL.mountain);   
+    config.Vizabi.utils.applyDefaults(fullMarkerLegend?.config || {}, MountainChart.DEFAULT_MODEL.legend);  
 
     const frameType = config.Vizabi.stores.encodings.modelTypes.frame;
     const { marker, splashMarker } = frameType.splashMarker(fullMarker);
-
-    config.model.markers[markerName] = marker;
-
+    
     config.name = "mountainchart";
 
     config.subcomponents = [{
@@ -149,7 +149,10 @@ export default class MountainChart extends BaseComponent {
   }
 }
 MountainChart.DEFAULT_UI = {
-  chart: {  
+  "locale": { "id": "en", "shortNumberFormat": true },
+  "layout": { "projector": false },
+  
+  "chart": {
   },
 };
 
