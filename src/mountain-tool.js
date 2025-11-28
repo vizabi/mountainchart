@@ -35,8 +35,12 @@ export default class MountainChart extends BaseComponent {
 
     const fullMarker = config.model.markers?.mountain;
     const fullMarkerLegend = config.model.markers?.legend;
+    const fullMarkerPovertyline = config.model.markers?.povertyline;
+    const fullMarkerBilly = config.model.markers?.billy;
     config.Vizabi.utils.applyDefaults(fullMarker?.config || {}, MountainChart.DEFAULT_MODEL.mountain);   
     config.Vizabi.utils.applyDefaults(fullMarkerLegend?.config || {}, MountainChart.DEFAULT_MODEL.legend);  
+    config.Vizabi.utils.applyDefaults(fullMarkerPovertyline?.config || {}, MountainChart.DEFAULT_MODEL.povertyline);  
+    config.Vizabi.utils.applyDefaults(fullMarkerBilly?.config || {}, MountainChart.DEFAULT_MODEL.billy);  
 
     const frameType = config.Vizabi.stores.encodings.modelTypes.frame;
     const { marker, splashMarker } = frameType.splashMarker(fullMarker);
@@ -155,5 +159,86 @@ MountainChart.DEFAULT_UI = {
   "chart": {
   },
 };
+
+MountainChart.DEFAULT_MODEL = {
+  "mountain": {},
+  "legend": {
+    "data": {
+      "ref": {
+        "transform": "entityConceptSkipFilter",
+        "path": "markers.mountain.encoding.color"
+      }
+    },
+    "encoding": {
+      "color": {
+        "data": {
+          "concept": { "ref": "markers.mountain.encoding.color.data.concept" },
+          "constant": { "ref": "markers.mountain.encoding.color.data.constant" }
+        },
+        "scale": {
+          "modelType": "color",
+          "palette": { "ref": "markers.mountain.encoding.color.scale.palette" },
+          "type": null,
+          "domain": null,
+          "range": null,
+          "zoomed": null,
+          "zeroBaseline": false,
+          "clamp": false,
+          "allowedTypes": null
+        }
+      },
+      "name": { "data": { } },
+      "order": {
+        "modelType": "order",
+        "direction": "asc",
+        "data": { }
+      },
+      "map": { "data": { } }
+    }
+  },
+  "povertyline": {
+    "data": { "ref": "markers.mountain.config.data" },
+    "encoding": {
+      "povertyline": {
+        "data": { }
+      }
+    }
+  },
+  "billy": {
+    "requiredEncodings": ["x"],
+    "encoding": {
+      "order": {
+        "modelType": "order",
+        "direction": "desc",
+        "data": { "ref": "markers.billy.config.encoding.x.data" }
+      },
+      "x": {
+        "data": { }
+      },
+      "name": {
+        "data": { }
+      },
+      "slices": {
+        "data": { }
+      },
+      "frame": {
+        "modelType": "frame",
+        "loop": false,
+        "data": { },
+        "scale": {
+          "clampDomainToData": true
+        }
+      },
+      "selected": {
+        "modelType": "selection"
+      },
+      "highlighted": {
+        "modelType": "selection"
+      }
+    }
+
+  }
+};
+
 
 MountainChart.versionInfo = { version: __VERSION, build: __BUILD, package: __PACKAGE_JSON_FIELDS, sharedComponents: versionInfo};
