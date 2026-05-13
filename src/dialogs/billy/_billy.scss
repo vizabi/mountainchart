@@ -1,4 +1,7 @@
-.vzb-dialogs {
+@use "../../../node_modules/@vizabi/shared-components/src/styles/common" as *;
+
+.vzb-tool {
+  .vzb-dialogs {
     .vzb-dialogs-dialog {
       &[data-dlg="billy"] {
         .vzb-dialog-content {
@@ -36,3 +39,4 @@
       }
     }
   }
+}

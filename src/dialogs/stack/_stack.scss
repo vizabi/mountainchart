@@ -1,31 +1,34 @@
-//responsiveness
-&.vzb-large {
-  &.vzb-dialog-expand-true {
-    .vzb-dialogs-dialog {
-      &.vzb-sidebar {
-        &[data-dlg="stack"] {
-          flex: none;
+@use "../../../node_modules/@vizabi/shared-components/src/styles/common" as *;
 
-          .vzb-dl-holder .vzb-draggable {
-            height: initial;
+.vzb-tool {
+  //responsiveness
+  &.vzb-large {
+    &.vzb-dialog-expand-true {
+      .vzb-dialogs-dialog {
+        &.vzb-sidebar {
+          &[data-dlg="stack"] {
+            flex: none;
+
+            .vzb-dl-holder .vzb-draggable {
+              height: initial;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  //hiding elements when in popup mode
+  .vzb-sidebar {
+    .vzb-dialogs-dialog {
+      &[data-dlg="stack"] {
+        &.vzb-sidebar {
+          .vzb-howtomerge,
+          .vzb-manual-sorting {
+            display: none;
           }
         }
       }
     }
   }
 }
-
-//hiding elements when in popup mode
-.vzb-sidebar {
-  .vzb-dialogs-dialog {
-    &[data-dlg="stack"] {
-      &.vzb-sidebar {
-        .vzb-howtomerge,
-        .vzb-manual-sorting {
-          display: none;
-        }
-  	  }
-	  }
-  }
-}
-

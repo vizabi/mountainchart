@@ -1,7 +1,5 @@
-@import "../node_modules/bourbon/core/_bourbon.scss";
-@import "../node_modules/@vizabi/shared-components/src/styles/vizabi-old/_mixins.scss";
-@import "../node_modules/@vizabi/shared-components/src/styles/vizabi-old/_common.scss";
-@import "../node_modules/@vizabi/shared-components/src/styles/vizabi-old/_chart.scss";
+@use "../node_modules/@vizabi/shared-components/src/styles/common" as *;
+@use "sass:meta";
 
 .vzb-tool {
   visibility: visible !important;
@@ -422,10 +420,10 @@
       }
     }
   }
-
-  @import 'dialogs/stack/_stack.scss';
-  @import 'dialogs/povertyline/_povertyline.scss';
-  @import 'dialogs/billy/_billy.scss';
-  @import 'dialogs/dollar-street/dollar-street.scss';
-  @import 'dialogs/presets/_presets.scss';
 }
+
+@include meta.load-css('dialogs/stack/_stack.scss');
+@include meta.load-css('dialogs/povertyline/_povertyline.scss');
+@include meta.load-css('dialogs/billy/_billy.scss');
+@include meta.load-css('dialogs/dollar-street/dollar-street.scss');
+@include meta.load-css('dialogs/presets/_presets.scss');
